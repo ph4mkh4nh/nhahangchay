@@ -1,0 +1,743 @@
+﻿@model IEnumerable<nhahangchay.Models.Booking>
+@{
+    ViewData["Title"] = "Hồ sơ cá nhân & Đặt bàn";
+
+    // Tab 1: Đơn tiêu chuẩn hoặc đơn VIP/Omakase đã thanh toán cọc
+    var currentBookings = Model
+        .Where(x => x.Status == 0 && (x.DepositAmount == 0 || x.PaymentStatus == 1))
+        .OrderBy(x => x.BookingDate)
+        .ToList();
+
+    // Tab 3: Đơn yêu cầu cọc nhưng chưa thanh toán
+    var unpaidBookings = Model
+        .Where(x => x.Status == 0 && x.DepositAmount > 0 && x.PaymentStatus == 0)
+        .OrderBy(x => x.CreatedAt)
+        .ToList();
+
+    // Tab 2: Lịch sử
+    var historyBookings = Model
+        .Where(x => x.Status != 0)
+        .OrderByDescending(x => x.CreatedAt)
+        .ToList();
+}
+
+@functions {
+    string GetCancelPolicyText(nhahangchay.Models.Booking booking)
+    {
+        if (booking.DepositAmount <= 0)
+        {
+            return "Bàn tiêu chuẩn không yêu cầu cọc. Bạn có thể hủy online nếu còn hơn 1 tiếng trước giờ đến.";
+        }
+
+        if (booking.BookingType == "Bàn VIP")
+        {
+            return "Bàn VIP: Hủy trước 24 tiếng được hỗ trợ hoàn/chuyển 100% tiền cọc. Hủy dưới 24 tiếng, tiền cọc không được hoàn do nhà hàng đã giữ phòng riêng và chuẩn bị dịch vụ.";
+        }
+
+        if (booking.BookingType == "Omakase Chay")
+        {
+            return "Omakase Chay: Hủy trước 48 tiếng được hỗ trợ hoàn/chuyển 100% tiền cọc. Hủy từ 24 đến dưới 48 tiếng được hỗ trợ 50%. Hủy dưới 24 tiếng, tiền cọc không được hoàn do nhà hàng đã chuẩn bị nguyên liệu và suất phục vụ riêng.";
+        }
+
+        return "Nếu đơn có phát sinh tiền cọc, nhà hàng sẽ liên hệ để xử lý hoàn/chuyển cọc thủ công.";
+    }
+
+    string GetCancelConfirmText(nhahangchay.Models.Booking booking)
+    {
+        return $"Bạn có chắc chắn muốn hủy đơn {booking.BookingCode} không?\n\nVui lòng đọc chính sách hủy đơn phía trên trước khi xác nhận.\n\n{GetCancelPolicyText(booking)}";
+    }
+}
+
+<div class="container senvie-profile-container">
+
+    <div class="senvie-hero">
+        <div class="row align-items-center">
+            <div class="col-lg-8 senvie-hero-content">
+                <div class="senvie-eyebrow">
+                    <span class="senvie-brand-mark"></span>
+                    SenVie Vegan Dining
+                </div>
+                <h2>Quản lý đặt bàn</h2>
+                <p>
+                    Theo dõi các đơn đặt bàn sắp tới, xem lại lịch sử dùng bữa và mở mã QR check-in nhanh khi đến nhà hàng.
+                </p>
+            </div>
+            <div class="col-lg-4 mt-4 mt-lg-0">
+                <div class="senvie-quick-card">
+                    <div class="quick-label">Đơn sắp tới</div>
+                    <div class="quick-number">@currentBookings.Count</div>
+                    <div class="quick-note">Mã QR sẽ hiển thị khi bấm vào mã nhận diện.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="senvie-summary-grid">
+        <div class="senvie-stat-card">
+            <div class="senvie-stat-icon">Đ</div>
+            <div>
+                <p class="senvie-stat-title">Đơn sắp tới</p>
+                <p class="senvie-stat-value">@currentBookings.Count</p>
+            </div>
+        </div>
+
+        <div class="senvie-stat-card">
+            <div class="senvie-stat-icon">LS</div>
+            <div>
+                <p class="senvie-stat-title">Lịch sử</p>
+                <p class="senvie-stat-value">@historyBookings.Count</p>
+            </div>
+        </div>
+
+        <div class="senvie-stat-card">
+            <div class="senvie-stat-icon" style="@(unpaidBookings.Any() ? "background-color: #ffe5e5; color: #dc3545;" : "")">Cọc</div>
+            <div>
+                <p class="senvie-stat-title">Thanh toán cọc</p>
+                @if (unpaidBookings.Any())
+                {
+                    <p class="senvie-stat-value text-danger">
+                        @unpaidBookings.Count <span style="font-size: 14px; font-weight: normal;">đơn</span>
+                    </p>
+                }
+                else
+                {
+                    <p class="senvie-stat-value">0</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="senvie-content-card">
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success font-weight-bold text-center mb-3">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger font-weight-bold text-center mb-3">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        <div class="senvie-tabs-area">
+            <ul class="nav nav-tabs senvie-tabs" id="profileTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link active" id="current-tab" data-toggle="tab" href="#current" role="tab">
+                        <span class="senvie-tab-mark"></span>
+                        Đơn Sắp Tới
+                        <span class="badge badge-light ml-1">@currentBookings.Count</span>
+                    </a>
+                </li>
+
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" id="history-tab" data-toggle="tab" href="#history" role="tab">
+                        <span class="senvie-tab-mark"></span>
+                        Lịch Sử
+                        <span class="badge badge-secondary ml-1">@historyBookings.Count</span>
+                    </a>
+                </li>
+
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link @(unpaidBookings.Any() ? "text-danger font-weight-bold" : "")" id="payment-tab" data-toggle="tab" href="#payment" role="tab">
+                        <span class="senvie-tab-mark" style="@(unpaidBookings.Any() ? "background-color: #dc3545;" : "")"></span>
+                        Thanh toán Cọc
+                        @if (unpaidBookings.Any())
+                        {
+                            <span class="badge badge-danger ml-1 shadow-sm">@unpaidBookings.Count nợ</span>
+                        }
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="tab-content" id="profileTabsContent">
+
+            <div class="tab-pane fade show active" id="current" role="tabpanel">
+
+                <div class="booking-cancel-policy-box">
+                    <div class="policy-box-header">
+                        <div class="policy-icon-text">i</div>
+                        <div>
+                            <h5>Chính sách hủy đơn</h5>
+                            <p>Vui lòng đọc kỹ trước khi hủy đơn đặt bàn.</p>
+                        </div>
+                    </div>
+
+                    <div class="policy-rule-grid">
+                        <div class="policy-rule-item">
+                            <span class="policy-rule-label">Bàn tiêu chuẩn</span>
+                            <strong>Trước 1 tiếng</strong>
+                            <p>Khách có thể hủy online nếu còn hơn 1 tiếng trước giờ đến.</p>
+                        </div>
+
+                        <div class="policy-rule-item">
+                            <span class="policy-rule-label">Bàn VIP</span>
+                            <strong>Trước 24 tiếng</strong>
+                            <p>Được hỗ trợ hoàn hoặc chuyển 100% tiền cọc.</p>
+                        </div>
+
+                        <div class="policy-rule-item">
+                            <span class="policy-rule-label">Omakase Chay</span>
+                            <strong>Trước 48 tiếng</strong>
+                            <p>Được hỗ trợ hoàn hoặc chuyển 100% tiền cọc.</p>
+                        </div>
+                    </div>
+
+                    <div class="policy-note">
+                        <span class="policy-note-mark">!</span>
+                        <span>
+                            Nếu đơn đã thanh toán cọc, việc hoàn/chuyển cọc sẽ được nhà hàng liên hệ và xử lý thủ công.
+                        </span>
+                    </div>
+                </div>
+
+                <div class="senvie-table-wrap">
+                    <table class="table table-hover table-senvie">
+                        <thead>
+                            <tr>
+                                <th class="text-center">Mã Nhận Diện</th>
+                                <th>Ngày đặt bàn</th>
+                                <th>Thời gian dùng bữa</th>
+                                <th>Loại bàn</th>
+                                <th class="text-center">Số khách</th>
+                                <th class="text-center">Trạng thái</th>
+                                <th class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @if (!currentBookings.Any())
+                            {
+                                <tr>
+                                    <td colspan="7" class="p-0 border-0">
+                                        <div class="empty-state-box">
+                                            <span class="empty-state-icon">0</span>
+                                            <h5>Bạn chưa có kế hoạch dùng bữa nào sắp tới</h5>
+                                            <p class="text-muted mb-4">Hãy đặt bàn trước để SenVie chuẩn bị những món chay tươi ngon nhất cho bạn nhé.</p>
+                                            <a asp-controller="Home" asp-action="Index" class="btn btn-success senvie-primary-btn">
+                                                <span class="senvie-action-mark"></span>Đặt bàn ngay
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                foreach (var item in currentBookings)
+                                {
+                                    <tr>
+                                        <td class="text-center align-middle">
+                                            <button type="button"
+                                                    class="btn btn-show-qr btn-sm senvie-qr-btn"
+                                                    data-code="@item.BookingCode">
+                                                <span class="senvie-code-mark">QR</span>@item.BookingCode
+                                            </button>
+                                        </td>
+
+                                        <td class="date-muted align-middle">
+                                            @item.CreatedAt.ToString("dd/MM/yyyy") <br />
+                                            <small>@item.CreatedAt.ToString("HH:mm")</small>
+                                        </td>
+
+                                        <td class="date-strong align-middle">
+                                            @item.BookingDate.ToString("dd/MM/yyyy") <br />
+                                            @item.BookingDate.ToString("HH:mm")
+                                        </td>
+
+                                        <td class="align-middle">
+                                            <span class="table-main-text">@item.BookingType</span>
+
+                                            @if (item.DepositAmount > 0 && item.PaymentStatus == 1)
+                                            {
+                                                <br />
+                                                <small class="vip-note" style="color: #28a745 !important;">
+                                                    <span class="vip-mark" style="background-color: #28a745 !important;"></span>
+                                                    Đã cọc @item.DepositAmount.ToString("N0")đ
+                                                </small>
+                                            }
+                                            else if (item.DepositAmount == 0)
+                                            {
+                                                <br />
+                                                <small class="vip-note" style="color: #6c757d !important;">
+                                                    <span class="vip-mark" style="background-color: #6c757d !important;"></span>
+                                                    Không yêu cầu cọc
+                                                </small>
+                                            }
+
+                                            @if (item.BookingDetails != null && item.BookingDetails.Any())
+                                            {
+                                                <br />
+                                                <small class="vip-note" style="color: #7DBA4E !important;">
+                                                    <span class="vip-mark" style="background-color: #7DBA4E !important;"></span>
+                                                    @item.BookingDetails.Sum(x => x.Quantity) món chọn trước
+                                                </small>
+                                            }
+                                        </td>
+
+                                        <td class="text-center table-main-text align-middle">@item.NumberOfGuests</td>
+
+                                        <td class="text-center align-middle">
+                                            <span class="badge badge-warning text-dark status-badge">Chờ duyệt / Chưa đến</span>
+                                        </td>
+
+                                        <td class="text-center align-middle">
+                                            <form asp-controller="Home"
+                                                  asp-action="CancelMyBooking"
+                                                  method="post"
+                                                  class="profile-cancel-form"
+                                                  onsubmit="return confirm(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(GetCancelConfirmText(item))));">
+                                                @Html.AntiForgeryToken()
+
+                                                <input type="hidden" name="code" value="@item.BookingCode" />
+
+                                                <button type="submit" class="profile-cancel-btn">
+                                                    Hủy đơn
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="history" role="tabpanel">
+                <div class="senvie-table-wrap">
+                    <table class="table table-hover table-senvie">
+                        <thead>
+                            <tr>
+                                <th class="text-center">Mã Đơn</th>
+                                <th>Ngày đặt bàn</th>
+                                <th>Thời gian dùng bữa</th>
+                                <th>Loại bàn</th>
+                                <th class="text-center">Số khách</th>
+                                <th class="text-center">Trạng thái</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @if (!historyBookings.Any())
+                            {
+                                <tr>
+                                    <td colspan="6" class="p-0 border-0">
+                                        <div class="empty-state-box">
+                                            <span class="empty-state-icon">—</span>
+                                            <h5>Lịch sử trống</h5>
+                                            <p class="text-muted mb-0">Bạn chưa từng đặt bàn tại nhà hàng.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                foreach (var item in historyBookings)
+                                {
+                                    <tr>
+                                        <td class="booking-code-text text-center">@item.BookingCode</td>
+                                        <td class="date-muted">@item.CreatedAt.ToString("dd/MM/yyyy - HH:mm")</td>
+                                        <td class="table-main-text">@item.BookingDate.ToString("dd/MM/yyyy - HH:mm")</td>
+                                        <td class="text-secondary font-weight-bold">
+                                            @item.BookingType
+                                            @if (item.BookingDetails != null && item.BookingDetails.Any())
+                                            {
+                                                <br />
+                                                <small class="text-success">@item.BookingDetails.Sum(x => x.Quantity) món chọn trước</small>
+                                            }
+                                        </td>
+                                        <td class="text-center text-secondary font-weight-bold">@item.NumberOfGuests</td>
+                                        <td class="text-center">
+                                            @if (item.Status == 1)
+                                            {
+                                                <span class="badge badge-primary status-badge">
+                                                    <span class="status-dot"></span>Đã Check-in
+                                                </span>
+                                            }
+                                            else if (item.Status == 2)
+                                            {
+                                                <span class="badge badge-danger status-badge">
+                                                    <span class="status-dot"></span>Đã Hủy
+                                                </span>
+                                            }
+                                            else if (item.Status == 3)
+                                            {
+                                                <span class="badge badge-success status-badge">
+                                                    <span class="status-dot"></span>Hoàn thành
+                                                </span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="payment" role="tabpanel">
+
+                <div class="booking-cancel-policy-box compact-policy">
+                    <div class="policy-box-header">
+                        <div class="policy-icon-text">i</div>
+                        <div>
+                            <h5>Lưu ý về thanh toán cọc</h5>
+                            <p>Đơn VIP/Omakase chưa thanh toán cọc có thể bị tự động hủy sau 15 phút.</p>
+                        </div>
+                    </div>
+
+                    <div class="policy-note mb-0">
+                        <span class="policy-note-mark">!</span>
+                        <span>
+                            Nếu chưa muốn thanh toán, bạn có thể chủ động hủy đơn để đặt lại đơn khác.
+                            Trước khi thanh toán, vui lòng đọc kỹ chính sách hủy/hoàn cọc trên trang thanh toán.
+                        </span>
+                    </div>
+                </div>
+
+                <div class="senvie-table-wrap">
+                    <table class="table table-hover table-senvie mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-center">Mã Đơn</th>
+                                <th>Loại bàn</th>
+                                <th class="text-danger text-center">Số tiền cần cọc</th>
+                                <th class="text-center">Hạn thanh toán</th>
+                                <th class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @if (!unpaidBookings.Any())
+                            {
+                                <tr>
+                                    <td colspan="5" class="p-0 border-0">
+                                        <div class="empty-state-box">
+                                            <span class="empty-state-icon" style="color: #28a745;">✓</span>
+                                            <h5>Tuyệt vời! Bạn không có khoản nợ cọc nào.</h5>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                foreach (var item in unpaidBookings)
+                                {
+                                    var expireTime = item.CreatedAt.AddMinutes(15);
+                                    var timeLeft = (expireTime - DateTime.UtcNow.AddHours(7)).TotalMinutes;
+                                    var minutesStr = timeLeft > 0 ? Math.Ceiling(timeLeft).ToString() : "0";
+
+                                    <tr>
+                                        <td class="text-center align-middle font-weight-bold text-danger">@item.BookingCode</td>
+
+                                        <td class="align-middle">
+                                            <span class="table-main-text">@item.BookingType</span>
+                                            <br />
+                                            <small class="text-muted">Tạo lúc: @item.CreatedAt.ToString("HH:mm")</small>
+                                        </td>
+
+                                        <td class="text-center align-middle font-weight-bold" style="font-size: 18px; color: #a50064;">
+                                            @item.DepositAmount.ToString("N0") đ
+                                        </td>
+
+                                        <td class="text-center align-middle text-danger font-weight-bold">
+                                            Còn @minutesStr phút
+                                        </td>
+
+                                        <td class="text-center align-middle">
+                                            <div class="profile-payment-actions">
+                                                <a href="/Home/BookingSuccess?code=@item.BookingCode"
+                                                   class="profile-pay-btn">
+                                                    Thanh toán
+                                                </a>
+
+                                                <form asp-controller="Home"
+                                                      asp-action="CancelMyBooking"
+                                                      method="post"
+                                                      class="profile-cancel-form"
+                                                      onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn @item.BookingCode không? Đơn này chưa thanh toán cọc nên sẽ không phát sinh hoàn tiền.');">
+                                                    @Html.AntiForgeryToken()
+
+                                                    <input type="hidden" name="code" value="@item.BookingCode" />
+
+                                                    <button type="submit" class="profile-cancel-btn small-cancel">
+                                                        Hủy
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .booking-cancel-policy-box {
+        margin: 18px 0 22px;
+        padding: 20px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #fff9e8 0%, #fffdf5 100%);
+        border: 1px solid #ffe3a3;
+        border-left: 6px solid #ffc107;
+        color: #3d3520;
+        box-shadow: 0 12px 28px rgba(120, 92, 20, 0.08);
+    }
+
+    .compact-policy {
+        padding: 18px 20px;
+    }
+
+    .policy-box-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .policy-icon-text {
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        border-radius: 50%;
+        background: #fff1bd;
+        color: #a66c00;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: 900;
+        font-family: Arial, sans-serif;
+        line-height: 1;
+    }
+
+    .policy-box-header h5 {
+        margin: 0;
+        color: #6f4600;
+        font-size: 17px;
+        font-weight: 900;
+    }
+
+    .policy-box-header p {
+        margin: 4px 0 0;
+        color: #7d7158;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .policy-rule-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    .policy-rule-item {
+        background: #ffffff;
+        border: 1px solid #f3e4bd;
+        border-radius: 16px;
+        padding: 14px;
+        min-height: 120px;
+    }
+
+    .policy-rule-label {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #f4f8ed;
+        color: #4d7f2f;
+        font-size: 12px;
+        font-weight: 900;
+        margin-bottom: 10px;
+    }
+
+    .policy-rule-item strong {
+        display: block;
+        color: #cc8500;
+        font-size: 16px;
+        font-weight: 900;
+        margin-bottom: 6px;
+    }
+
+    .policy-rule-item p {
+        margin: 0;
+        color: #5f594b;
+        font-size: 13px;
+        line-height: 1.55;
+    }
+
+    .policy-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 13px 14px;
+        border-radius: 14px;
+        background: #fff3cd;
+        color: #6a4a00;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.5;
+    }
+
+    .policy-note-mark {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        border-radius: 50%;
+        background: #ffd766;
+        color: #6a4a00;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 900;
+        font-family: Arial, sans-serif;
+        line-height: 1;
+    }
+
+    .profile-payment-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .profile-cancel-form {
+        margin: 0;
+    }
+
+    .profile-cancel-btn {
+        border: none;
+        outline: none;
+        min-width: 104px;
+        height: 38px;
+        padding: 0 15px;
+        border-radius: 999px;
+        background: #fff1f2;
+        color: #dc3545;
+        border: 1px solid #f5b8bf;
+        font-size: 13px;
+        font-weight: 900;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        transition: 0.2s ease;
+        white-space: nowrap;
+    }
+
+        .profile-cancel-btn:hover {
+            background: #dc3545;
+            color: #ffffff;
+            border-color: #dc3545;
+            box-shadow: 0 8px 18px rgba(220, 53, 69, 0.22);
+            transform: translateY(-1px);
+        }
+
+        .profile-cancel-btn.small-cancel {
+            min-width: 86px;
+        }
+
+    .profile-pay-btn {
+        min-width: 120px;
+        height: 38px;
+        padding: 0 15px;
+        border-radius: 999px;
+        background: #a50064;
+        color: #ffffff !important;
+        font-size: 13px;
+        font-weight: 900;
+        text-decoration: none !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        box-shadow: 0 6px 14px rgba(165, 0, 100, 0.22);
+        transition: 0.2s ease;
+    }
+
+        .profile-pay-btn:hover {
+            background: #880052;
+            color: #ffffff !important;
+            transform: translateY(-1px);
+        }
+
+    @@media (max-width: 992px) {
+        .policy-rule-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .booking-cancel-policy-box {
+            padding: 16px;
+        }
+
+        .profile-payment-actions {
+            align-items: flex-start;
+        }
+
+        .profile-cancel-btn,
+        .profile-pay-btn {
+            min-width: 100px;
+        }
+    }
+</style>
+
+<div class="modal fade" id="qrModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+        <div class="modal-content senvie-modal-content">
+            <div class="modal-header border-0 pb-0 senvie-modal-header">
+                <h5 class="modal-title senvie-modal-title">Mã Check-in</h5>
+                <button type="button" class="close senvie-modal-close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true" class="senvie-close-icon">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center pt-2 pb-4">
+                <p class="text-muted mb-3 senvie-modal-note">Vui lòng đưa mã QR này cho Lễ tân</p>
+                <img id="qrImage" src="" alt="QR Code" class="senvie-qr-image" />
+                <h3 id="qrCodeText" class="senvie-qr-code-text mb-0"></h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('.btn-show-qr').click(function () {
+                var bookingCode = ($(this).attr('data-code') || '').trim();
+
+                if (!bookingCode) {
+                    alert('Không tìm thấy mã đặt bàn để tạo QR.');
+                    return;
+                }
+
+                var qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + encodeURIComponent(bookingCode);
+
+                $('#qrImage').attr('src', qrUrl);
+                $('#qrCodeText').text(bookingCode);
+                $('#qrModal').modal('show');
+            });
+
+            @if (unpaidBookings.Any())
+            {
+                        <text>
+                                    $('#payment-tab').tab('show');
+
+                                    setTimeout(function () {
+                                        alert("⚠️ CẢNH BÁO TỪ SENVIE: \n\nBạn đang có @unpaidBookings.Count đơn đặt bàn VIP/Omakase chưa hoàn tất thanh toán cọc. \n\nHệ thống sẽ tự động HỦY đơn nếu quá 15 phút kể từ lúc đặt. Vui lòng thanh toán ngay để giữ chỗ!");
+                                    }, 500);
+                        </text>
+            }
+        });
+    </script>
+}

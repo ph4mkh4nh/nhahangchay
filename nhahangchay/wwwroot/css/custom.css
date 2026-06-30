@@ -1,0 +1,1229 @@
+/* =========================================================
+   SenVie Custom CSS
+   1) Chỉnh logo, màu chữ, footer và màu thương hiệu
+   2) Giao diện trang Profile / Quản lý đặt bàn
+   ========================================================= */
+
+:root {
+    --senvie-green: #7DBA4E;
+    --senvie-green-dark: #5f9d34;
+    --senvie-green-deep: #243821;
+    --senvie-text: #222222;
+    --senvie-muted: #6d756a;
+    --senvie-soft: #eff8e8;
+    --senvie-border: #edf2e9;
+    --senvie-danger: #dc3545;
+}
+
+/* =========================================================
+   1. Global chỉnh nhẹ toàn site
+   ========================================================= */
+
+/* Logo SenVie - Header */
+#mainNav .navbar-brand img {
+    width: auto !important;
+    height: auto !important;
+    max-height: 65px;
+    object-fit: contain;
+}
+
+/* Logo SenVie - Footer */
+.main-footer .img-logo img {
+    width: 400px;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Chữ cơ bản: tránh ép span/li toàn site vì dễ làm hỏng badge, icon, menu */
+body {
+    color: var(--senvie-text);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--senvie-text);
+}
+
+p {
+    color: var(--senvie-text);
+    font-weight: 450;
+    line-height: 1.6;
+}
+
+/* Các đoạn mô tả/tin tức cần rõ hơn */
+.blog-box-inner p,
+.blog-detail p,
+.menu-box p {
+    color: var(--senvie-text) !important;
+    font-weight: 500 !important;
+}
+
+/* Nút menu active trong template */
+#mainNav .navbar-nav .nav-item .nav-link.active,
+#mainNav .navbar-nav .nav-item .nav-link.active span {
+    color: #ffffff !important;
+}
+
+/* Thẻ tên đầu bếp trên nền tối/ảnh */
+.our-team .team-content,
+.our-team .team-content h3,
+.our-team .team-content span {
+    color: #ffffff !important;
+}
+
+/* Banner trang chủ */
+.main-banner .slider-content h2,
+.main-banner .slider-content p {
+    color: #ffffff !important;
+}
+
+/* Chữ trắng cho các khối nội dung nền tối của template */
+.inner-column li,
+.about-box li,
+.services-box li,
+.list-style li {
+    color: #ffffff !important;
+}
+
+/* Footer: chữ tối trên nền sáng */
+.main-footer,
+.main-footer h4,
+.main-footer p,
+.main-footer span,
+.main-footer a,
+.copyrights,
+.copyrights p,
+.copyrights a {
+    color: #333333 !important;
+}
+
+/* Màu thương hiệu */
+.text-primary,
+.section-title h3,
+.foot-title,
+.admin-navbar .logo i {
+    color: var(--senvie-green) !important;
+}
+
+/* =========================================================
+   2. Profile / Quản lý đặt bàn
+   ========================================================= */
+
+.senvie-profile-container {
+    margin-top: 115px;
+    margin-bottom: 90px;
+    min-height: 60vh;
+    max-width: 1180px;
+    color: #243325;
+}
+
+.senvie-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 28px;
+    padding: 34px;
+    margin-bottom: 22px;
+    background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.38), transparent 32%), linear-gradient(135deg, #f7fbef 0%, #e7f3d8 48%, #d6ecc2 100%);
+    border: 1px solid rgba(125, 186, 78, 0.22);
+    box-shadow: 0 18px 45px rgba(42, 77, 38, 0.12);
+}
+
+    .senvie-hero::after {
+        content: "";
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        right: -70px;
+        bottom: -100px;
+        border-radius: 50%;
+        background: rgba(125, 186, 78, 0.16);
+    }
+
+.senvie-hero-content,
+.senvie-quick-card {
+    position: relative;
+    z-index: 1;
+}
+
+.senvie-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 13px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    color: #5a8f35;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+}
+
+.senvie-brand-mark {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #6faa3e;
+    box-shadow: 0 0 0 5px rgba(111, 170, 62, 0.12);
+    flex-shrink: 0;
+}
+
+.senvie-hero h2 {
+    margin: 0;
+    color: #20321e;
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+}
+
+.senvie-hero p {
+    max-width: 660px;
+    margin: 12px 0 0;
+    color: #5f6f5c;
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.senvie-quick-card {
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    padding: 22px;
+    box-shadow: 0 14px 32px rgba(42, 77, 38, 0.1);
+}
+
+    .senvie-quick-card .quick-label {
+        color: #6d7a69;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+    .senvie-quick-card .quick-number {
+        color: #2d4d26;
+        font-size: 42px;
+        line-height: 1;
+        font-weight: 900;
+    }
+
+    .senvie-quick-card .quick-note {
+        color: #6d7a69;
+        font-size: 13px;
+        margin-top: 8px;
+    }
+
+.senvie-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.senvie-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px;
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1px solid var(--senvie-border);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.045);
+}
+
+.senvie-stat-icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    background: var(--senvie-soft);
+    color: #6faa3e;
+    font-size: 13px;
+    font-weight: 900;
+    flex-shrink: 0;
+}
+
+.senvie-stat-title {
+    margin: 0;
+    color: #7b8677;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.senvie-stat-value {
+    margin: 2px 0 0;
+    color: #253522;
+    font-size: 24px;
+    font-weight: 900;
+}
+
+.senvie-soon-value {
+    font-size: 18px;
+}
+
+.senvie-content-card {
+    background: #ffffff;
+    border-radius: 24px;
+    border: 1px solid var(--senvie-border);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.065);
+    overflow: hidden;
+}
+
+.senvie-tabs-area {
+    padding: 16px 18px 0;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdf8 100%);
+    border-bottom: 1px solid var(--senvie-border);
+}
+
+.nav-tabs.senvie-tabs {
+    border-bottom: none;
+    gap: 8px;
+}
+
+    .nav-tabs.senvie-tabs .nav-item {
+        margin-bottom: 0;
+    }
+
+    .nav-tabs.senvie-tabs .nav-link {
+        border: 1px solid transparent;
+        color: #778173;
+        font-weight: 800;
+        padding: 12px 18px;
+        font-size: 15px;
+        border-radius: 999px;
+        transition: all 0.25s ease;
+        background: transparent;
+    }
+
+        .nav-tabs.senvie-tabs .nav-link:hover {
+            color: var(--senvie-green-dark);
+            background: #f4faef;
+            border-color: #e4f1da;
+        }
+
+        .nav-tabs.senvie-tabs .nav-link.active {
+            color: #ffffff;
+            background: linear-gradient(135deg, var(--senvie-green) 0%, var(--senvie-green-dark) 100%);
+            border-color: var(--senvie-green);
+            box-shadow: 0 10px 20px rgba(125, 186, 78, 0.25);
+        }
+
+        .nav-tabs.senvie-tabs .nav-link.disabled-tab {
+            cursor: not-allowed;
+            opacity: 0.58;
+        }
+
+.senvie-tab-mark {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    background: currentColor;
+    opacity: 0.75;
+    vertical-align: 1px;
+}
+
+.senvie-soon-badge {
+    font-size: 10px;
+}
+
+.senvie-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    padding: 18px;
+}
+
+.table-senvie {
+    min-width: 880px;
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    color: #253522;
+}
+
+    .table-senvie thead th {
+        border: none;
+        background: var(--senvie-green-deep);
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 0.2px;
+        padding: 16px 15px;
+        white-space: nowrap;
+    }
+
+        .table-senvie thead th:first-child {
+            border-radius: 16px 0 0 16px;
+        }
+
+        .table-senvie thead th:last-child {
+            border-radius: 0 16px 16px 0;
+        }
+
+    .table-senvie tbody tr {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+        .table-senvie tbody tr:hover {
+            transform: translateY(-2px);
+        }
+
+    .table-senvie tbody td {
+        border-top: 1px solid #eef3ea;
+        border-bottom: 1px solid #eef3ea;
+        background: #ffffff;
+        padding: 17px 15px;
+        vertical-align: middle;
+        font-size: 14px;
+        color: #293629;
+    }
+
+        .table-senvie tbody td:first-child {
+            border-left: 1px solid #eef3ea;
+            border-radius: 16px 0 0 16px;
+        }
+
+        .table-senvie tbody td:last-child {
+            border-right: 1px solid #eef3ea;
+            border-radius: 0 16px 16px 0;
+        }
+
+    .table-senvie tbody tr:hover td {
+        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.055);
+        background: #fffefb;
+    }
+
+.senvie-qr-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 8px 14px;
+    color: var(--senvie-green-dark);
+    background: #f5fbef;
+    border: 1px solid #cfe8bd;
+    font-weight: 900;
+    box-shadow: 0 8px 18px rgba(125, 186, 78, 0.14);
+}
+
+    .senvie-qr-btn:hover {
+        color: #ffffff;
+        background: #6aaa3b;
+        border-color: #6aaa3b;
+    }
+
+.senvie-code-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 22px;
+    border-radius: 999px;
+    background: rgba(125, 186, 78, 0.16);
+    color: var(--senvie-green-dark);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.4px;
+    margin-right: 6px;
+}
+
+.senvie-qr-btn:hover .senvie-code-mark {
+    background: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+}
+
+.booking-code-text {
+    color: #d9534f !important;
+    font-weight: 900;
+    font-size: 15px;
+}
+
+.date-muted {
+    color: #7c8678;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.45;
+}
+
+.date-strong {
+    color: var(--senvie-green-dark);
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1.45;
+}
+
+.table-main-text {
+    color: #263623;
+    font-weight: 800;
+}
+
+.vip-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 5px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #fff1f0;
+    color: #d9534f;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.vip-mark,
+.status-dot,
+.senvie-action-mark {
+    display: inline-block;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+}
+
+.vip-mark {
+    width: 7px;
+    height: 7px;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    opacity: 0.75;
+}
+
+.senvie-action-mark {
+    width: 9px;
+    height: 9px;
+    margin-right: 8px;
+    vertical-align: 1px;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-radius: 999px !important;
+    padding: 8px 12px !important;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.empty-state-box {
+    padding: 70px 20px;
+    text-align: center;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdf8 100%);
+    border: 1px dashed #dce8d3;
+    border-radius: 20px;
+}
+
+.empty-state-icon {
+    width: 70px;
+    height: 70px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--senvie-soft);
+    color: #75b549;
+    font-size: 24px;
+    font-weight: 900;
+    margin-bottom: 16px;
+}
+
+.empty-state-box h5 {
+    color: #263623;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.senvie-primary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-weight: 800;
+    padding: 11px 22px;
+    background: linear-gradient(135deg, var(--senvie-green) 0%, var(--senvie-green-dark) 100%);
+    border: none;
+    box-shadow: 0 10px 20px rgba(125, 186, 78, 0.25);
+}
+
+.senvie-modal-content {
+    border-radius: 24px;
+    border: none;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+}
+
+.senvie-modal-header {
+    justify-content: center;
+    position: relative;
+    padding-top: 20px;
+    background: linear-gradient(180deg, #fbfdf8 0%, #ffffff 100%);
+}
+
+.senvie-modal-title {
+    color: var(--senvie-green-dark);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.senvie-modal-close {
+    position: absolute;
+    right: 16px;
+    top: 11px;
+    outline: none !important;
+}
+
+.senvie-close-icon {
+    font-size: 25px;
+}
+
+.senvie-modal-note {
+    font-size: 13px;
+}
+
+.senvie-qr-image {
+    width: 205px;
+    height: 205px;
+    border: 1px solid #e2eddc;
+    padding: 12px;
+    border-radius: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.07);
+    background: #ffffff;
+}
+
+.senvie-qr-code-text {
+    color: #d9534f;
+    font-weight: 900;
+    letter-spacing: 2px;
+}
+
+@media (max-width: 991.98px) {
+    .senvie-profile-container {
+        margin-top: 95px;
+    }
+
+    .senvie-hero {
+        padding: 26px;
+    }
+
+        .senvie-hero h2 {
+            font-size: 29px;
+        }
+
+    .senvie-summary-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .senvie-profile-container {
+        margin-top: 85px;
+        margin-bottom: 55px;
+    }
+
+    .senvie-hero {
+        border-radius: 22px;
+        padding: 22px;
+    }
+
+        .senvie-hero h2 {
+            font-size: 25px;
+        }
+
+    .senvie-tabs-area {
+        padding: 12px 12px 0;
+    }
+
+    .nav-tabs.senvie-tabs {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 12px;
+    }
+
+        .nav-tabs.senvie-tabs .nav-link {
+            white-space: nowrap;
+            padding: 10px 14px;
+            font-size: 14px;
+        }
+
+    .senvie-table-wrap {
+        padding: 12px;
+    }
+}
+/* ================================
+   SenVie Guest Chat Box
+================================ */
+
+.guest-chat-toggle {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    width: 62px;
+    height: 62px;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7DBA4E, #5f9438);
+    color: #ffffff;
+    font-size: 27px;
+    box-shadow: 0 12px 28px rgba(72, 117, 40, 0.35);
+    z-index: 10000;
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+
+    .guest-chat-toggle:hover {
+        transform: translateY(-3px) scale(1.04);
+        box-shadow: 0 16px 35px rgba(72, 117, 40, 0.45);
+        background: linear-gradient(135deg, #86c957, #568a31);
+    }
+
+/* Ẩn dấu chấm mặc định */
+.guest-chat-pulse {
+    display: none;
+    position: absolute;
+    top: 9px;
+    right: 10px;
+    width: 11px;
+    height: 11px;
+    background: #ffd75e;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+}
+
+/* Chỉ hiện dấu chấm khi có tin nhắn mới */
+.guest-chat-toggle.has-unread .guest-chat-pulse {
+    display: block;
+}
+
+.guest-chat-wrapper {
+    display: none;
+    position: fixed;
+    right: 22px;
+    bottom: 96px;
+    width: 360px;
+    max-width: calc(100vw - 32px);
+    background: #ffffff;
+    border-radius: 18px;
+    overflow: hidden;
+    z-index: 9999;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
+    border: 1px solid rgba(125, 186, 78, 0.18);
+}
+
+.guest-chat-header {
+    background: linear-gradient(135deg, #7DBA4E, #5f9438);
+    color: #ffffff;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.guest-chat-title {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+    .guest-chat-title strong {
+        display: block;
+        font-size: 15px;
+        line-height: 1.2;
+        letter-spacing: 0.2px;
+        color: #ffffff;
+    }
+
+    .guest-chat-title span {
+        display: block;
+        margin-top: 3px;
+        font-size: 11.5px;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+.guest-chat-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex: 0 0 38px;
+}
+
+.guest-chat-close {
+    width: 31px;
+    height: 31px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+    .guest-chat-close:hover {
+        background: rgba(255, 255, 255, 0.28);
+        transform: rotate(90deg);
+    }
+
+.guest-chat-intro {
+    padding: 11px 15px;
+    background: #f3f9ee;
+    color: #355524;
+    font-size: 13px;
+    line-height: 1.5;
+    font-weight: 500;
+    border-bottom: 1px solid #e7f1df;
+}
+
+    .guest-chat-intro strong {
+        color: #263f19;
+        font-weight: 700;
+    }
+
+.guest-chat-history {
+    height: 315px;
+    overflow-y: auto;
+    padding: 16px 14px;
+    background: linear-gradient(180deg, #f7f8f5, #eef4ea);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+    .guest-chat-history::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .guest-chat-history::-webkit-scrollbar-thumb {
+        background: rgba(125, 186, 78, 0.65);
+        border-radius: 10px;
+    }
+
+.msg-box {
+    max-width: 84%;
+    padding: 9px 12px;
+    border-radius: 16px;
+    font-size: 13.5px;
+    line-height: 1.45;
+    position: relative;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+}
+
+    .msg-box b {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 12px;
+        color: #2d3a25;
+        font-weight: 800;
+    }
+
+.message-text {
+    color: #333333;
+    font-weight: 500;
+}
+
+.msg-guest {
+    align-self: flex-end;
+    background: #dff4cf;
+    color: #25391d;
+    border-bottom-right-radius: 5px;
+}
+
+.msg-admin {
+    align-self: flex-start;
+    background: #ffffff;
+    color: #2f2f2f;
+    border: 1px solid #edf0e9;
+    border-bottom-left-radius: 5px;
+}
+
+.time-text {
+    display: block;
+    margin-top: 4px;
+    font-size: 10.5px;
+    color: #777777;
+    font-weight: 500;
+    text-align: right;
+}
+
+.guest-chat-input-area {
+    padding: 11px;
+    background: #ffffff;
+    border-top: 1px solid #edf0e9;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.guest-chat-input {
+    flex: 1;
+    height: 40px;
+    border: 1px solid #d7dfd1;
+    border-radius: 999px;
+    padding: 0 15px;
+    outline: none;
+    font-size: 13.5px;
+    color: #222222;
+    font-weight: 500;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .guest-chat-input::placeholder {
+        color: #777777;
+        font-weight: 500;
+    }
+
+    .guest-chat-input:focus {
+        border-color: #7DBA4E;
+        box-shadow: 0 0 0 3px rgba(125, 186, 78, 0.14);
+    }
+
+.guest-chat-send {
+    height: 40px;
+    border: none;
+    border-radius: 999px;
+    padding: 0 15px;
+    background: #7DBA4E;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+    .guest-chat-send:hover {
+        background: #689f41;
+        transform: translateY(-1px);
+    }
+
+    .guest-chat-send:disabled {
+        background: #aab2a5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+@media (max-width: 575px) {
+    .guest-chat-toggle {
+        right: 16px;
+        bottom: 16px;
+        width: 58px;
+        height: 58px;
+    }
+
+    .guest-chat-wrapper {
+        right: 12px;
+        bottom: 84px;
+        width: calc(100vw - 24px);
+        border-radius: 16px;
+    }
+
+    .guest-chat-history {
+        height: 300px;
+    }
+
+    .guest-chat-send span {
+        display: none;
+    }
+
+    .guest-chat-send {
+        width: 42px;
+        justify-content: center;
+        padding: 0;
+    }
+}
+.senvie-featured-dish-card {
+    height: 100%;
+    background: #ffffff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid #edf1ea;
+    transition: 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.senvie-featured-dish-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.09);
+}
+
+.senvie-featured-dish-image {
+    width: 100%;
+    height: 210px;
+    background: #f5f7f3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 12px;
+}
+
+    .senvie-featured-dish-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        border-radius: 10px;
+        display: block;
+    }
+
+.senvie-featured-dish-body {
+    padding: 18px 18px 20px;
+    text-align: center;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+    .senvie-featured-dish-body h3 {
+        color: #1f2f1f;
+        font-size: 17px;
+        font-weight: 900;
+        margin: 0 0 8px;
+        line-height: 1.35;
+        min-height: 46px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .senvie-featured-dish-body p {
+        color: #7a8278;
+        font-size: 13px;
+        line-height: 1.5;
+        margin: 0 0 14px;
+        min-height: 40px;
+    }
+
+.senvie-dish-price {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 92px;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: #edf7e8;
+    color: #4d8b2f;
+    font-size: 14px;
+    font-weight: 900;
+    border: 1px solid #d9edce;
+}
+
+.senvie-view-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 230px;
+    height: 48px;
+    border-radius: 999px;
+    background: #1f3b20;
+    color: #ffffff !important;
+    font-weight: 900;
+    text-decoration: none !important;
+    box-shadow: 0 8px 20px rgba(31, 59, 32, 0.18);
+    transition: 0.2s ease;
+}
+
+    .senvie-view-menu-btn:hover {
+        background: #7DBA4E;
+        color: #ffffff !important;
+        transform: translateY(-2px);
+    }
+
+@media (max-width: 768px) {
+    .senvie-featured-dish-image {
+        height: 190px;
+    }
+
+    .senvie-featured-dish-body h3 {
+        min-height: auto;
+    }
+}
+/* Fix màu chữ riêng cho phần Dịch vụ, không ảnh hưởng toàn site */
+#pricing .section-title p {
+    color: #566156 !important;
+    font-weight: 500;
+}
+
+#pricing h3,
+#pricing h4,
+#pricing .title {
+    color: #102515 !important;
+    font-weight: 900 !important;
+}
+
+#pricing p,
+#pricing li,
+#pricing small {
+    color: #3f4a3f !important;
+    font-weight: 500;
+    line-height: 1.65;
+}
+
+#pricing li {
+    margin-bottom: 10px;
+}
+
+#pricing strong {
+    color: #1f3b20 !important;
+    font-weight: 900;
+}
+
+#pricing .senvie-service-price,
+#pricing .service-price,
+#pricing .pricing-price {
+    color: #6fb842 !important;
+    font-weight: 900 !important;
+}
+
+#pricing .service-note,
+#pricing .senvie-service-note {
+    color: #5f6a5f !important;
+    background: #f8fff4;
+    border-color: #dcefd2;
+}
+/* =====================================================
+   SEN VIE - FIX TEXT ĐỒNG BỘ SECTION + DỊCH VỤ
+   Dán cuối custom.css
+===================================================== */
+
+/* 1. Đồng bộ tiêu đề tất cả section */
+.section-title h3,
+.section-title h2 {
+    color: #7DBA4E !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.5px;
+}
+
+/* Dòng mô tả dưới tiêu đề section: bớt nhạt nhưng vẫn nhẹ */
+.section-title p {
+    color: #7a837a !important;
+    font-weight: 500 !important;
+    line-height: 1.7 !important;
+}
+
+/* Riêng section dịch vụ: trả tiêu đề về màu xanh như các mục khác */
+#pricing .section-title h3,
+#pricing .section-title h2 {
+    color: #7DBA4E !important;
+    font-weight: 500 !important;
+}
+
+#pricing .section-title p {
+    color: #7a837a !important;
+    font-weight: 500 !important;
+}
+
+/* 2. Làm chữ trong card dịch vụ rõ hơn */
+#pricing .senvie-service-card,
+#pricing .pricingTable,
+#pricing .service-card-wrapper {
+    color: #243024 !important;
+}
+
+    /* Tên gói: Bàn tiêu chuẩn / VIP / Omakase */
+    #pricing .senvie-service-card h3,
+    #pricing .senvie-service-card .title,
+    #pricing .pricingTable .title,
+    #pricing .pricingTable h3 {
+        color: #102515 !important;
+        font-weight: 900 !important;
+    }
+
+/* Badge nhỏ: Linh hoạt / Riêng tư / Trải nghiệm */
+#pricing .senvie-service-badge,
+#pricing .service-badge,
+#pricing .badge,
+#pricing .pricing-badge {
+    color: #2f7429 !important;
+    font-weight: 900 !important;
+}
+
+/* Dòng giá/cọc */
+#pricing .senvie-service-price,
+#pricing .service-price,
+#pricing .pricing-price,
+#pricing .gs-amount {
+    color: #6fb842 !important;
+    font-weight: 900 !important;
+}
+
+/* Mô tả trong card */
+#pricing .senvie-service-card p,
+#pricing .pricingTable p,
+#pricing .service-card-wrapper p {
+    color: #2f3b2f !important;
+    font-weight: 600 !important;
+    line-height: 1.65 !important;
+}
+
+/* Danh sách quyền lợi */
+#pricing .senvie-service-card li,
+#pricing .pricingTable li,
+#pricing .pricing-content li,
+#pricing .service-card-wrapper li {
+    color: #2f3b2f !important;
+    font-weight: 650 !important;
+    line-height: 1.65 !important;
+}
+
+/* Dấu tick */
+#pricing li::marker {
+    color: #6fb842 !important;
+}
+
+/* Nếu tick là span/i riêng */
+#pricing .check-icon,
+#pricing .service-check,
+#pricing .pricing-content li::before {
+    color: #6fb842 !important;
+    font-weight: 900 !important;
+}
+
+/* Ô ghi chú nhỏ trong card */
+#pricing .senvie-service-note,
+#pricing .service-note,
+#pricing .service-card-note,
+#pricing .pricing-note {
+    color: #384638 !important;
+    font-weight: 650 !important;
+    line-height: 1.6 !important;
+    background: #f8fff4 !important;
+    border-color: #cfe8c4 !important;
+}
+
+    /* Chữ con bên trong ô ghi chú */
+    #pricing .senvie-service-note *,
+    #pricing .service-note *,
+    #pricing .service-card-note *,
+    #pricing .pricing-note * {
+        color: #384638 !important;
+        font-weight: 650 !important;
+    }
+
+/* Nút chọn gói */
+#pricing a,
+#pricing button {
+    font-weight: 900 !important;
+}

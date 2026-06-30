@@ -1,0 +1,157 @@
+﻿@model IEnumerable<nhahangchay.Models.Dish>
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Quản lý thực đơn";
+}
+
+<div class="admin-page-heading">
+    <div>
+        <p class="admin-eyebrow">Quản lý thực đơn</p>
+        <h1>Danh sách món ăn</h1>
+        <p class="admin-subtitle">Xem món đã upload, kiểm tra ảnh Cloudinary và bật/tắt hiển thị trên website.</p>
+    </div>
+
+    <div class="d-flex flex-wrap" style="gap: 10px;">
+        <a asp-controller="Admin" asp-action="MenuPreview" class="admin-btn admin-btn-reset">
+            <i class="fas fa-eye"></i>
+            <span>Xem trước menu</span>
+        </a>
+
+        <a asp-controller="Admin" asp-action="AddDish" class="admin-primary-action">
+            <i class="fas fa-plus"></i>
+            <span>Thêm món ăn</span>
+        </a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="admin-alert-success mb-3">
+        <i class="fas fa-check-circle"></i>
+        <span>@TempData["SuccessMessage"]</span>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger font-weight-bold">
+        <i class="fas fa-exclamation-triangle"></i>
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<section class="admin-table-card">
+    <div class="table-responsive">
+        <table class="table admin-booking-table mb-0">
+            <thead>
+                <tr>
+                    <th>Ảnh</th>
+                    <th>Tên món</th>
+                    <th>Phân loại</th>
+                    <th>Giá</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày tạo</th>
+                    <th class="text-center">Thao tác</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="align-middle">
+                                <img src="@item.ImageUrl" alt="@item.Name" class="admin-dish-thumb" />
+                            </td>
+
+                            <td class="align-middle">
+                                <div class="admin-customer-name">@item.Name</div>
+                                @if (!string.IsNullOrEmpty(item.Description))
+                                {
+                                    <small class="text-muted">@item.Description</small>
+                                }
+                            </td>
+
+                            <td class="align-middle">@item.Category</td>
+
+                            <td class="align-middle">
+                                <strong>@item.Price.ToString("N0")đ</strong>
+                            </td>
+
+                            <td class="align-middle">
+                                @if (item.IsAvailable)
+                                {
+                                    <span class="admin-status admin-status-done">
+                                        <i class="fas fa-check-circle"></i>
+                                        Đang hiển thị
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="admin-status admin-status-pending">
+                                        <i class="fas fa-eye-slash"></i>
+                                        Bản nháp
+                                    </span>
+                                }
+                            </td>
+
+                            <td class="align-middle">
+                                @item.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+
+                            <td class="align-middle">
+                                <div class="admin-action-group">
+                                    <a asp-action="EditDish"
+                                       asp-route-id="@item.Id"
+                                       class="admin-icon-btn admin-icon-view"
+                                       title="Sửa món ăn">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+
+                                    <form asp-action="ToggleDishAvailability"
+                                          asp-route-id="@item.Id"
+                                          method="post"
+                                          class="admin-inline-form"
+                                          onsubmit="return senvieSubmitOnce(this, 'Đang cập nhật trạng thái món ăn...');">
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="submit"
+                                                class="admin-icon-btn @(item.IsAvailable ? "admin-icon-delete" : "admin-icon-check")"
+                                                title="@(item.IsAvailable ? "Ẩn khỏi website" : "Cho hiển thị trên website")">
+                                            <i class="fas @(item.IsAvailable ? "fa-eye-slash" : "fa-eye")"></i>
+                                        </button>
+                                    </form>
+
+                                    <form asp-action="DeleteDish"
+                                          asp-route-id="@item.Id"
+                                          method="post"
+                                          class="admin-inline-form"
+                                          onsubmit="return senvieConfirmSubmit(this, 'Bạn có chắc chắn muốn XÓA món @item.Name không? Ảnh trên Cloudinary cũng sẽ bị xóa nếu có.', 'Đang xóa món ăn...');">
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="submit" class="admin-icon-btn admin-icon-delete" title="Xóa món ăn">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7">
+                            <div class="admin-empty-state">
+                                <i class="fas fa-utensils"></i>
+                                <strong>Chưa có món ăn nào</strong>
+                                <span>Bấm “Thêm món ăn” để upload món đầu tiên lên thực đơn.</span>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>

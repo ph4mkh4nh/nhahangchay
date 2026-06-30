@@ -1,0 +1,37 @@
+﻿@model nhahangchay.Models.Dish
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Sửa món ăn";
+    ViewData["DishFormMode"] = "edit";
+}
+
+<div class="admin-page-heading">
+    <div>
+        <p class="admin-eyebrow">Quản lý thực đơn</p>
+        <h1>Sửa món ăn</h1>
+        <p class="admin-subtitle">Cập nhật tên, giá, phân loại, mô tả hoặc thay ảnh món ăn.</p>
+    </div>
+
+    <a asp-controller="Admin" asp-action="Dishes" class="admin-btn admin-btn-reset">
+        <i class="fas fa-arrow-left"></i>
+        <span>Quay lại danh sách</span>
+    </a>
+</div>
+
+<section class="admin-dish-form-card">
+    <form asp-action="EditDish"
+          asp-route-id="@Model.Id"
+          method="post"
+          enctype="multipart/form-data"
+          onsubmit="return senvieSubmitOnce(this, 'Đang cập nhật món ăn...');">
+        @Html.AntiForgeryToken()
+        <input asp-for="Id" type="hidden" />
+        <partial name="_DishFormFields" model="Model" />
+    </form>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

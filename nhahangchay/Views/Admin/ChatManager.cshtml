@@ -1,0 +1,475 @@
+﻿@{
+    // Tắt hoàn toàn giao diện (header, footer) của trang chủ khách hàng
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trạm Quản Lý Chat - Admin</title>
+
+    <link rel="stylesheet" href="~/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- CSS riêng cho trang Admin -->
+    <link rel="stylesheet" href="~/css/admin-custom.css" asp-append-version="true" />
+</head>
+
+<body class="senvie-admin-page admin-chat-page">
+
+    <nav class="admin-navbar admin-chat-navbar">
+        <a href="#" class="admin-brand">
+            <span class="admin-brand-icon"><i class="fas fa-leaf"></i></span>
+            <span>SenVie Admin</span>
+        </a>
+
+        <div class="admin-nav-actions">
+            <a asp-controller="Admin" asp-action="Index" class="admin-site-btn admin-back-btn">
+                <i class="fas fa-arrow-left"></i>
+                <span>Về màn hình chính</span>
+            </a>
+
+            <span class="admin-hello">Xin chào, Quản Lý</span>
+
+            <a asp-controller="Home" asp-action="Index" class="admin-site-btn">
+                Xem Website
+            </a>
+        </div>
+    </nav>
+
+    <main class="admin-chat-shell">
+        <aside class="admin-chat-sidebar">
+            <div class="admin-chat-sidebar-header">
+                <div>
+                    <p class="admin-eyebrow mb-1">Trạm hỗ trợ</p>
+                    <h2>Khách đang chat</h2>
+                </div>
+                <button type="button" class="admin-chat-refresh" id="btn-refresh-users" title="Tải lại danh sách">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+
+            <div class="admin-chat-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="chat-user-search" placeholder="Tìm khách theo tên hoặc mã phòng..." autocomplete="off">
+            </div>
+
+            <div class="admin-chat-user-list" id="user-list">
+                <div class="admin-chat-loading">
+                    <i class="fas fa-circle-notch fa-spin"></i>
+                    <span>Đang tải danh sách...</span>
+                </div>
+            </div>
+        </aside>
+
+        <section class="admin-chat-main">
+            <header class="admin-chat-header" id="chat-header-title">
+                <div class="admin-chat-header-avatar">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div>
+                    <h1>Vui lòng chọn một khách hàng bên trái để chat</h1>
+                    <p>Danh sách hội thoại sẽ cập nhật theo tin nhắn mới.</p>
+                </div>
+            </header>
+
+            <div class="admin-chat-history" id="admin-chat-history">
+                <div class="admin-chat-empty-state" id="chat-empty-state">
+                    <i class="fas fa-comment-dots"></i>
+                    <strong>Chưa chọn cuộc trò chuyện</strong>
+                    <span>Chọn một khách hàng ở cột bên trái để xem lịch sử và trả lời tin nhắn.</span>
+                </div>
+            </div>
+
+            <footer class="admin-chat-input-pane">
+                <input type="text" id="admin-message" placeholder="Nhập tin nhắn hỗ trợ..." disabled autocomplete="off" />
+                <button id="btn-admin-reply" type="button" disabled title="Gửi tin nhắn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </footer>
+        </section>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+
+    <script>
+        var currentTargetRoom = "";
+        var connection = new signalR.HubConnectionBuilder()
+        .withUrl("/chatHub")
+        .withAutomaticReconnect()
+        .build();
+
+        function getSafeText(value, fallback) {
+        if (value === null || value === undefined || value === "") {
+        return fallback || "";
+        }
+
+        return value.toString();
+        }
+
+        function getInitials(name) {
+        var value = getSafeText(name, "KH").trim();
+
+        if (value.indexOf("Guest_") === 0) {
+        return "GU";
+        }
+
+        var words = value.split(/\s+/).filter(Boolean);
+
+        if (words.length >= 2) {
+        return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+        }
+
+        return value.substring(0, 2).toUpperCase();
+        }
+
+        function formatRelativeTime(dateInput) {
+        if (!dateInput) {
+        return "";
+        }
+
+        var d = new Date(dateInput);
+
+        if (isNaN(d.getTime())) {
+        return dateInput.toString();
+        }
+
+        var now = new Date();
+        var hours = d.getHours().toString().padStart(2, "0");
+        var minutes = d.getMinutes().toString().padStart(2, "0");
+        var timeStr = hours + ":" + minutes;
+
+        var dateOnlyD = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        var dateOnlyNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        var diffDays = Math.floor((dateOnlyNow - dateOnlyD) / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) {
+        return timeStr + " Hôm nay";
+        }
+
+        if (diffDays === 1) {
+        return timeStr + " Hôm qua";
+        }
+
+        return timeStr + " " + d.getDate().toString().padStart(2, "0") + "/" + (d.getMonth() + 1).toString().padStart(2, "0");
+        }
+
+        function createUserRow(item) {
+        var roomId = getSafeText(item.roomId, "");
+        var fullName = getSafeText(item.fullName, roomId || "Khách");
+        var lastMessage = getSafeText(item.lastMessage, "Chưa có tin nhắn");
+        var parts = item.lastTime ? item.lastTime.split("|") : ["", "0"];
+        var displayTime = parts[0] || "";
+        var unreadCount = parseInt(parts[1]) || 0;
+
+        var $row = $("<div></div>")
+        .addClass("admin-chat-user-item")
+        .attr("id", "user-" + roomId)
+        .attr("data-room-id", roomId);
+
+        if (roomId === currentTargetRoom) {
+        $row.addClass("active");
+        }
+
+        var $left = $("<div></div>").addClass("admin-chat-user-left");
+
+        $("<div></div>")
+        .addClass("admin-chat-user-avatar")
+        .text(getInitials(fullName))
+        .appendTo($left);
+
+        var $info = $("<div></div>").addClass("admin-chat-user-info");
+
+        $("<strong></strong>")
+        .addClass("fullName-label")
+        .text(fullName)
+        .appendTo($info);
+
+        $("<small></small>")
+        .attr("id", "preview-" + roomId)
+        .text(lastMessage)
+        .appendTo($info);
+
+        $left.append($info);
+
+        var $meta = $("<div></div>").addClass("admin-chat-user-meta");
+
+        $("<time></time>")
+        .attr("id", "time-" + roomId)
+        .text(displayTime)
+        .appendTo($meta);
+
+        $("<span></span>")
+        .addClass("admin-chat-unread")
+        .attr("id", "badge-" + roomId)
+        .text(unreadCount)
+        .toggle(unreadCount > 0 && roomId !== currentTargetRoom)
+        .appendTo($meta);
+
+        $row.append($left).append($meta);
+
+        $row.on("click", function () {
+        selectUser(roomId);
+        });
+
+        return $row;
+        }
+
+        function loadUsers() {
+        $("#user-list").html(
+        '<div class="admin-chat-loading"><i class="fas fa-circle-notch fa-spin"></i><span>Đang tải danh sách...</span></div>'
+        );
+
+        $.get("/api/chat/users", function (data) {
+        $("#user-list").empty();
+
+        if (!data || data.length === 0) {
+        $("#user-list").html(
+        '<div class="admin-chat-list-empty"><i class="fas fa-users-slash"></i><strong>Chưa có khách chat</strong><span>Khi khách gửi tin nhắn, hội thoại sẽ xuất hiện tại đây.</span></div>'
+        );
+        return;
+        }
+
+        data.forEach(function (item) {
+        $("#user-list").append(createUserRow(item));
+        });
+
+        filterUserList();
+        }).fail(function () {
+        $("#user-list").html(
+        '<div class="admin-chat-list-empty"><i class="fas fa-exclamation-triangle"></i><strong>Không tải được danh sách</strong><span>Vui lòng bấm tải lại hoặc kiểm tra API chat.</span></div>'
+        );
+        });
+        }
+
+        function updateChatHeader(fullName, roomId) {
+        var $header = $("#chat-header-title");
+        $header.empty();
+
+        var $avatar = $("<div></div>")
+        .addClass("admin-chat-header-avatar")
+        .text(getInitials(fullName));
+
+        var $text = $("<div></div>");
+
+        $("<h1></h1>")
+        .text("Đang hỗ trợ: " + fullName)
+        .appendTo($text);
+
+        $("<p></p>")
+        .text("Mã phòng: " + roomId)
+        .appendTo($text);
+
+        $header.append($avatar).append($text);
+        }
+
+        function showEmptyConversation(text) {
+        $("#admin-chat-history").html(
+        '<div class="admin-chat-empty-state">' +
+        '<i class="fas fa-comment-dots"></i>' +
+        '<strong>Chưa có tin nhắn</strong>' +
+        '<span>' + text + '</span>' +
+        '</div>'
+        );
+        }
+
+        function selectUser(roomId) {
+        currentTargetRoom = roomId;
+
+        $(".admin-chat-user-item").removeClass("active");
+
+        var userRow = document.getElementById("user-" + roomId);
+        if (userRow) {
+        $(userRow).addClass("active");
+        }
+
+        var fullName = userRow
+        ? ($(userRow).find(".fullName-label").text() || roomId)
+        : roomId;
+
+        updateChatHeader(fullName, roomId);
+
+        $("#admin-message").removeAttr("disabled").focus();
+        $("#btn-admin-reply").removeAttr("disabled");
+
+        $(document.getElementById("badge-" + roomId)).text("0").hide();
+
+        $.post("/api/chat/read?roomId=" + encodeURIComponent(roomId));
+
+        $("#admin-chat-history").html(
+        '<div class="admin-chat-loading in-history"><i class="fas fa-circle-notch fa-spin"></i><span>Đang tải lịch sử chat...</span></div>'
+        );
+
+        $.get("/api/chat/history?roomId=" + encodeURIComponent(roomId), function (messages) {
+        $("#admin-chat-history").empty();
+
+        if (!messages || messages.length === 0) {
+        showEmptyConversation("Bạn có thể bắt đầu hỗ trợ khách bằng ô nhập bên dưới.");
+        return;
+        }
+
+        messages.forEach(function (msg) {
+        appendMessage(msg.senderName, msg.message, msg.createdAt);
+        });
+        }).fail(function () {
+        $("#admin-chat-history").html(
+        '<div class="admin-chat-empty-state"><i class="fas fa-exclamation-triangle"></i><strong>Không tải được lịch sử</strong><span>Vui lòng thử chọn lại khách hàng.</span></div>'
+        );
+        });
+        }
+
+        function appendMessage(sender, message, createdAt) {
+        var senderName = getSafeText(sender, "Khách");
+        var messageText = getSafeText(message, "");
+        var normalizedSender = senderName.trim().toLowerCase();
+        var isAdmin = normalizedSender === "admin";
+        var timeDisplay = formatRelativeTime(createdAt);
+
+        $("#admin-chat-history .admin-chat-empty-state, #admin-chat-history .admin-chat-loading").remove();
+
+        var $container = $("<div></div>")
+        .addClass("admin-chat-message-row")
+        .addClass(isAdmin ? "is-admin" : "is-guest");
+
+        if (!isAdmin) {
+        $("<div></div>")
+        .addClass("admin-chat-msg-avatar")
+        .text(getInitials(senderName))
+        .appendTo($container);
+        }
+
+        var $bubbleWrap = $("<div></div>")
+        .addClass("admin-chat-bubble-wrap");
+
+        var $bubble = $("<div></div>")
+        .addClass("admin-chat-bubble");
+
+        $("<span></span>")
+        .addClass("admin-chat-message-text")
+        .text(messageText)
+        .appendTo($bubble);
+
+        $("<span></span>")
+        .addClass("admin-chat-message-time")
+        .text(timeDisplay)
+        .appendTo($bubble);
+
+        $bubbleWrap.append($bubble);
+        $container.append($bubbleWrap);
+
+        $("#admin-chat-history").append($container);
+
+        var chatHistory = document.getElementById("admin-chat-history");
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        connection.on("ReceiveMessage", function (roomId, sender, message) {
+        var now = new Date();
+        var newDateIso = now.toISOString();
+        var dateStr = formatRelativeTime(newDateIso);
+        var normalizedSender = (sender || "").trim().toLowerCase();
+
+        if (roomId === currentTargetRoom) {
+        appendMessage(sender, message, newDateIso);
+
+        if (normalizedSender !== "admin") {
+        $.post("/api/chat/read?roomId=" + encodeURIComponent(roomId));
+        }
+        }
+
+        var userRow = document.getElementById("user-" + roomId);
+
+        if (userRow) {
+        $(document.getElementById("preview-" + roomId)).text(message);
+        $(document.getElementById("time-" + roomId)).text(dateStr);
+
+        if (normalizedSender !== "admin" && roomId !== currentTargetRoom) {
+        var $badge = $(document.getElementById("badge-" + roomId));
+        var currentUnread = parseInt($badge.text()) || 0;
+        $badge.text(currentUnread + 1).fadeIn(200);
+        }
+
+        $(userRow).detach().prependTo("#user-list");
+        filterUserList();
+        } else {
+        loadUsers();
+        }
+        });
+
+        connection.start()
+        .then(function () {
+        return connection.invoke("JoinRoom", "", true);
+        })
+        .then(function () {
+        loadUsers();
+        })
+        .catch(function (err) {
+        console.error("Không thể kết nối SignalR:", err.toString());
+        loadUsers();
+        });
+
+        $("#btn-admin-reply").click(function () {
+        if (currentTargetRoom === "") {
+        return;
+        }
+
+        var msg = $("#admin-message").val().trim();
+
+        if (msg === "") {
+        return;
+        }
+
+        if (connection.state !== signalR.HubConnectionState.Connected) {
+        alert("Chat chưa kết nối. Vui lòng thử lại sau vài giây.");
+        return;
+        }
+
+        var $button = $("#btn-admin-reply");
+        $button.prop("disabled", true);
+
+        connection.invoke("ReplyToUser", currentTargetRoom, msg)
+        .then(function () {
+        $("#admin-message").val("");
+        })
+        .catch(function (err) {
+        console.warn("Không gửi được tin nhắn:", err);
+        alert("Tin nhắn chưa gửi được. Vui lòng thử lại sau.");
+        })
+        .finally(function () {
+        $button.prop("disabled", false);
+        $("#admin-message").focus();
+        });
+        });
+
+        $("#admin-message").keypress(function (e) {
+        if (e.which === 13) {
+        e.preventDefault();
+        $("#btn-admin-reply").click();
+        }
+        });
+
+        $("#btn-refresh-users").click(function () {
+        loadUsers();
+        });
+
+        $("#chat-user-search").on("input", function () {
+        filterUserList();
+        });
+
+        function filterUserList() {
+        var keyword = ($("#chat-user-search").val() || "").toLowerCase().trim();
+
+        $(".admin-chat-user-item").each(function () {
+        var name = ($(this).find(".fullName-label").text() || "").toLowerCase();
+        var roomId = ($(this).attr("data-room-id") || "").toLowerCase();
+        var matched = !keyword || name.indexOf(keyword) >= 0 || roomId.indexOf(keyword) >= 0;
+
+        $(this).toggle(matched);
+        });
+        }
+    </script>
+</body>
+</html>

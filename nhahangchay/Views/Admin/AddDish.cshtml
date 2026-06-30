@@ -1,0 +1,35 @@
+﻿@model nhahangchay.Models.Dish
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Thêm món ăn";
+    ViewData["DishFormMode"] = "add";
+}
+
+<div class="admin-page-heading">
+    <div>
+        <p class="admin-eyebrow">Quản lý thực đơn</p>
+        <h1>Thêm món ăn mới</h1>
+        <p class="admin-subtitle">Upload ảnh món ăn lên Cloudinary và lưu thông tin vào menu SenVie.</p>
+    </div>
+
+    <a asp-controller="Admin" asp-action="Dishes" class="admin-btn admin-btn-reset">
+        <i class="fas fa-arrow-left"></i>
+        <span>Quay lại thực đơn</span>
+    </a>
+</div>
+
+<section class="admin-dish-form-card">
+    <form asp-action="AddDish"
+          method="post"
+          enctype="multipart/form-data"
+          onsubmit="return senvieSubmitOnce(this, 'Đang upload ảnh và lưu món ăn...');">
+        @Html.AntiForgeryToken()
+        <partial name="_DishFormFields" model="Model" />
+    </form>
+</section>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

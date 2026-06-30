@@ -1,0 +1,144 @@
+﻿@model nhahangchay.Models.Booking
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chi tiết Đơn - @Model.BookingCode</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+
+    <!-- CSS riêng cho trang Admin -->
+    <link rel="stylesheet" href="~/css/admin-custom.css" asp-append-version="true" />
+</head>
+
+<body class="senvie-admin-page admin-detail-page">
+    <main class="admin-detail-shell">
+        <div class="admin-detail-card">
+            <div class="admin-detail-header">
+                <a href="/Admin/Index" class="admin-detail-back">
+                    <i class="fas fa-arrow-left"></i>
+                    Quay lại
+                </a>
+
+                <div class="admin-detail-icon">
+                    <i class="fas fa-receipt"></i>
+                </div>
+
+                <p class="admin-eyebrow">Thông tin đơn đặt bàn</p>
+                <h1>@Model.BookingCode</h1>
+
+                @if (Model.Status == 0)
+                {
+                    <span class="admin-status admin-status-pending">
+                        <i class="fas fa-clock"></i>
+                        Đang chờ duyệt
+                    </span>
+                }
+                else if (Model.Status == 1)
+                {
+                    <span class="admin-status admin-status-done">
+                        <i class="fas fa-check-circle"></i>
+                        Đã check-in
+                    </span>
+                }
+            </div>
+
+            <div class="admin-detail-body">
+                <div class="admin-detail-grid">
+                    <div class="admin-detail-item">
+                        <span><i class="fas fa-user"></i> Khách hàng</span>
+                        <strong>@Model.CustomerName</strong>
+                    </div>
+
+                    <div class="admin-detail-item">
+                        <span><i class="fas fa-phone-alt"></i> Số điện thoại</span>
+                        <strong>@Model.PhoneNumber</strong>
+                    </div>
+
+                    <div class="admin-detail-item">
+                        <span><i class="fas fa-envelope"></i> Email</span>
+                        <strong>@Model.Email</strong>
+                    </div>
+
+                    <div class="admin-detail-item">
+                        <span><i class="far fa-calendar-alt"></i> Ngày giờ đến</span>
+                        <strong>@Model.BookingDate.ToString("dd/MM/yyyy HH:mm")</strong>
+                    </div>
+
+                    <div class="admin-detail-item">
+                        <span><i class="fas fa-utensils"></i> Loại bàn</span>
+                        <strong>@Model.BookingType</strong>
+                    </div>
+
+                    <div class="admin-detail-item">
+                        <span><i class="fas fa-users"></i> Số lượng khách</span>
+                        <strong>@Model.NumberOfGuests người</strong>
+                    </div>
+                </div>
+
+                <div class="admin-special-note">
+                    <span><i class="fas fa-sticky-note"></i> Ghi chú đặc biệt</span>
+                    <p>@(string.IsNullOrEmpty(Model.SpecialRequest) ? "Không có" : Model.SpecialRequest)</p>
+                </div>
+
+
+                @if (Model.BookingDetails != null && Model.BookingDetails.Any())
+                {
+                    var preOrderTotal = Model.BookingDetails.Sum(x => x.LineTotal);
+
+                    <div class="admin-special-note" style="margin-top: 18px;">
+                        <span><i class="fas fa-utensils"></i> Món khách chọn trước</span>
+
+                        <div class="table-responsive mt-3">
+                            <table class="table table-sm table-bordered mb-2">
+                                <thead>
+                                    <tr>
+                                        <th>Món ăn</th>
+                                        <th class="text-center">SL</th>
+                                        <th class="text-right">Đơn giá</th>
+                                        <th class="text-right">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var detail in Model.BookingDetails)
+                                    {
+                                        <tr>
+                                            <td>@detail.DishName</td>
+                                            <td class="text-center">@detail.Quantity</td>
+                                            <td class="text-right">@detail.UnitPrice.ToString("N0")đ</td>
+                                            <td class="text-right font-weight-bold">@detail.LineTotal.ToString("N0")đ</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="3" class="text-right">Tổng tạm tính</th>
+                                        <th class="text-right text-success">@preOrderTotal.ToString("N0")đ</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <p class="text-muted mb-0" style="font-size: 13px;">
+                            Đây là danh sách món khách chọn trước để bếp chuẩn bị. Tiền món thanh toán tại nhà hàng.
+                        </p>
+                    </div>
+                }
+
+                <div class="admin-detail-actions">
+                    <a href="/Admin/Index" class="admin-btn admin-btn-reset">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Quay lại danh sách</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

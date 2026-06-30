@@ -1,0 +1,60 @@
+/* SenVie UI polish - scoped fixes only */
+
+/* Làm chữ rõ hơn trong các khu vực khách hàng, không đụng toàn bộ template */
+#menu .section-title p,
+.senvie-full-menu-page p,
+#booking-status-page p,
+.senvie-profile-container p,
+.custom-booking-form p,
+.custom-booking-form label,
+.senvie-profile-container table,
+.senvie-profile-container td,
+.senvie-profile-container th {
+    color: #2f3a2f !important;
+}
+
+#menu .section-title h3,
+.senvie-full-menu-page h1,
+.senvie-full-menu-page h3,
+.senvie-profile-container h2,
+#booking-status-page h2,
+#booking-status-page h3 {
+    color: #1f2f1f !important;
+}
+
+.text-muted,
+.senvie-full-menu-page .text-muted,
+.senvie-profile-container .text-muted {
+    color: #5f6b5f !important;
+}
+
+/* Giá món chỉ là nhãn xem, không giống nút mua hàng */
+.senvie-dish-price,
+.full-menu-footer strong {
+    color: #4d8b2f !important;
+    background: #edf7e8;
+    border: 1px solid #d9edce;
+    border-radius: 999px;
+    padding: 8px 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Panel món chọn trước tránh đè box chat */
+.preorder-panel {
+    left: 24px !important;
+    right: auto !important;
+    bottom: 24px !important;
+    z-index: 1000 !important;
+}
+
+@media (max-width: 768px) {
+    .preorder-panel {
+        left: 12px !important;
+        right: 86px !important;
+        bottom: 92px !important;
+        width: auto !important;
+        max-width: none !important;
+    }
+}

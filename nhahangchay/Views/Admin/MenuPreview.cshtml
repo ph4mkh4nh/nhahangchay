@@ -1,0 +1,106 @@
+﻿@model IEnumerable<nhahangchay.Models.Dish>
+@{
+    Layout = null;
+    ViewData["Title"] = "Xem trước menu";
+    var categories = Model.Select(x => x.Category).Distinct().ToList();
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Xem trước menu - SenVie Admin</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="~/css/admin-custom.css" asp-append-version="true" />
+</head>
+
+<body class="senvie-admin-page">
+
+    <nav class="admin-navbar">
+        <a class="admin-brand" asp-controller="Admin" asp-action="Dishes">
+            <span class="admin-brand-icon"><i class="fas fa-arrow-left"></i></span>
+            <span>Quay lại thực đơn</span>
+        </a>
+
+        <div class="admin-nav-actions">
+            <span class="admin-hello">Chế độ xem trước</span>
+            <a href="/" class="admin-site-btn">Xem Website</a>
+        </div>
+    </nav>
+
+    <main class="admin-shell">
+        <div class="admin-page-heading">
+            <div>
+                <p class="admin-eyebrow">Xem trước menu</p>
+                <h1>Menu SenVie</h1>
+                <p class="admin-subtitle">Trang này chỉ dành cho admin để kiểm tra món ăn trước khi hiển thị chính thức.</p>
+            </div>
+        </div>
+
+        @if (Model == null || !Model.Any())
+        {
+            <section class="admin-table-card">
+                <div class="admin-empty-state">
+                    <i class="fas fa-utensils"></i>
+                    <strong>Chưa có món ăn nào để xem trước</strong>
+                    <span>Hãy thêm món ăn trước.</span>
+                </div>
+            </section>
+        }
+        else
+        {
+            foreach (var category in categories)
+            {
+                <section class="mb-4">
+                    <h3 style="font-weight: 900; color: #26323a; margin-bottom: 15px;">@category</h3>
+
+                    <div class="admin-menu-preview-grid">
+                        @foreach (var item in Model.Where(x => x.Category == category))
+                        {
+                            <div class="admin-menu-preview-card @(item.IsAvailable ? "" : "is-draft")">
+                                <div class="admin-menu-preview-image">
+                                    <img src="@item.ImageUrl" alt="@item.Name" />
+
+                                    @if (!item.IsAvailable)
+                                    {
+                                        <span class="admin-menu-draft-badge">Bản nháp</span>
+                                    }
+                                </div>
+
+                                <div class="admin-menu-preview-body">
+                                    <h4>@item.Name</h4>
+
+                                    @if (!string.IsNullOrEmpty(item.Description))
+                                    {
+                                        <p>@item.Description</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted">Chưa có mô tả món ăn.</p>
+                                    }
+
+                                    <div class="admin-menu-preview-footer">
+                                        <strong>@item.Price.ToString("N0")đ</strong>
+
+                                        @if (item.IsAvailable)
+                                        {
+                                            <span class="text-success">Đang hiển thị</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-warning">Chưa công khai</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </section>
+            }
+        }
+    </main>
+</body>
+</html>

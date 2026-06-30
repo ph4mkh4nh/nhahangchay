@@ -1,0 +1,527 @@
+﻿@model IEnumerable<nhahangchay.Models.Booking>
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Quản lý đặt bàn";
+
+    var currentSearch = ViewBag.CurrentSearch as string ?? "";
+    int? currentFilter = ViewBag.CurrentFilter == null ? null : (int?)ViewBag.CurrentFilter;
+
+    var currentDateFilter = ViewBag.CurrentDateFilter as string ?? "";
+    var currentFromDate = ViewBag.CurrentFromDate as string ?? "";
+    var currentToDate = ViewBag.CurrentToDate as string ?? "";
+    var currentQuickFilter = ViewBag.CurrentQuickFilter as string ?? "pending";
+
+    int currentPage = ViewBag.CurrentPage is int ? (int)ViewBag.CurrentPage : 1;
+    int totalPages = ViewBag.TotalPages is int ? (int)ViewBag.TotalPages : 1;
+    int pageSize = ViewBag.PageSize is int ? (int)ViewBag.PageSize : 10;
+    int totalItems = ViewBag.TotalItems is int ? (int)ViewBag.TotalItems : 0;
+    decimal todayDepositCollected = ViewBag.TodayDepositCollected is decimal d1 ? d1 : 0;
+    decimal pendingDepositTotal = ViewBag.PendingDepositTotal is decimal d2 ? d2 : 0;
+}
+
+<div class="admin-page-heading">
+    <div>
+        <p class="admin-eyebrow">Quản lý nhà hàng</p>
+        <h1>Danh sách đơn đặt bàn</h1>
+        <p class="admin-subtitle">Theo dõi, tìm kiếm, xác nhận check-in và quản lý đơn đặt bàn của SenVie.</p>
+    </div>
+
+    <div class="d-flex flex-wrap" style="gap: 10px;">
+        <a asp-controller="Admin" asp-action="Dishes" class="admin-primary-action">
+            <i class="fas fa-utensils"></i>
+            <span>Quản lý thực đơn</span>
+        </a>
+
+        <a asp-controller="Admin" asp-action="AddDish" class="admin-primary-action">
+            <i class="fas fa-plus"></i>
+            <span>Thêm món ăn</span>
+        </a>
+
+        <a asp-controller="Admin" asp-action="CheckIn" class="admin-primary-action">
+            <i class="fas fa-qrcode"></i>
+            <span>Quét QR Check-in</span>
+        </a>
+    </div>
+</div>
+
+<section class="admin-stat-grid">
+    <a asp-action="Index" asp-route-quickFilter="today" class="admin-stat-card @(currentQuickFilter == "today" ? "active" : "")">
+        <span>Đơn hôm nay</span>
+        <strong>@ViewBag.TodayCount</strong>
+    </a>
+
+    <a asp-action="Index" asp-route-quickFilter="pending" class="admin-stat-card @(currentQuickFilter == "pending" ? "active" : "")">
+        <span>Chờ duyệt</span>
+        <strong>@ViewBag.PendingCount</strong>
+    </a>
+
+    <a asp-action="Index" asp-route-quickFilter="checkedin" class="admin-stat-card @(currentQuickFilter == "checkedin" ? "active" : "")">
+        <span>Đã check-in</span>
+        <strong>@ViewBag.CheckedInCount</strong>
+    </a>
+
+    <a asp-action="Index" asp-route-quickFilter="debt" class="admin-stat-card warning @(currentQuickFilter == "debt" ? "active" : "")">
+        <span>Cần thu cọc</span>
+        <strong>@ViewBag.DepositDebtCount</strong>
+        <small>@pendingDepositTotal.ToString("N0")đ chờ xác nhận</small>
+    </a>
+
+    <a asp-action="Index" asp-route-quickFilter="cancelled" class="admin-stat-card danger @(currentQuickFilter == "cancelled" ? "active" : "")">
+        <span>Đã hủy</span>
+        <strong>@ViewBag.CancelledCount</strong>
+    </a>
+</section>
+
+<section class="admin-quick-filter-bar">
+    <a asp-action="Index" asp-route-quickFilter="pending" class="@(currentQuickFilter == "pending" ? "active" : "")">
+        <i class="fas fa-clock"></i> Cần xử lý
+    </a>
+
+    <a asp-action="Index" asp-route-quickFilter="today" class="@(currentQuickFilter == "today" ? "active" : "")">
+        <i class="fas fa-calendar-day"></i> Hôm nay
+    </a>
+
+    <a asp-action="Index" asp-route-quickFilter="debt" class="@(currentQuickFilter == "debt" ? "active" : "")">
+        <i class="fas fa-coins"></i> Cần thu cọc
+    </a>
+
+    <a asp-action="Index" asp-route-quickFilter="checkedin" class="@(currentQuickFilter == "checkedin" ? "active" : "")">
+        <i class="fas fa-check-circle"></i> Đã check-in
+    </a>
+
+    <a asp-action="Index" asp-route-quickFilter="cancelled" class="@(currentQuickFilter == "cancelled" ? "active" : "")">
+        <i class="fas fa-ban"></i> Đã hủy
+    </a>
+
+    <a asp-action="Index" asp-route-quickFilter="all" class="@(currentQuickFilter == "all" ? "active" : "")">
+        <i class="fas fa-list"></i> Tất cả
+    </a>
+</section>
+
+<section class="admin-filter-card">
+    <form asp-action="Index" method="get" class="admin-filter-form">
+        <input type="hidden" name="page" value="1" />
+        <input type="hidden" name="quickFilter" value="@currentQuickFilter" />
+
+        <div class="admin-search-field">
+            <i class="fas fa-search"></i>
+            <input type="text"
+                   name="searchString"
+                   value="@currentSearch"
+                   class="form-control"
+                   placeholder="Tìm tên, SĐT, mã Code..." />
+        </div>
+
+        <div class="admin-select-field">
+            <select name="statusFilter" class="form-control">
+                <option value="">-- Tất cả trạng thái --</option>
+                <option value="0" selected="@(currentFilter == 0 ? "selected" : null)">Chờ duyệt</option>
+                <option value="1" selected="@(currentFilter == 1 ? "selected" : null)">Đã check-in</option>
+                <option value="2" selected="@(currentFilter == 2 ? "selected" : null)">Đã hủy</option>
+            </select>
+        </div>
+
+        <div class="admin-select-field">
+            <select name="dateFilter" class="form-control">
+                <option value="">-- Tất cả ngày --</option>
+                <option value="today" selected="@(currentDateFilter == "today" ? "selected" : null)">Hôm nay</option>
+                <option value="tomorrow" selected="@(currentDateFilter == "tomorrow" ? "selected" : null)">Ngày mai</option>
+                <option value="week" selected="@(currentDateFilter == "week" ? "selected" : null)">7 ngày tới</option>
+                <option value="range" selected="@(currentDateFilter == "range" ? "selected" : null)">Khoảng ngày</option>
+            </select>
+        </div>
+
+        <input type="date"
+               name="fromDate"
+               value="@currentFromDate"
+               class="form-control admin-date-filter-input" />
+
+        <input type="date"
+               name="toDate"
+               value="@currentToDate"
+               class="form-control admin-date-filter-input" />
+
+        <div class="admin-select-field small-select">
+            <select name="pageSize" class="form-control">
+                <option value="10" selected="@(pageSize == 10 ? "selected" : null)">10 dòng</option>
+                <option value="25" selected="@(pageSize == 25 ? "selected" : null)">25 dòng</option>
+                <option value="50" selected="@(pageSize == 50 ? "selected" : null)">50 dòng</option>
+            </select>
+        </div>
+
+        <button type="submit" class="admin-btn admin-btn-search">
+            <i class="fas fa-search"></i>
+            <span>Tìm kiếm</span>
+        </button>
+
+        <a asp-action="Index" asp-route-quickFilter="pending" class="admin-btn admin-btn-reset">
+            <i class="fas fa-sync-alt"></i>
+            <span>Tải lại</span>
+        </a>
+    </form>
+</section>
+
+<section class="admin-table-card">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="admin-alert-success">
+            <i class="fas fa-check-circle"></i>
+            <span>@TempData["SuccessMessage"]</span>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger font-weight-bold m-3">
+            <i class="fas fa-exclamation-triangle"></i>
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="table-responsive">
+        <table class="table admin-booking-table mb-0">
+            <thead>
+                <tr>
+                    <th>Mã Code</th>
+                    <th>Khách hàng</th>
+                    <th>Số điện thoại</th>
+                    <th>Ngày giờ đến</th>
+                    <th>Loại bàn</th>
+                    <th>Số khách</th>
+                    <th class="text-center">Tiền cọc</th>
+                    <th>Trạng thái</th>
+                    <th class="text-center">Thao tác</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="align-middle">
+                                <strong class="admin-code text-danger">@item.BookingCode</strong>
+                            </td>
+
+                            <td class="align-middle">
+                                <div class="admin-customer-name font-weight-bold">@item.CustomerName</div>
+                            </td>
+
+                            <td class="align-middle">
+                                <span class="admin-muted">@item.PhoneNumber</span>
+                            </td>
+
+                            <td class="align-middle">
+                                <span class="admin-date font-weight-bold text-dark">
+                                    @item.BookingDate.ToString("dd/MM/yyyy HH:mm")
+                                </span>
+                            </td>
+
+                            <td class="align-middle">
+                                <span class="admin-table-type">@item.BookingType</span>
+                            </td>
+
+                            <td class="align-middle text-center">
+                                <strong>@item.NumberOfGuests</strong>
+                            </td>
+
+                            <td class="align-middle text-center">
+                                @if (item.DepositAmount == 0)
+                                {
+                                    <span class="badge badge-light text-muted p-2 border">0đ</span>
+                                }
+                                else if (item.DepositAmount > 0 && item.PaymentStatus == 1)
+                                {
+                                    <span class="badge badge-success p-2 shadow-sm">
+                                        <i class="fas fa-check-circle"></i>
+                                        Đã thu @item.DepositAmount.ToString("N0")đ
+                                    </span>
+                                }
+                                else if (item.DepositAmount > 0 && item.PaymentStatus == 0)
+                                {
+                                    <div class="d-flex flex-column align-items-center">
+                                        <span class="badge badge-danger p-2 mb-1 shadow-sm">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            Nợ @item.DepositAmount.ToString("N0")đ
+                                        </span>
+
+                                        @if (item.Status == 0)
+                                        {
+                                            var approveMessage = $"Xác nhận đã nhận tiền chuyển khoản {item.DepositAmount:N0}đ từ khách {item.CustomerName}?";
+
+                                            <form asp-action="ApproveDeposit"
+                                                  asp-route-id="@item.Id"
+                                                  method="post"
+                                                  class="admin-inline-form js-admin-post"
+                                                  data-confirm="@approveMessage"
+                                                  data-loading="Đang xác nhận tiền cọc...">
+                                                @Html.AntiForgeryToken()
+
+                                                <button type="submit"
+                                                        class="btn btn-sm btn-outline-danger font-weight-bold mt-1"
+                                                        style="font-size: 11px; border-radius: 15px;">
+                                                    <i class="fas fa-check"></i>
+                                                    Đã nhận tiền
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                }
+                            </td>
+
+                            <td class="align-middle">
+                                @if (item.Status == 0)
+                                {
+                                    <span class="admin-status admin-status-pending">
+                                        <i class="fas fa-clock"></i>
+                                        Chờ duyệt
+                                    </span>
+                                }
+                                else if (item.Status == 1)
+                                {
+                                    <span class="admin-status admin-status-done">
+                                        <i class="fas fa-check-circle"></i>
+                                        Đã check-in
+                                    </span>
+                                }
+                                else if (item.Status == 2)
+                                {
+                                    <span class="admin-status admin-status-cancel">
+                                        <i class="fas fa-ban"></i>
+                                        Đã hủy
+                                    </span>
+                                }
+                            </td>
+
+                            <td class="align-middle">
+                                <div class="admin-action-group d-flex justify-content-center" style="gap: 5px;">
+                                    <a asp-action="Details"
+                                       asp-route-id="@item.Id"
+                                       class="admin-icon-btn admin-icon-view btn btn-sm btn-info text-white"
+                                       title="Xem chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+
+                                    @if (item.Status == 0)
+                                    {
+                                        var isDebt = item.DepositAmount > 0 && item.PaymentStatus == 0;
+                                        var confirmMsg = isDebt
+                                            ? $"CẢNH BÁO: Khách {item.CustomerName} chưa đóng cọc {item.DepositAmount:N0}đ. Xác nhận cho check-in và thu tiền mặt tại quầy?"
+                                            : $"Bạn có chắc chắn khách hàng {item.CustomerName} đã đến nhà hàng?";
+
+                                        <form asp-action="DirectCheckIn"
+                                              asp-route-id="@item.Id"
+                                              method="post"
+                                              class="admin-inline-form m-0 js-admin-post"
+                                              data-confirm="@confirmMsg"
+                                              data-loading="Đang check-in đơn đặt bàn...">
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="admin-icon-btn admin-icon-check btn btn-sm @(isDebt ? "btn-warning text-dark" : "btn-success text-white")"
+                                                    title="Xác nhận check-in">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                    }
+
+                                    @if (item.Status == 0)
+                                    {
+                                        var cancelMsg = $"Bạn có chắc chắn muốn HỦY đơn {item.BookingCode} không? Đơn sẽ được giữ lại trong lịch sử và khách sẽ nhận email thông báo hủy.";
+
+                                        <form asp-action="CancelBooking"
+                                              asp-route-id="@item.Id"
+                                              method="post"
+                                              class="admin-inline-form m-0 js-admin-post"
+                                              data-confirm="@cancelMsg"
+                                              data-loading="Đang hủy đơn đặt bàn...">
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="admin-icon-btn admin-icon-delete btn btn-sm btn-danger text-white"
+                                                    title="Hủy đơn đặt bàn">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="9">
+                            <div class="admin-empty-state text-center py-5">
+                                <i class="fas fa-calendar-times text-muted mb-3" style="font-size: 40px;"></i><br />
+                                <strong>Chưa có đơn đặt bàn phù hợp</strong><br />
+                                <span class="text-muted">Thử đổi từ khóa tìm kiếm hoặc bấm “Tất cả”.</span>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="admin-pagination-bar">
+        <div>
+            Hiển thị <strong>@(Model?.Count() ?? 0)</strong> / <strong>@totalItems</strong> đơn
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <div class="admin-pagination">
+                <a asp-action="Index"
+                   asp-route-searchString="@currentSearch"
+                   asp-route-statusFilter="@currentFilter"
+                   asp-route-dateFilter="@currentDateFilter"
+                   asp-route-fromDate="@currentFromDate"
+                   asp-route-toDate="@currentToDate"
+                   asp-route-quickFilter="@currentQuickFilter"
+                   asp-route-page="@(currentPage - 1)"
+                   asp-route-pageSize="@pageSize"
+                   class="@(currentPage <= 1 ? "disabled" : "")">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+
+                <span>Trang @currentPage / @totalPages</span>
+
+                <a asp-action="Index"
+                   asp-route-searchString="@currentSearch"
+                   asp-route-statusFilter="@currentFilter"
+                   asp-route-dateFilter="@currentDateFilter"
+                   asp-route-fromDate="@currentFromDate"
+                   asp-route-toDate="@currentToDate"
+                   asp-route-quickFilter="@currentQuickFilter"
+                   asp-route-page="@(currentPage + 1)"
+                   asp-route-pageSize="@pageSize"
+                   class="@(currentPage >= totalPages ? "disabled" : "")">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
+        }
+    </div>
+</section>
+
+<div id="admin-toast-container" class="admin-toast-container"></div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+
+    <script>
+        var unreadCount = 0;
+
+        var adminConnection = new signalR.HubConnectionBuilder()
+        .withUrl("/chatHub")
+        .withAutomaticReconnect()
+        .build();
+
+        function appendAdminToast(sender, message) {
+        var toastId = "toast-" + Date.now();
+
+        var $toast = $("<div></div>")
+        .attr("id", toastId)
+        .addClass("admin-toast");
+
+        var $header = $("<div></div>").addClass("admin-toast-header");
+
+        var $title = $("<span></span>");
+        $("<i></i>").addClass("fas fa-comment-dots").appendTo($title);
+        $title.append(" Tin nhắn mới từ Khách!");
+
+        var $close = $("<button></button>")
+        .attr("type", "button")
+        .addClass("admin-toast-close")
+        .html("<i class='fas fa-times'></i>")
+        .on("click", function () {
+        $("#" + toastId).remove();
+        });
+
+        $header.append($title).append($close);
+
+        var $body = $("<div></div>").addClass("admin-toast-body");
+        $("<strong></strong>").text(sender + ": ").appendTo($body);
+        $("<span></span>").text(message).appendTo($body);
+
+        var $link = $("<a></a>")
+        .attr("href", "/Admin/ChatManager")
+        .addClass("admin-toast-link")
+        .html("Vào Trạm Chat <i class='fas fa-arrow-right'></i>");
+
+        $toast.append($header).append($body).append($link);
+        $("#admin-toast-container").append($toast);
+
+        setTimeout(function () {
+        $("#" + toastId).fadeOut(300, function () {
+        $(this).remove();
+        });
+        }, 8000);
+        }
+
+        adminConnection.on("ReceiveMessage", function (roomId, sender, message) {
+        var normalizedSender = (sender || "").trim().toLowerCase();
+
+        if (normalizedSender !== "admin") {
+        unreadCount++;
+
+        $("#chat-badge")
+        .text(unreadCount)
+        .css("display", "inline-flex");
+
+        appendAdminToast(sender, message);
+        playChimeSound();
+        }
+        });
+
+        adminConnection.start()
+        .then(function () {
+        return adminConnection.invoke("JoinRoom", "", true);
+        })
+        .catch(function (err) {
+        console.error("Không thể kết nối SignalR Admin:", err.toString());
+        });
+
+        function playChimeSound() {
+        try {
+        var AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+
+        var ctx = new AudioContext();
+
+        var osc1 = ctx.createOscillator();
+        var gain1 = ctx.createGain();
+
+        osc1.type = "sine";
+        osc1.frequency.setValueAtTime(587.33, ctx.currentTime);
+        gain1.gain.setValueAtTime(0.18, ctx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start();
+        osc1.stop(ctx.currentTime + 0.4);
+
+        setTimeout(function () {
+        var osc2 = ctx.createOscillator();
+        var gain2 = ctx.createGain();
+
+        osc2.type = "sine";
+        osc2.frequency.setValueAtTime(880.00, ctx.currentTime);
+        gain2.gain.setValueAtTime(0.18, ctx.currentTime);
+        gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start();
+        osc2.stop(ctx.currentTime + 0.5);
+        }, 80);
+        } catch (e) {
+        console.log("Trình duyệt chặn âm thanh:", e);
+        }
+        }
+    </script>
+}

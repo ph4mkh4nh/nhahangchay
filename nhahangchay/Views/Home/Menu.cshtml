@@ -1,0 +1,621 @@
+﻿@model IEnumerable<nhahangchay.Models.Dish>
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Thực đơn SenVie";
+
+    var categories = ViewBag.Categories as List<string> ?? new List<string>();
+    var currentCategory = ViewBag.CurrentCategory as string ?? "";
+}
+
+<div class="senvie-full-menu-page">
+    <div class="container">
+
+        <div class="full-menu-hero text-center">
+            <p class="menu-eyebrow">SenVie Vegan Dining</p>
+            <h1>Thực Đơn Chay</h1>
+            <p>
+                Chọn trước vài món để SenVie chuẩn bị nhanh hơn khi bạn đến nhà hàng.
+                Việc chọn món chỉ là tạm tính, thanh toán trực tiếp tại nhà hàng.
+            </p>
+        </div>
+
+        <div class="menu-filter-bar">
+            <a asp-controller="Home"
+               asp-action="Menu"
+               class="menu-filter-pill @(string.IsNullOrWhiteSpace(currentCategory) ? "active" : "")">
+                Tất cả
+            </a>
+
+            @foreach (var category in categories)
+            {
+                <a asp-controller="Home"
+                   asp-action="Menu"
+                   asp-route-category="@category"
+                   class="menu-filter-pill @(currentCategory == category ? "active" : "")">
+                    @category
+                </a>
+            }
+        </div>
+
+        <div class="preorder-info-strip">
+            <strong>Gợi ý:</strong>
+            Bạn có thể chọn món trước cho Bàn Tiêu Chuẩn hoặc Bàn VIP. Với Omakase Chay, bếp trưởng sẽ thiết kế thực đơn riêng nên không cần chọn món lẻ.
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="row">
+                @foreach (var dish in Model)
+                {
+                    var imageUrl = string.IsNullOrWhiteSpace(dish.ImageUrl)
+                        ? Url.Content("~/uploads/no-image.jpg")
+                        : dish.ImageUrl;
+
+                    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                        <div class="full-menu-card">
+                            <div class="full-menu-img">
+                                <img src="@imageUrl" alt="@dish.Name" />
+                            </div>
+
+                            <div class="full-menu-body">
+                                <span class="full-menu-category">@dish.Category</span>
+
+                                <h3>@dish.Name</h3>
+
+                                @if (!string.IsNullOrWhiteSpace(dish.Description))
+                                {
+                                    <p>@dish.Description</p>
+                                }
+                                else
+                                {
+                                    <p>Món chay thanh vị, được chế biến từ nguyên liệu tươi ngon trong ngày.</p>
+                                }
+
+                                <div class="full-menu-footer">
+                                    <strong>@dish.Price.ToString("N0")đ</strong>
+
+                                    <button type="button"
+                                            class="preorder-add-btn js-add-preorder"
+                                            data-dish-id="@dish.Id"
+                                            data-name="@dish.Name"
+                                            data-price="@dish.Price.ToString(CultureInfo.InvariantCulture)">
+                                        Chọn trước
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="menu-empty-state">
+                <h4>Chưa có món phù hợp</h4>
+                <p>Vui lòng chọn danh mục khác hoặc quay lại sau.</p>
+                <a asp-controller="Home" asp-action="Index">Quay về trang chủ</a>
+            </div>
+        }
+    </div>
+</div>
+
+<div id="preOrderPanel" class="preorder-panel">
+    <div class="preorder-panel-header">
+        <div>
+            <strong>Món chọn trước</strong>
+            <span id="preOrderCount">0 món</span>
+        </div>
+        <button type="button" id="preOrderToggle" class="preorder-toggle-btn">Thu gọn</button>
+    </div>
+
+    <div id="preOrderBody" class="preorder-panel-body">
+        <div id="preOrderEmpty" class="preorder-empty">Bạn chưa chọn món nào.</div>
+        <div id="preOrderItems"></div>
+
+        <div class="preorder-total-row">
+            <span>Tổng tạm tính</span>
+            <strong id="preOrderTotal">0đ</strong>
+        </div>
+
+        <div class="preorder-note">
+            Tổng tiền món chỉ là tạm tính, thanh toán tại nhà hàng.
+        </div>
+
+        <div class="preorder-actions">
+            <button type="button" id="clearPreOrderBtn" class="preorder-clear-btn">Xóa món</button>
+            <a href="/#contact" class="preorder-continue-btn">Tiếp tục đặt bàn</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .senvie-full-menu-page {
+        padding: 130px 0 90px;
+        background: #f4f7f2;
+        min-height: 100vh;
+    }
+
+    .full-menu-hero {
+        margin-bottom: 28px;
+    }
+
+    .menu-eyebrow {
+        margin-bottom: 8px;
+        color: #7DBA4E;
+        font-weight: 900;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .full-menu-hero h1 {
+        color: #1f3b20;
+        font-size: 42px;
+        font-weight: 900;
+        margin-bottom: 12px;
+    }
+
+    .full-menu-hero p {
+        max-width: 760px;
+        margin: 0 auto;
+        color: #6c756b;
+        line-height: 1.7;
+    }
+
+    .menu-filter-bar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .menu-filter-pill {
+        padding: 10px 18px;
+        border-radius: 999px;
+        background: #ffffff;
+        color: #365136;
+        font-weight: 800;
+        text-decoration: none !important;
+        border: 1px solid #dfe8dc;
+        transition: 0.2s ease;
+    }
+
+        .menu-filter-pill:hover,
+        .menu-filter-pill.active {
+            background: #7DBA4E;
+            color: #ffffff;
+            box-shadow: 0 8px 18px rgba(125, 186, 78, 0.25);
+        }
+
+    .preorder-info-strip {
+        max-width: 920px;
+        margin: 0 auto 28px;
+        padding: 13px 16px;
+        border-radius: 14px;
+        background: #fff8e1;
+        border-left: 5px solid #ffc107;
+        color: #5f4a12;
+        font-size: 14px;
+        line-height: 1.55;
+    }
+
+    .full-menu-card {
+        height: 100%;
+        background: #ffffff;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.07);
+        border: 1px solid #eef2ec;
+        transition: 0.2s ease;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .full-menu-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 18px 36px rgba(0, 0, 0, 0.1);
+        }
+
+    .full-menu-img {
+        height: 210px;
+        background: #f5f7f3;
+        overflow: hidden;
+        padding: 12px;
+    }
+
+        .full-menu-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+            border-radius: 12px;
+        }
+
+    .full-menu-body {
+        padding: 18px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .full-menu-category {
+        display: inline-block;
+        width: fit-content;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #edf7e8;
+        color: #4d7f2f;
+        font-size: 12px;
+        font-weight: 900;
+        margin-bottom: 10px;
+    }
+
+    .full-menu-body h3 {
+        color: #1f2f1f;
+        font-size: 18px;
+        font-weight: 900;
+        margin-bottom: 10px;
+        min-height: 44px;
+    }
+
+    .full-menu-body p {
+        color: #6f766f;
+        font-size: 14px;
+        line-height: 1.55;
+        min-height: 66px;
+        margin-bottom: 15px;
+    }
+
+    .full-menu-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: auto;
+    }
+
+        .full-menu-footer strong {
+            color: #7DBA4E;
+            font-size: 18px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+    .preorder-add-btn {
+        border: none;
+        border-radius: 999px;
+        background: #1f3b20;
+        color: #ffffff;
+        font-size: 13px;
+        font-weight: 900;
+        padding: 9px 14px;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+        .preorder-add-btn:hover {
+            background: #7DBA4E;
+            transform: translateY(-1px);
+        }
+
+    .preorder-panel {
+        position: fixed;
+        left: 24px;
+        right: auto;
+        bottom: 24px;
+        width: 360px;
+        max-width: calc(100vw - 32px);
+        background: #ffffff;
+        border-radius: 18px;
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+        border: 1px solid #e4ecdf;
+        z-index: 1000;
+        overflow: hidden;
+    }
+
+    .preorder-panel-header {
+        padding: 14px 16px;
+        background: #1f3b20;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+        .preorder-panel-header strong {
+            display: block;
+            font-weight: 900;
+        }
+
+        .preorder-panel-header span {
+            display: block;
+            font-size: 12px;
+            opacity: 0.85;
+            margin-top: 2px;
+        }
+
+    .preorder-toggle-btn {
+        border: 1px solid rgba(255,255,255,0.45);
+        background: transparent;
+        color: #ffffff;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .preorder-panel-body {
+        padding: 14px;
+        max-height: 420px;
+        overflow-y: auto;
+    }
+
+    .preorder-empty {
+        color: #8b9488;
+        text-align: center;
+        padding: 14px 8px;
+        font-size: 14px;
+    }
+
+    .preorder-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 0;
+        border-bottom: 1px solid #eef2ec;
+    }
+
+    .preorder-item-name {
+        font-weight: 900;
+        color: #253425;
+        font-size: 14px;
+        line-height: 1.35;
+    }
+
+    .preorder-item-price {
+        color: #7DBA4E;
+        font-weight: 800;
+        font-size: 13px;
+        margin-top: 3px;
+    }
+
+    .preorder-qty-controls {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+    }
+
+        .preorder-qty-controls button {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            background: #edf7e8;
+            color: #315b22;
+            font-weight: 900;
+            cursor: pointer;
+        }
+
+    .preorder-total-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 2px solid #edf2e8;
+    }
+
+        .preorder-total-row strong {
+            color: #7DBA4E;
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+    .preorder-note {
+        margin-top: 8px;
+        color: #7d8379;
+        font-size: 12px;
+        line-height: 1.45;
+    }
+
+    .preorder-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .preorder-clear-btn,
+    .preorder-continue-btn {
+        flex: 1;
+        border: none;
+        border-radius: 999px;
+        padding: 10px 12px;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 900;
+        text-decoration: none !important;
+    }
+
+    .preorder-clear-btn {
+        background: #f4f5f3;
+        color: #666;
+        cursor: pointer;
+    }
+
+    .preorder-continue-btn {
+        background: #7DBA4E;
+        color: #ffffff !important;
+    }
+
+    .menu-empty-state {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 50px 24px;
+        text-align: center;
+        box-shadow: 0 12px 26px rgba(0,0,0,0.06);
+    }
+
+    @@media (max-width: 768px) {
+        .senvie-full-menu-page {
+            padding-top: 105px;
+        }
+
+        .full-menu-hero h1 {
+            font-size: 32px;
+        }
+
+        .full-menu-img {
+            height: 210px;
+        }
+
+        .preorder-panel {
+            left: 12px;
+            right: 86px;
+            bottom: 92px;
+            width: auto;
+            max-width: none;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        (function () {
+            var storageKey = "senvie_preorder_items";
+            var cart = loadCart();
+
+            function loadCart() {
+                try {
+                    return JSON.parse(localStorage.getItem(storageKey) || "[]");
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            function saveCart() {
+                localStorage.setItem(storageKey, JSON.stringify(cart));
+            }
+
+            function formatMoney(value) {
+                return (value || 0).toLocaleString('vi-VN') + 'đ';
+            }
+
+            function renderCart() {
+                var container = document.getElementById('preOrderItems');
+                var empty = document.getElementById('preOrderEmpty');
+                var count = document.getElementById('preOrderCount');
+                var totalEl = document.getElementById('preOrderTotal');
+
+                if (!container || !empty || !count || !totalEl) return;
+
+                container.innerHTML = '';
+
+                var totalQuantity = cart.reduce(function (sum, item) { return sum + item.quantity; }, 0);
+                var totalPrice = cart.reduce(function (sum, item) { return sum + item.quantity * item.price; }, 0);
+
+                count.innerText = totalQuantity + ' món';
+                totalEl.innerText = formatMoney(totalPrice);
+                empty.style.display = cart.length ? 'none' : 'block';
+
+                cart.forEach(function (item) {
+                    var row = document.createElement('div');
+                    row.className = 'preorder-item';
+
+                    row.innerHTML =
+                        '<div>' +
+                            '<div class="preorder-item-name"></div>' +
+                            '<div class="preorder-item-price"></div>' +
+                        '</div>' +
+                        '<div class="preorder-qty-controls">' +
+                            '<button type="button" data-action="minus" data-id="' + item.dishId + '">-</button>' +
+                            '<strong>' + item.quantity + '</strong>' +
+                            '<button type="button" data-action="plus" data-id="' + item.dishId + '">+</button>' +
+                        '</div>';
+
+                    row.querySelector('.preorder-item-name').innerText = item.name;
+                    row.querySelector('.preorder-item-price').innerText = formatMoney(item.price);
+
+                    container.appendChild(row);
+                });
+            }
+
+            function addToCart(dishId, name, price) {
+                var existing = cart.find(function (item) { return item.dishId === dishId; });
+
+                if (existing) {
+                    existing.quantity += 1;
+                } else {
+                    cart.push({ dishId: dishId, name: name, price: price, quantity: 1 });
+                }
+
+                saveCart();
+                renderCart();
+            }
+
+            document.addEventListener('click', function (event) {
+                var addButton = event.target.closest('.js-add-preorder');
+
+                if (addButton) {
+                    var dishId = parseInt(addButton.dataset.dishId);
+                    var name = addButton.dataset.name || '';
+                    var price = parseFloat(addButton.dataset.price || '0');
+
+                    if (!dishId || !name) return;
+
+                    addToCart(dishId, name, price);
+                    addButton.innerText = 'Đã chọn';
+                    setTimeout(function () { addButton.innerText = 'Chọn trước'; }, 900);
+                    return;
+                }
+
+                var qtyButton = event.target.closest('.preorder-qty-controls button');
+
+                if (qtyButton) {
+                    var id = parseInt(qtyButton.dataset.id);
+                    var action = qtyButton.dataset.action;
+                    var item = cart.find(function (x) { return x.dishId === id; });
+
+                    if (!item) return;
+
+                    if (action === 'plus') {
+                        item.quantity += 1;
+                    } else {
+                        item.quantity -= 1;
+                    }
+
+                    cart = cart.filter(function (x) { return x.quantity > 0; });
+                    saveCart();
+                    renderCart();
+                }
+            });
+
+            document.getElementById('clearPreOrderBtn')?.addEventListener('click', function () {
+                if (!cart.length) return;
+
+                if (confirm('Xóa toàn bộ món đã chọn trước?')) {
+                    cart = [];
+                    saveCart();
+                    renderCart();
+                }
+            });
+
+            document.getElementById('preOrderToggle')?.addEventListener('click', function () {
+                var body = document.getElementById('preOrderBody');
+
+                if (!body) return;
+
+                var isHidden = body.style.display === 'none';
+                body.style.display = isHidden ? 'block' : 'none';
+                this.innerText = isHidden ? 'Thu gọn' : 'Mở';
+            });
+
+            renderCart();
+        })();
+    </script>
+}

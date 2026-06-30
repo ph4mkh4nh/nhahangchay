@@ -1,0 +1,1365 @@
+﻿@using nhahangchay.Models
+@using System.Collections.Generic
+
+@{
+    var featuredDishes = ViewBag.FeaturedDishes as List<Dish> ?? new List<Dish>();
+}
+
+<link rel="stylesheet" href="~/css/custom.css" asp-append-version="true" />
+
+<style>
+    /* Home polish - scoped fixes, giữ logic cũ */
+    #mainNav .navbar-nav .nav-link,
+    #mainNav .navbar-nav li a,
+    .navbar .navbar-nav .nav-link,
+    .navbar .navbar-nav li a {
+        color: #3f4a3f !important;
+        opacity: 1 !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.2px;
+    }
+
+        #mainNav .navbar-nav .nav-link:hover,
+        #mainNav .navbar-nav li a:hover,
+        .navbar .navbar-nav .nav-link:hover,
+        .navbar .navbar-nav li a:hover {
+            color: #7DBA4E !important;
+        }
+
+    #mainNav .navbar-nav .active > .nav-link,
+    #mainNav .navbar-nav li.active > a,
+    .navbar .navbar-nav .active > .nav-link,
+    .navbar .navbar-nav li.active > a {
+        color: #ffffff !important;
+        opacity: 1 !important;
+        font-weight: 700 !important;
+    }
+
+    .message-box .senvie-about-highlights {
+        list-style: none;
+        padding: 0;
+        margin: 24px 0 0;
+    }
+
+        .message-box .senvie-about-highlights li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 10px;
+            padding: 13px 16px;
+            border-radius: 10px;
+            background: #f6f9f3;
+            border: 1px solid #e1ebda;
+            color: #283528 !important;
+            font-weight: 700;
+            line-height: 1.5;
+            cursor: default !important;
+            transition: none !important;
+            transform: none !important;
+        }
+
+            .message-box .senvie-about-highlights li:nth-child(even) {
+                background: #fffaf6;
+                border-color: #eadbd3;
+            }
+
+            .message-box .senvie-about-highlights li:hover {
+                background: #f6f9f3 !important;
+                color: #283528 !important;
+                transform: none !important;
+                box-shadow: none !important;
+            }
+
+            .message-box .senvie-about-highlights li:nth-child(even):hover {
+                background: #fffaf6 !important;
+            }
+
+    .senvie-about-check {
+        width: 24px;
+        height: 24px;
+        min-width: 24px;
+        border-radius: 50%;
+        background: #7DBA4E;
+        color: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 900;
+        margin-top: 1px;
+    }
+
+    .senvie-service-row {
+        margin-top: 28px;
+    }
+
+    .senvie-service-card {
+        height: 100%;
+        background: #ffffff;
+        border-radius: 22px;
+        border: 1px solid #e3eadf;
+        box-shadow: 0 14px 34px rgba(30, 55, 30, 0.08);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: 0.25s ease;
+    }
+
+        .senvie-service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 42px rgba(30, 55, 30, 0.12);
+        }
+
+    .senvie-service-head {
+        padding: 26px 24px 20px;
+        background: linear-gradient(135deg, #f8fff4 0%, #ffffff 100%);
+        border-bottom: 1px solid #edf3e9;
+        min-height: 210px;
+        position: relative;
+    }
+
+        .senvie-service-head.vip {
+            background: linear-gradient(135deg, #eff9e8 0%, #ffffff 100%);
+        }
+
+        .senvie-service-head.omakase {
+            background: linear-gradient(135deg, #fff9ea 0%, #ffffff 100%);
+        }
+
+    .senvie-service-label {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: #edf7e8;
+        color: #4d7f2f;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+    }
+
+    .senvie-service-card h3 {
+        color: #203420;
+        font-size: 26px;
+        font-weight: 900;
+        margin: 0 0 12px;
+        line-height: 1.25;
+    }
+
+    .senvie-service-price {
+        color: #7DBA4E;
+        font-size: 24px;
+        font-weight: 900;
+        margin-bottom: 10px;
+    }
+
+    .senvie-service-desc {
+        color: #667066;
+        font-size: 14px;
+        line-height: 1.65;
+        margin: 0;
+    }
+
+    .senvie-service-body {
+        padding: 22px 24px 24px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .senvie-service-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 20px;
+    }
+
+        .senvie-service-list li {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            color: #314031;
+            font-size: 14px;
+            line-height: 1.55;
+        }
+
+            .senvie-service-list li::before {
+                content: "✓";
+                color: #7DBA4E;
+                font-weight: 900;
+                margin-top: 1px;
+            }
+
+    .senvie-service-note {
+        margin-top: auto;
+        padding: 13px 14px;
+        border-radius: 14px;
+        background: #f7faf4;
+        color: #607060;
+        font-size: 13px;
+        line-height: 1.55;
+        border: 1px dashed #d7e6cf;
+    }
+
+    .senvie-service-btn {
+        margin-top: 16px;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        height: 44px;
+        border-radius: 999px;
+        background: #1f3b20;
+        color: #ffffff !important;
+        font-weight: 900;
+        text-decoration: none !important;
+        box-shadow: 0 8px 20px rgba(31, 59, 32, 0.16);
+        transition: 0.2s ease;
+    }
+
+        .senvie-service-btn:hover {
+            background: #7DBA4E;
+            color: #ffffff !important;
+            transform: translateY(-1px);
+        }
+
+    @@media (max-width: 768px) {
+        .senvie-service-head {
+            min-height: auto;
+        }
+
+        .senvie-service-card h3 {
+            font-size: 23px;
+        }
+    }
+</style>
+<section id="home" class="main-banner">
+    <!--trang chủ / slider-->
+    <div class="slider-new-2 owl-carousel owl-theme">
+
+        <div class="item slider-screen">
+            <div class="slider-img-full">
+                <img src="~/uploads/slider-01.png" alt="" />
+            </div>
+            <div class="container">
+                <div class="slider-content text-white">
+                    <div class="in-box">
+                        <h2>Tinh Hoa Ẩm Thực Thuần Chay</h2>
+                        <p>Đánh thức vị giác bằng những món ăn thanh tao, bổ dưỡng và thân thiện với môi trường.</p>
+                        <a class="btn-slider hvr-radial-in" href="#contact">Xem Thực Đơn hoặc Đặt Bàn Ngay.</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="item slider-screen">
+            <div class="slider-img-full">
+                <img src="~/uploads/slider-02.png" alt="" />
+            </div>
+            <div class="container">
+                <div class="slider-content text-white">
+                    <div class="in-box">
+                        <h2>Không Gian Thanh Tịnh & An Nhiên</h2>
+                        <p>Đánh thức vị giác bằng những món ăn thanh tao, bổ dưỡng và thân thiện với môi trường.</p>
+                        <a class="btn-slider hvr-radial-in" href="#contact">Đặt Bàn Ngay.</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="item slider-screen">
+            <div class="slider-img-full">
+                <img src="~/uploads/slider-03.png" alt="" />
+            </div>
+            <div class="container">
+                <div class="slider-content text-white">
+                    <div class="in-box">
+                        <h2>Nguyên Liệu Hữu Cơ Tươi Sạch</h2>
+                        <p>Đánh thức vị giác bằng những món ăn thanh tao, bổ dưỡng và thân thiện với môi trường.</p>
+                        <a class="btn-slider hvr-radial-in" href="#contact">Đặt Bàn Ngay.</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+	
+	
+<div id="about" class="section" style="background-color: transparent;">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+
+            <div class="col-md-6">
+                <div class="message-box">
+                    <h2>Chào mừng đến với nhà hàng chay SenVie.</h2>
+
+                    <p class="text-dark mb-3" style="font-family: Arial, sans-serif; font-size: 1.1rem; line-height: 1.7; font-weight: 500;">
+                        "Ra đời với tâm nguyện mang đến những bữa ăn thanh khiết, SenVie không chỉ là nơi thưởng thức ẩm thực, mà còn là chốn bình yên để bạn gác lại âu lo."
+                    </p>
+
+                    <p class="text-dark" style="font-family: Arial, sans-serif; font-size: 1.1rem; line-height: 1.7; font-weight: 500;">
+                        "Mỗi món ăn tại nhà hàng đều là một tác phẩm nghệ thuật được chăm chút tỉ mỉ từ khâu chọn lựa nguyên liệu tươi sạch nhất. Chúng tôi tự hào phục vụ các món chay mang hương vị nguyên bản, kết hợp tinh hoa ẩm thực truyền thống và đương đại, giúp cân bằng hoàn hảo giữa Thân và Tâm."
+                    </p>
+
+                    <ul class="senvie-about-highlights">
+                        <li><span class="senvie-about-check">✓</span><span>100% nguyên liệu thuần thực vật & hữu cơ.</span></li>
+                        <li><span class="senvie-about-check">✓</span><span>Nói không với bột ngọt và chất bảo quản.</span></li>
+                        <li><span class="senvie-about-check">✓</span><span>Không sử dụng ngũ vị tân: hành, hẹ, tỏi, nén, hưng hào.</span></li>
+                        <li><span class="senvie-about-check">✓</span><span>Thực đơn đa dạng với hơn 50 món chay Á - Âu đặc sắc.</span></li>
+                        <li><span class="senvie-about-check">✓</span><span>Không gian thiền tịnh, an nhiên và thư thái.</span></li>
+                    </ul>
+
+                    <a href="#menu" class="sim-btn hvr-radial-in mt-3"><span>Khám Phá Thực Đơn</span></a>
+                </div>
+            </div><div class="col-md-6" style="padding: 0; background: transparent;">
+            <div class="wow fadeIn">
+                <img src="~/uploads/about_01.png" asp-append-version="true" class="img-fluid rounded shadow" alt="Nhà hàng chay SenVie">
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+<div class="section cont-box">
+    <div class="container-fluid">
+        <div class="row text-center">
+
+            <div class="col-lg-3 col-sm-6 col-xs-12">
+                <div class="inner-cont-box">
+                    <i class="fa fa-users fa-2x"></i>
+                    <h3 class="counter-number">15000</h3>
+                    <h4>Thực Khách Hài Lòng</h4>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6 col-xs-12">
+                <div class="inner-cont-box">
+                    <i class="fa fa-clock-o fa-2x"></i>
+                    <h3 class="counter-number">5</h3>
+                    <h4>Năm Phục Vụ</h4>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6 col-xs-12">
+                <div class="inner-cont-box">
+                    <i class="fa fa-leaf fa-2x"></i>
+                    <h3 class="counter-number">50</h3>
+                    <h4>Món Chay Đặc Sắc</h4>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6 col-xs-12">
+                <div class="inner-cont-box">
+                    <i class="fa fa-star fa-2x"></i>
+                    <h3 class="counter-number">2000</h3>
+                    <h4>Đánh Giá 5 Sao</h4>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!--menu-->
+<div id="menu" class="section lb">
+    <div class="container-fluid">
+        <div class="section-title text-center">
+            <h3>Món Chay Nổi Bật</h3>
+            <p>
+                Những món chay được SenVie gợi ý cho bữa ăn chính, phù hợp để khách chọn trước khi đặt bàn.
+            </p>
+        </div>
+
+        @if (featuredDishes.Any())
+        {
+            <div class="row text-center senvie-featured-menu-row">
+                @foreach (var dish in featuredDishes)
+                {
+                    var imageUrl = string.IsNullOrWhiteSpace(dish.ImageUrl)
+                        ? Url.Content("~/uploads/no-image.jpg")
+                        : dish.ImageUrl;
+
+                    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                        <div class="senvie-featured-dish-card">
+                            <div class="senvie-featured-dish-image">
+                                <img src="@imageUrl" alt="@dish.Name" />
+                            </div>
+
+                            <div class="senvie-featured-dish-body">
+                                <h3>@dish.Name</h3>
+
+                                @if (!string.IsNullOrWhiteSpace(dish.Description))
+                                {
+                                    <p>
+                                        @(dish.Description.Length > 70
+                                            ? dish.Description.Substring(0, 70) + "..."
+                                            : dish.Description)
+                                    </p>
+                                }
+                                else
+                                {
+                                    <p>Món chay thanh vị, được chế biến từ nguyên liệu tươi ngon.</p>
+                                }
+
+                                <div class="senvie-dish-price">
+                                    @dish.Price.ToString("N0")đ
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="text-center mt-4">
+                <a asp-controller="Home"
+                   asp-action="Menu"
+                   class="senvie-view-menu-btn">
+                    Xem Thực Đơn Đầy Đủ
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <h4 class="text-muted">Thực đơn đang được cập nhật</h4>
+                <p class="text-muted">Vui lòng quay lại sau hoặc liên hệ nhà hàng để được tư vấn món ăn.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .gallery-single {
+        overflow: hidden;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+        .gallery-single img {
+            transition: transform 0.4s ease;
+            cursor: pointer;
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .gallery-single:hover img {
+            transform: scale(1.1);
+        }
+</style>
+<!--thư viện ảnh-->
+<div id="gallery" class="section wb senvie-gallery-section">
+    <div class="container-fluid">
+        <div class="section-title text-center">
+            <h3>Thư Viện Ảnh</h3>
+            <p>
+                Không gian thanh tịnh, món chay tinh tế và những khoảnh khắc ẩm thực được SenVie chăm chút bằng cả tâm huyết.
+            </p>
+        </div>
+
+        <div class="gallery-menu text-center row">
+            <div class="col-md-12">
+                <div class="button-group filter-button-group senvie-gallery-filter">
+                    <button class="hvr-radial-in active" data-filter="*">Tất Cả</button>
+                    <button class="hvr-radial-in" data-filter=".gal_space">Không Gian</button>
+                    <button class="hvr-radial-in" data-filter=".gal_food">Món Chay</button>
+                    <button class="hvr-radial-in" data-filter=".gal_omakase">Omakase</button>
+                    <button class="hvr-radial-in" data-filter=".gal_party">Tiệc Chay</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="gallery-list row senvie-gallery-grid">
+
+            <div class="col-md-4 col-sm-6 gallery-grid gal_space mb-4">
+                <div class="gallery-single senvie-gallery-card">
+                    <a href="/uploads/gallery_img-01.png" data-rel="prettyPhoto[gal]">
+                        <img src="~/uploads/gallery_img-01.png" class="img-fluid" alt="Không gian nhà hàng SenVie">
+                        <div class="senvie-gallery-caption">
+                            <span>Không gian an nhiên</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-sm-6 gallery-grid gal_space gal_party mb-4">
+                <div class="gallery-single senvie-gallery-card">
+                    <a href="/uploads/gallery_img-02.png" data-rel="prettyPhoto[gal]">
+                        <img src="~/uploads/gallery_img-02.png" class="img-fluid" alt="Phòng riêng và bàn tiệc chay">
+                        <div class="senvie-gallery-caption">
+                            <span>Phòng riêng & bàn tiệc</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-sm-6 gallery-grid gal_food mb-4">
+                <div class="gallery-single senvie-gallery-card">
+                    <a href="/uploads/gallery_img-03.png" data-rel="prettyPhoto[gal]">
+                        <img src="~/uploads/gallery_img-03.png" class="img-fluid" alt="Món chay Việt Nam">
+                        <div class="senvie-gallery-caption">
+                            <span>Món chay Việt thanh vị</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-sm-6 gallery-grid gal_food mb-4">
+                <div class="gallery-single senvie-gallery-card">
+                    <a href="/uploads/gallery_img-04.png" data-rel="prettyPhoto[gal]">
+                        <img src="~/uploads/gallery_img-04.png" class="img-fluid" alt="Món chay hiện đại">
+                        <div class="senvie-gallery-caption">
+                            <span>Ẩm thực chay hiện đại</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-sm-6 gallery-grid gal_food mb-4">
+                <div class="gallery-single senvie-gallery-card">
+                    <a href="/uploads/gallery_img-05.png" data-rel="prettyPhoto[gal]">
+                        <img src="~/uploads/gallery_img-05.png" class="img-fluid" alt="Tráng miệng và thức uống chay">
+                        <div class="senvie-gallery-caption">
+                            <span>Tráng miệng & thức uống</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-sm-6 gallery-grid gal_omakase mb-4">
+                <div class="gallery-single senvie-gallery-card">
+                    <a href="/uploads/gallery_img-06.png" data-rel="prettyPhoto[gal]">
+                        <img src="~/uploads/gallery_img-06.png" class="img-fluid" alt="Omakase chay fine dining">
+                        <div class="senvie-gallery-caption">
+                            <span>Omakase Chay</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-sm-6 gallery-grid gal_omakase gal_food mb-4">
+                <div class="gallery-single senvie-gallery-card">
+                    <a href="/uploads/gallery_img-07.png" data-rel="prettyPhoto[gal]">
+                        <img src="~/uploads/gallery_img-07.png" class="img-fluid" alt="Đầu bếp trình bày món chay">
+                        <div class="senvie-gallery-caption">
+                            <span>Nghệ thuật trình bày</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-sm-6 gallery-grid gal_party mb-4">
+                <div class="gallery-single senvie-gallery-card">
+                    <a href="/uploads/gallery_img-08.png" data-rel="prettyPhoto[gal]">
+                        <img src="~/uploads/gallery_img-08.png" class="img-fluid" alt="Tiệc chay SenVie">
+                        <div class="senvie-gallery-caption">
+                            <span>Tiệc chay thanh tịnh</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-sm-6 gallery-grid gal_space gal_food mb-4">
+                <div class="gallery-single senvie-gallery-card">
+                    <a href="/uploads/gallery_img-09.png" data-rel="prettyPhoto[gal]">
+                        <img src="~/uploads/gallery_img-09.png" class="img-fluid" alt="Nguyên liệu tươi sạch SenVie">
+                        <div class="senvie-gallery-caption">
+                            <span>Nguyên liệu tươi sạch</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!--đánh giá của khách hàng-->
+<div id="testimonials" class="section lb">
+    <div class="container-fluid">
+        <div class="section-title text-center">
+            <h3>Khách Hàng Nói Gì Về Chúng Tôi</h3>
+            <p>Hàng ngàn thực khách đã trải nghiệm và hài lòng với không gian thanh tịnh cùng hương vị ẩm thực thuần chay tại SenVie.</p>
+        </div><!-- end title -->
+
+        <div class="row">
+            <div class="col-md-12 col-sm-12">
+                <div class="testi-carousel owl-carousel owl-theme">
+                    <div class="testimonial align-items-center clearfix">
+                        <div class="testi-meta">
+                            <img src="~/uploads/img-1.jpg" alt="" class="img-fluid">
+                            <h4>James Fernando </h4>
+                        </div>
+                        <!-- end testi-meta -->
+                        <div class="desc">
+                            <h3><i class="fa fa-quote-left"></i> Trải Nghiệm Ẩm Thực Tuyệt Vời!</h3>
+                            <p class="lead">"Không gian nhà hàng vô cùng thanh tịnh và ấm cúng. Các món chay được nêm nếm rất vừa miệng, thanh đạm nhưng không hề đơn điệu.</p>
+                        </div>
+                    </div>
+                    <!-- end testimonial -->
+
+                    <div class="testimonial align-items-center clearfix">
+                        <div class="testi-meta">
+                            <img src="~/uploads/img-2.jpg" alt="" class="img-fluid">
+                            <h4>Jacques Philips </h4>
+                        </div>
+                        <!-- end testi-meta -->
+                        <div class="desc">
+                            <h3><i class="fa fa-quote-left"></i> Thực Đơn Đa Dạng & Tươi Ngon!</h3>
+                            <p class="lead">Mình ăn chay trường nên rất khó tính trong việc chọn quán. SenVie thực sự làm mình an tâm vì cam kết sử dụng nguyên liệu hữu cơ và không dùng ngũ vị tân.</p>
+                        </div>
+                    </div>
+                    <!-- end testimonial -->
+
+                    <div class="testimonial align-items-center clearfix">
+                        <div class="testi-meta">
+                            <img src="~/uploads/img-3.jpg" alt="" class="img-fluid">
+                            <h4>Venanda Mercy </h4>
+                        </div>
+                        <!-- end testi-meta -->
+                        <div class="desc">
+                            <h3><i class="fa fa-quote-left"></i> Phục vụ rất tốt!</h3>
+                            <p class="lead">SenVie có đội ngũ nhân viên và đầu bếp rất chuyên nghiệp. Các bạn nhân viên phục vụ cũng rất tận tình và chuyên nghiệp. </p>
+                        </div>
+                    </div>
+                    <!-- end testimonial -->
+                </div><!-- end carousel -->
+            </div><!-- end col -->
+        </div><!-- end row -->
+    </div><!-- end container -->
+</div><!-- end section -->
+<!--đầu bếp-->
+<div id="chef" class="section wb">
+    <div class="container-fluid">
+        <div class="section-title text-center">
+            <h3>Đội Ngũ Bếp Trưởng</h3>
+            <p>Những nghệ nhân ẩm thực tài hoa, mang tình yêu thiên nhiên và sự tận tâm vào từng món ăn thuần khiết. </p>
+        </div><!-- end title -->
+
+        <div class="row" style="margin-bottom: 70px;">
+
+            <div class="col-md-3 col-sm-6">
+                <div class="our-team">
+                    <img src="~/uploads/chef-1.jpg" alt="Matthew Kenney" style="height: 500px; width: 100%; object-fit: cover; object-position: top;">
+                    <div class="team-content">
+                        <h3 class="title">Matthew Kenney</h3>
+                        <span class="post">Senior Chef</span>
+                        <ul class="social-links">
+                            <li><a href="#"><i class="fa fa-facebook"></i> </a></li>
+                            <li><a href="#"><i class="fa fa-google-plus"></i> </a></li>
+                            <li><a href="#"><i class="fa fa-twitter"></i> </a></li>
+                            <li><a href="#"><i class="fa fa-linkedin"></i> </a></li>
+                            <li><a href="#"><i class="fa fa-pinterest-p"></i> </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="our-team">
+                    <img src="~/uploads/chef-2.jpg" alt="Gaz Oakley" style="height: 500px; width: 100%; object-fit: cover; object-position: top;">
+                    <div class="team-content">
+                        <h3 class="title">Gaz Oakley</h3>
+                        <span class="post">Senior Chef</span>
+                        <ul class="social-links">
+                            <li><a href="#"><i class="fa fa-facebook"></i> </a></li>
+                            <li><a href="#"><i class="fa fa-google-plus"></i> </a></li>
+                            <li><a href="#"><i class="fa fa-twitter"></i> </a></li>
+                            <li><a href="#"><i class="fa fa-linkedin"></i> </a></li>
+                            <li><a href="#"><i class="fa fa-pinterest-p"></i> </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="our-team">
+                    <img src="~/uploads/chef-3.jpg" alt="Chloe Coscarelli" style="height: 500px; width: 100%; object-fit: cover; object-position: top;">
+                    <div class="team-content">
+                        <h3 class="title">Chloe Coscarelli</h3>
+                        <span class="post">Senior Chef</span>
+                        <ul class="social-links">
+                            <li><a href="#"><i class="fa fa-facebook"></i> </a></li>
+                            <li><a href="#"><i class="fa fa-google-plus"></i> </a></li>
+                            <li><a href="#"><i class="fa fa-twitter"></i> </a></li>
+                            <li><a href="#"><i class="fa fa-linkedin"></i> </a></li>
+                            <li><a href="#"><i class="fa fa-pinterest-p"></i> </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="our-team">
+                    <img src="~/uploads/chef-4.jpg" alt="Jean-Christian Jury" style="height: 500px; width: 100%; object-fit: cover; object-position: top;">
+                    <div class="team-content">
+                        <h3 class="title">Jean-Christian Jury</h3>
+                        <span class="post">Senior Chef</span>
+                        <ul class="social-links">
+                            <li><a href="#"><i class="fa fa-facebook"></i> </a></li>
+                            <li><a href="#"><i class="fa fa-google-plus"></i> </a></li>
+                            <li><a href="#"><i class="fa fa-twitter"></i> </a></li>
+                            <li><a href="#"><i class="fa fa-linkedin"></i> </a></li>
+                            <li><a href="#"><i class="fa fa-pinterest-p"></i> </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--dịch vụ-->
+<div id="pricing" class="section lb">
+    <div class="container-fluid">
+        <div class="section-title text-center">
+            <h3>Dịch Vụ Đặt Bàn & Tiệc Chay</h3>
+            <p>Chọn không gian dùng bữa phù hợp. Món ăn có thể chọn trước tại trang thực đơn và thanh toán tại nhà hàng.</p>
+        </div>
+
+        <div class="row senvie-service-row">
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="senvie-service-card">
+                    <div class="senvie-service-head">
+                        <span class="senvie-service-label">Linh hoạt</span>
+                        <h3>Bàn Tiêu Chuẩn</h3>
+                        <div class="senvie-service-price">Miễn phí giữ chỗ</div>
+                        <p class="senvie-service-desc">
+                            Phù hợp khách lẻ, cặp đôi hoặc nhóm nhỏ muốn dùng bữa trong không gian chung thanh tịnh.
+                        </p>
+                    </div>
+
+                    <div class="senvie-service-body">
+                        <ul class="senvie-service-list">
+                            <li>Không yêu cầu đặt cọc.</li>
+                            <li>Có thể chọn món trước từ trang thực đơn.</li>
+                            <li>Giữ bàn tối đa 15 phút sau giờ hẹn.</li>
+                            <li>Nhận mã QR check-in sau khi đặt bàn thành công.</li>
+                        </ul>
+
+                        <div class="senvie-service-note">
+                            Tiền món chỉ là tạm tính nếu khách chọn trước, thanh toán trực tiếp tại nhà hàng.
+                        </div>
+
+                        <a href="#contact" onclick="selectBookingService('Bàn Tiêu Chuẩn')" class="senvie-service-btn">
+                            Chọn bàn tiêu chuẩn
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="senvie-service-card">
+                    <div class="senvie-service-head vip">
+                        <span class="senvie-service-label">Riêng tư</span>
+                        <h3>Bàn VIP</h3>
+                        <div class="senvie-service-price">Cọc giữ phòng 1.000.000đ</div>
+                        <p class="senvie-service-desc">
+                            Dành cho khách cần phòng riêng, phục vụ riêng và không gian yên tĩnh cho buổi gặp mặt quan trọng.
+                        </p>
+                    </div>
+
+                    <div class="senvie-service-body">
+                        <ul class="senvie-service-list">
+                            <li>Phòng riêng biệt lập, hạn chế tiếng ồn.</li>
+                            <li>Có thể chọn món trước để bếp chuẩn bị nhanh hơn.</li>
+                            <li>Lễ tân liên hệ nếu khách có yêu cầu trang trí.</li>
+                            <li>Cọc được xử lý theo chính sách hủy/hoàn cọc.</li>
+                        </ul>
+
+                        <div class="senvie-service-note">
+                            Phù hợp sinh nhật, kỷ niệm, tiếp khách hoặc bữa ăn gia đình riêng tư.
+                        </div>
+
+                        <a href="#contact" onclick="selectBookingService('Bàn VIP')" class="senvie-service-btn">
+                            Chọn bàn VIP
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="senvie-service-card">
+                    <div class="senvie-service-head omakase">
+                        <span class="senvie-service-label">Trải nghiệm</span>
+                        <h3>Omakase Chay</h3>
+                        <div class="senvie-service-price">Cọc 50% theo gói</div>
+                        <p class="senvie-service-desc">
+                            Trải nghiệm Chef's Table chay, thực đơn được bếp trưởng thiết kế theo mùa và khẩu vị của khách.
+                        </p>
+                    </div>
+
+                    <div class="senvie-service-body">
+                        <ul class="senvie-service-list">
+                            <li>Gói Tĩnh Tại, Tinh Hoa hoặc Nghệ Nhân.</li>
+                            <li>Không áp dụng chọn món lẻ trước từ menu thường.</li>
+                            <li>Khách nên ghi rõ dị ứng hoặc khẩu vị cần tránh.</li>
+                            <li>Khuyến nghị đặt trước để nhà hàng chuẩn bị nguyên liệu.</li>
+                        </ul>
+
+                        <div class="senvie-service-note">
+                            Phù hợp khách muốn trải nghiệm ẩm thực chay fine dining theo phong cách riêng.
+                        </div>
+
+                        <a href="#contact" onclick="selectBookingService('Omakase Chay')" class="senvie-service-btn">
+                            Chọn Omakase
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function selectBookingService(serviceValue) {
+        // Hỗ trợ cả form V1 (txtBookingType) và form V2 (bookingTypeSelect)
+        var selectElement = document.getElementById('bookingTypeSelect') || document.getElementById('txtBookingType');
+
+        if (selectElement) {
+            // Gán giá trị loại bàn
+            selectElement.value = serviceValue;
+
+            // Để bảng chọn Sinh nhật/Kỷ niệm của form VIP tự động mở ra
+            selectElement.dispatchEvent(new Event('change'));
+        } else {
+            console.warn("Không tìm thấy ô chọn Loại Bàn ở dưới Form!");
+        }
+    }
+</script>
+
+<!--blog-->
+<div id="blog" class="section wb" style="padding-bottom: 50px;">
+    <div class="container-fluid">
+        <div class="section-title text-center">
+            <h3>Tin Tức & Cẩm Nang</h3>
+            <p>Cập nhật những thông tin mới nhất về ẩm thực chay, cẩm nang sức khỏe và các sự kiện văn hóa tại SenVie.</p>
+        </div><div class="row">
+        <div class="col-md-4 col-sm-6 col-xs-12">
+            <div class="blog-box">
+                <div class="post-media">
+                    <img src="~/uploads/blog_01.jpg" alt="Thực đơn Vu Lan" class="img-fluid rounded" style="height: 280px; width: 100%; object-fit: cover;">
+                    <div class="blog-meta">
+                        <span class="date" style="background-color: #7DBA4E; color: white; padding: 5px 10px; font-weight: bold;">15 Thg 8</span>
+                    </div>
+                </div>
+                <div class="blog-content mt-3">
+                    <h4 style="font-size: 1.2rem; font-weight: bold; margin-bottom: 10px;">
+                        <a href="#" class="text-dark">Ra Mắt Thực Đơn Chay Mùa Vu Lan</a>
+                    </h4>
+                    <p>Nhân dịp Đại lễ Vu Lan báo hiếu, SenVie tự hào giới thiệu thực đơn đặc biệt với hơn 20 món chay truyền thống, mang đậm hương vị gia đình và trọn vẹn ý nghĩa an lành...</p>
+                    <div class="post-meta mt-2" style="border-top: 1px solid #eee; padding-top: 10px; font-size: 0.9rem; color: #888;">
+                        <ul class="list-inline mb-0">
+                            <li class="list-inline-item">Bởi <span style="color: #7DBA4E; font-weight: bold;">Admin</span></li>
+                            <li class="list-inline-item">| 15 Bình luận</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-sm-6 col-xs-12">
+            <div class="blog-box">
+                <div class="post-media">
+                    <img src="~/uploads/blog_02.jpg" alt="Chế độ ăn Eat Clean" class="img-fluid rounded" style="height: 280px; width: 100%; object-fit: cover;">
+                    <div class="blog-meta">
+                        <span class="date" style="background-color: #7DBA4E; color: white; padding: 5px 10px; font-weight: bold;">02 Thg 8</span>
+                    </div>
+                </div>
+                <div class="blog-content mt-3">
+                    <h4 style="font-size: 1.2rem; font-weight: bold; margin-bottom: 10px;">
+                        <a href="#" class="text-dark">Xu Hướng Eat-Clean Thuần Thực Vật</a>
+                    </h4>
+                    <p>Bạn muốn ăn chay nhưng sợ thiếu chất? Hãy cùng chuyên gia dinh dưỡng của chúng tôi tìm hiểu cách xây dựng thực đơn Eat-Clean thuần thực vật giúp giữ dáng, đẹp da và tràn đầy năng lượng...</p>
+                    <div class="post-meta mt-2" style="border-top: 1px solid #eee; padding-top: 10px; font-size: 0.9rem; color: #888;">
+                        <ul class="list-inline mb-0">
+                            <li class="list-inline-item">Bởi <span style="color: #7DBA4E; font-weight: bold;">Admin</span></li>
+                            <li class="list-inline-item">| 32 Bình luận</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-sm-6 col-xs-12">
+            <div class="blog-box">
+                <div class="post-media">
+                    <img src="~/uploads/blog_03.jpg" alt="Workshop Trà Đạo" class="img-fluid rounded" style="height: 280px; width: 100%; object-fit: cover;">
+                    <div class="blog-meta">
+                        <span class="date" style="background-color: #7DBA4E; color: white; padding: 5px 10px; font-weight: bold;">28 Thg 7</span>
+                    </div>
+                </div>
+                <div class="blog-content mt-3">
+                    <h4 style="font-size: 1.2rem; font-weight: bold; margin-bottom: 10px;">
+                        <a href="#" class="text-dark">Sự Kiện: Nghệ Thuật Trà Đạo Tâm Giao</a>
+                    </h4>
+                    <p>Cuối tuần này, kính mời quý thực khách đến với không gian thiền tịnh của SenVie để cùng thưởng thức những chén trà ướp sen thanh tao và lắng nghe chia sẻ về nghệ thuật sống chậm...</p>
+                    <div class="post-meta mt-2" style="border-top: 1px solid #eee; padding-top: 10px; font-size: 0.9rem; color: #888;">
+                        <ul class="list-inline mb-0">
+                            <li class="list-inline-item">Bởi <span style="color: #7DBA4E; font-weight: bold;">Admin</span></li>
+                            <li class="list-inline-item">| 08 Bình luận</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+
+<!--form đặt bàn (ĐÃ NÂNG CẤP DYNAMIC FORM)-->
+<div id="contact" class="section db" style="padding: 40px 0; background-attachment: fixed;">
+    <div class="container">
+        <div class="section-title text-center" style="margin-bottom: 25px;">
+            <h2 style="color: #ffffff; font-size: 32px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-family: inherit;">
+                Đặt Bàn Trực Tuyến
+            </h2>
+            <p style="color: rgba(255, 255, 255, 0.9); font-size: 15px; font-style: italic; max-width: 700px; margin: 10px auto 0; font-family: inherit;">
+                "Hân hạnh được chuẩn bị không gian thanh tịnh cùng những món ăn chay bổ dưỡng cho hành trình ẩm thực của quý khách."
+            </p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="custom-booking-form" style="max-width: 850px; margin: 0 auto; background: rgba(255, 255, 255, 0.96); padding: 25px 35px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2);">
+                    <form id="realBookingForm" asp-controller="Home" asp-action="SubmitBooking" method="post">
+                        <div class="row">
+
+                            @if (TempData["SuccessMessage"] != null)
+                            {
+                                <div class="col-md-12 mb-2">
+                                    <div class="alert alert-success text-center font-weight-bold py-2 mb-2" style="border-radius: 5px; font-size: 14px;"><i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]</div>
+                                </div>
+                            }
+                            @if (TempData["ErrorMessage"] != null)
+                            {
+                                <div class="col-md-12 mb-2">
+                                    <div class="alert alert-danger text-center font-weight-bold py-2 mb-2" style="border-radius: 5px; font-size: 14px;"><i class="fas fa-exclamation-triangle"></i> @TempData["ErrorMessage"]</div>
+                                </div>
+                            }
+
+                            <!-- BƯỚC 1: CHỌN LOẠI BÀN -->
+                            <div class="col-md-12 mb-2">
+                                <div class="form-group mb-0">
+                                    <label class="font-weight-bold text-dark mb-1" style="font-size: 14px;"><i class="fas fa-utensils text-success mr-1"></i> Lựa chọn không gian:</label>
+                                    <select class="form-control custom-input" id="bookingTypeSelect" name="BookingType" required style="cursor: pointer; font-weight: 600;">
+                                        <option value="Bàn Tiêu Chuẩn">Bàn Tiêu Chuẩn (Không gian chung - Miễn phí)</option>
+                                        <option value="Bàn VIP">Bàn VIP (Phòng Riêng biệt lập - Có phí giữ chỗ)</option>
+                                        <option value="Omakase Chay">Omakase Chay (Trải nghiệm Chef's Table)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- MODULE: OPTION CHO BÀN VIP (ẨN/HIỆN ĐỘNG) -->
+                            <div class="col-md-12 mb-2" id="vipOptionsDiv" style="display: none;">
+                                <div class="form-group mb-0" style="background-color: #f1f8eb; padding: 12px; border-left: 4px solid #7DBA4E; border-radius: 5px;">
+                                    <label class="font-weight-bold text-success mb-1" style="font-size: 13px;"><i class="fas fa-gift mr-1"></i> Dịch vụ Custom Không Gian (Offline):</label>
+                                    <p class="mb-1" style="font-size: 12px; color: #555;">Lễ tân sẽ liên hệ trực tiếp để báo giá trang trí hoa tươi, nến, bóng bay theo yêu cầu riêng của quý khách.</p>
+                                </div>
+                            </div>
+
+                            <!-- MODULE: OPTION CHO OMAKASE (ẨN/HIỆN ĐỘNG) -->
+                            <div class="col-md-12 mb-2" id="omakaseOptionsDiv" style="display: none;">
+                                <div class="form-group mb-0" style="background-color: #fff3cd; padding: 12px; border-left: 4px solid #ffc107; border-radius: 5px;">
+                                    <label class="font-weight-bold text-dark mb-1" style="font-size: 13px;"><i class="fas fa-leaf text-warning mr-1"></i> Chọn phân hạng Omakase:</label>
+                                    <select id="omakaseTierSelect" name="OmakaseTier" class="form-control custom-input">
+                                        <option value="Tĩnh Tại" data-price="1500000">Gói "Tĩnh Tại" (7 món cơ bản) - 1.500.000đ / Khách</option>
+                                        <option value="Tinh Hoa" data-price="2500000">Gói "Tinh Hoa" (9 món & Trà) - 2.500.000đ / Khách</option>
+                                        <option value="Nghệ Nhân" data-price="4000000">Gói "Nghệ Nhân" (12 món thượng hạng) - 4.000.000đ / Khách</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- BƯỚC 2: THÔNG TIN KHÁCH HÀNG -->
+                            <div class="col-md-6 mb-2">
+                                <div class="form-group mb-0">
+                                    <label class="font-weight-bold text-dark mb-1" style="font-size: 14px;">Họ và tên *</label>
+                                    <input type="text" class="form-control custom-input" name="CustomerName" value="@ViewBag.CustomerName" placeholder="Nhập tên..." required @(string.IsNullOrEmpty(ViewBag.CustomerName) ? "" : "readonly") style="@(string.IsNullOrEmpty(ViewBag.CustomerName) ? "" : "background-color: #e9ecef !important; cursor: not-allowed;")">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <div class="form-group mb-0">
+                                    <label class="font-weight-bold text-dark mb-1" style="font-size: 14px;">Số điện thoại *</label>
+                                    <input type="text" class="form-control custom-input" name="PhoneNumber" placeholder="Nhập số điện thoại..." required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-2">
+                                <div class="form-group mb-0">
+                                    <label class="font-weight-bold text-dark mb-1" style="font-size: 14px;">Địa chỉ Email *</label>
+                                    <input type="email" class="form-control custom-input" name="Email" value="@ViewBag.CustomerEmail" placeholder="ví_dụ@gmail.com..." required @(string.IsNullOrEmpty(ViewBag.CustomerEmail) ? "" : "readonly") style="@(string.IsNullOrEmpty(ViewBag.CustomerEmail) ? "" : "background-color: #e9ecef !important; cursor: not-allowed;")">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-2">
+                                <div class="form-group mb-0">
+                                    <label class="font-weight-bold text-dark mb-1" style="font-size: 14px;">Số lượng khách *</label>
+                                    <input type="number" class="form-control custom-input" name="NumberOfGuests" id="numberOfGuestsInput" placeholder="Nhập số người..." min="1" value="1" required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12 mb-2">
+                                <div class="form-group mb-0">
+                                    <label class="font-weight-bold text-dark mb-1" style="font-size: 14px;">
+                                        <i class="far fa-calendar-alt text-success mr-1"></i> Thời gian đến nhà hàng *
+                                    </label>
+                                    <div style="font-size: 13px; color: #333; font-style: italic; margin-bottom: 8px;">
+                                        <span style="color: #17a2b8;">✦</span> Quý khách vui lòng đặt trước tối thiểu 1 tiếng.
+                                    </div>
+                                    <input type="datetime-local" name="BookingDate" id="bookingDateInput" class="form-control custom-input" required />
+                                </div>
+                            </div>
+
+                            <!-- MODULE: GHI CHÚ (THAY ĐỔI LABEL THEO LOẠI BÀN) -->
+                            <div class="col-md-12 mb-3">
+                                <div class="form-group mb-0">
+                                    <label class="font-weight-bold text-dark mb-1" style="font-size: 14px;" id="specialRequestLabel">
+                                        <i class="far fa-comment-dots text-success mr-1"></i> Yêu cầu đặc biệt (Nếu có):
+                                    </label>
+                                    <textarea class="form-control custom-input" name="SpecialRequest" id="specialRequestInput" placeholder="Ví dụ: Không hành tỏi, thích ngồi gần cửa sổ..." rows="2" style="padding-top: 8px;"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- MODULE: HIỂN THỊ TIỀN CỌC -->
+                            <div class="col-md-12 mb-3" id="depositInfoDiv" style="display: none;">
+                                <div class="alert text-center mb-0" style="background-color: #fff; border: 2px dashed #d9534f; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);">
+                                    <h6 class="mb-1 text-danger font-weight-bold"><i class="fas fa-lock"></i> Yêu Cầu Đặt Cọc</h6>
+                                    <h3 class="font-weight-bold text-danger mb-1" id="depositAmountText">0 VNĐ</h3>
+                                    <p class="mb-0 text-muted" id="depositDescription" style="font-size: 13px;"></p>
+                                </div>
+                            </div>
+
+                            <!-- MODULE: MÓN CHỌN TRƯỚC TỪ TRANG MENU -->
+                            <div class="col-md-12 mb-3" id="preOrderSummaryDiv" style="display: none;">
+                                <div class="alert mb-0" style="background-color: #f8fff4; border: 1px solid #d8edce; border-left: 4px solid #7DBA4E; border-radius: 10px;">
+                                    <h6 class="mb-2 text-success font-weight-bold">Món bạn đã chọn trước</h6>
+                                    <div id="preOrderSummaryItems" style="font-size: 13px; color: #333;"></div>
+                                    <div class="d-flex justify-content-between align-items-center mt-2 pt-2" style="border-top: 1px dashed #c9dfbd;">
+                                        <small class="text-muted">Tổng tiền món chỉ là tạm tính, thanh toán tại nhà hàng.</small>
+                                        <strong id="preOrderSummaryTotal" class="text-success">0đ</strong>
+                                    </div>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger mt-2"
+                                            onclick="clearPreOrderFromBookingForm()">
+                                        Xóa món đã chọn
+                                    </button>
+                                </div>
+                            </div>
+
+                            <input type="hidden" name="preOrderJson" id="preOrderJson" value="" />
+
+                            <!-- Input ẩn để gửi Số tiền cọc về Backend C# lưu vào Database -->
+                            <input type="hidden" name="DepositAmount" id="hiddenDepositAmount" value="0" />
+
+                            <div class="col-md-12 text-center mt-2">
+                                <button type="submit" class="btn hvr-radial-in" style="background-color: #7DBA4E; color: white; padding: 10px 40px; font-weight: bold; font-size: 15px; text-transform: uppercase; border-radius: 30px; border: none; transition: all 0.3s;">
+                                    Xác Nhận Đặt Bàn
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+    /* Featured menu cards - safe local CSS for Home/Index */
+    .senvie-featured-menu-row {
+        margin-top: 18px;
+    }
+
+    .senvie-featured-dish-card {
+        height: 100%;
+        background: #ffffff;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+        border: 1px solid #edf1ea;
+        transition: 0.2s ease;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .senvie-featured-dish-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.09);
+        }
+
+    .senvie-featured-dish-image {
+        width: 100%;
+        height: 210px;
+        background: #f5f7f3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        padding: 12px;
+    }
+
+        .senvie-featured-dish-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            border-radius: 10px;
+            display: block;
+        }
+
+    .senvie-featured-dish-body {
+        padding: 18px 18px 20px;
+        text-align: center;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+        .senvie-featured-dish-body h3 {
+            color: #1f2f1f;
+            font-size: 17px;
+            font-weight: 900;
+            margin: 0 0 8px;
+            line-height: 1.35;
+            min-height: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .senvie-featured-dish-body p {
+            color: #7a8278;
+            font-size: 13px;
+            line-height: 1.5;
+            margin: 0 0 14px;
+            min-height: 40px;
+        }
+
+    .senvie-dish-price {
+        margin-top: auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 92px;
+        height: 36px;
+        padding: 0 14px;
+        border-radius: 999px;
+        background: #edf7e8;
+        color: #4d8b2f;
+        font-size: 14px;
+        font-weight: 900;
+        border: 1px solid #d9edce;
+    }
+
+    .senvie-view-menu-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 230px;
+        height: 48px;
+        border-radius: 999px;
+        background: #1f3b20;
+        color: #ffffff !important;
+        font-weight: 900;
+        text-decoration: none !important;
+        box-shadow: 0 8px 20px rgba(31, 59, 32, 0.18);
+        transition: 0.2s ease;
+    }
+
+        .senvie-view-menu-btn:hover {
+            background: #7DBA4E;
+            color: #ffffff !important;
+            transform: translateY(-2px);
+        }
+
+    @@media (max-width: 768px) {
+        .senvie-featured-dish-image {
+            height: 190px;
+        }
+
+        .senvie-featured-dish-body h3 {
+            min-height: auto;
+        }
+    }
+</style>
+
+<!-- =========================================================
+     JAVASCRIPT: BỘ NÃO CỦA FORM ĐỘNG
+     ========================================================= -->
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+
+            var preOrderStorageKey = "senvie_preorder_items";
+
+            function loadPreOrderCart() {
+                try {
+                    return JSON.parse(localStorage.getItem(preOrderStorageKey) || "[]");
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            function savePreOrderCart(cart) {
+                localStorage.setItem(preOrderStorageKey, JSON.stringify(cart || []));
+            }
+
+            function formatPreOrderMoney(value) {
+                return (value || 0).toLocaleString('vi-VN') + 'đ';
+            }
+
+            function updatePreOrderSummary(bookingType) {
+                var cart = loadPreOrderCart();
+                var summaryBox = $('#preOrderSummaryDiv');
+                var summaryItems = $('#preOrderSummaryItems');
+                var summaryTotal = $('#preOrderSummaryTotal');
+                var hiddenInput = $('#preOrderJson');
+
+                summaryItems.empty();
+
+                if (bookingType === 'Omakase Chay') {
+                    hiddenInput.val('');
+
+                    if (cart.length > 0) {
+                        summaryBox.show();
+                        summaryItems.html('<div class="text-warning font-weight-bold">Omakase Chay là trải nghiệm do bếp trưởng thiết kế nên không áp dụng chọn món lẻ. Các món đã chọn trước sẽ không được gửi kèm đơn này.</div>');
+                        summaryTotal.text('0đ');
+                    } else {
+                        summaryBox.hide();
+                    }
+
+                    return;
+                }
+
+                if (!cart.length) {
+                    hiddenInput.val('');
+                    summaryBox.hide();
+                    return;
+                }
+
+                var total = 0;
+                var submitItems = [];
+
+                cart.forEach(function (item) {
+                    var quantity = parseInt(item.quantity) || 1;
+                    var price = parseFloat(item.price) || 0;
+                    total += quantity * price;
+
+                    submitItems.push({
+                        dishId: item.dishId,
+                        quantity: quantity
+                    });
+
+                    $('<div></div>')
+                        .addClass('d-flex justify-content-between mb-1')
+                        .html('<span>' + item.name + ' x ' + quantity + '</span><strong>' + formatPreOrderMoney(quantity * price) + '</strong>')
+                        .appendTo(summaryItems);
+                });
+
+                hiddenInput.val(JSON.stringify(submitItems));
+                summaryTotal.text(formatPreOrderMoney(total));
+                summaryBox.show();
+            }
+
+            window.clearPreOrderFromBookingForm = function () {
+                if (!confirm('Xóa toàn bộ món đã chọn trước?')) {
+                    return;
+                }
+
+                savePreOrderCart([]);
+                updatePreOrderSummary($('#bookingTypeSelect').val());
+            };
+
+
+            // Hàm tính toán và cập nhật giao diện
+            function updateDynamicForm() {
+                var bookingType = $('#bookingTypeSelect').val();
+                var guests = parseInt($('#numberOfGuestsInput').val()) || 1;
+
+                if (bookingType === 'Bàn Tiêu Chuẩn') {
+                    // 1. Chế độ Tiêu Chuẩn: Ẩn hết, không thu tiền cọc
+                    $('#vipOptionsDiv').slideUp();
+                    $('#omakaseOptionsDiv').slideUp();
+                    $('#depositInfoDiv').slideUp();
+
+                    $('#hiddenDepositAmount').val(0);
+
+                    // Trả Label ghi chú về mặc định
+                    $('#specialRequestLabel').html('<i class="far fa-comment-dots text-success mr-1"></i> Yêu cầu đặc biệt (Nếu có):');
+                    $('#specialRequestInput').attr('placeholder', 'Ví dụ: Không hành tỏi, thích ngồi gần cửa sổ...');
+
+                } else if (bookingType === 'Bàn VIP') {
+                    // 2. Chế độ VIP: Hiện thông báo Custom, Tính cọc cứng 1 triệu
+                    $('#vipOptionsDiv').slideDown();
+                    $('#omakaseOptionsDiv').slideUp();
+                    $('#depositInfoDiv').slideDown();
+
+                    var vipDeposit = 1000000;
+                    $('#hiddenDepositAmount').val(vipDeposit);
+                    $('#depositAmountText').text(vipDeposit.toLocaleString('vi-VN') + ' VNĐ');
+                    $('#depositDescription').text('Phí giữ phòng VIP biệt lập & Cam kết không gian.');
+
+                    // Nhắc khách nhập yêu cầu Custom
+                    $('#specialRequestLabel').html('<i class="fas fa-gift text-danger mr-1"></i> Ghi chú Trang trí / Custom (Nếu có):');
+                    $('#specialRequestInput').attr('placeholder', 'Ví dụ: Setup hoa hồng, nến, bóng bay sinh nhật...');
+
+                } else if (bookingType === 'Omakase Chay') {
+                    // 3. Chế độ Omakase: Hiện bảng chọn Gói, Tính cọc 50% theo đầu người
+                    $('#vipOptionsDiv').slideUp();
+                    $('#omakaseOptionsDiv').slideDown();
+                    $('#depositInfoDiv').slideDown();
+
+                    // Lấy giá tiền của Gói Omakase đang được chọn
+                    var tierPrice = parseInt($('#omakaseTierSelect').find(':selected').data('price'));
+                    // Thu cọc 50% = (Giá gói * Số người) / 2
+                    var omakaseDeposit = (tierPrice * guests) * 0.5;
+
+                    $('#hiddenDepositAmount').val(omakaseDeposit);
+                    $('#depositAmountText').text(omakaseDeposit.toLocaleString('vi-VN') + ' VNĐ');
+                    $('#depositDescription').text('Cọc 50% trải nghiệm Omakase cho ' + guests + ' khách.');
+
+                    // Omakase đặc biệt quan tâm đến Dị ứng
+                    $('#specialRequestLabel').html('<i class="fas fa-exclamation-triangle text-warning mr-1"></i> Ghi chú Dị ứng thực phẩm (Bắt buộc):');
+                    $('#specialRequestInput').attr('placeholder', 'Ví dụ: Dị ứng đậu phộng, không ăn cay, dị ứng gluten...');
+                }
+
+                updatePreOrderSummary(bookingType);
+            }
+
+            // Lắng nghe sự kiện: Bất cứ khi nào Khách đổi Loại bàn, Số người, hoặc Gói Omakase -> Chạy lại hàm tính toán
+            $('#bookingTypeSelect, #numberOfGuestsInput, #omakaseTierSelect').on('change keyup', function() {
+                updateDynamicForm();
+            });
+
+            // Chạy lần đầu tiên khi trang vừa load xong
+            updateDynamicForm();
+        });
+    </script>
+}
+
+<style>
+    .custom-input {
+        height: 38px !important;
+        border-radius: 5px !important;
+        border: 1px solid #ced4da !important;
+        padding-left: 12px;
+        font-size: 14px;
+        color: #333;
+        font-family: inherit !important;
+        transition: all 0.3s ease-in-out !important;
+        background-color: #fff !important;
+    }
+
+        .custom-input:focus {
+            border-color: #7DBA4E !important;
+            box-shadow: 0 0 6px rgba(125, 186, 78, 0.25) !important;
+        }
+
+    textarea.custom-input {
+        height: auto !important;
+    }
+</style>

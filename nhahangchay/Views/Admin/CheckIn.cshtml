@@ -1,0 +1,264 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <title>Trạm Quét QR - SenVie Admin</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="~/css/admin-custom.css" asp-append-version="true" />
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+</head>
+<body class="senvie-admin-page admin-checkin-page">
+
+    <nav class="admin-navbar">
+        <a class="admin-brand" href="/Admin">
+            <span class="admin-brand-icon"><i class="fas fa-arrow-left"></i></span>
+            <span>Quay lại Admin</span>
+        </a>
+
+        <div class="admin-nav-actions">
+            <span class="admin-hello">Trạm QR Check-in</span>
+            <a href="/" class="admin-site-btn">Xem Website</a>
+        </div>
+    </nav>
+
+    <main class="admin-checkin-shell">
+        <div class="admin-checkin-heading">
+            <p class="admin-eyebrow">SenVie Restaurant</p>
+            <h1><i class="fas fa-qrcode"></i> Check-in đặt bàn</h1>
+            <p>Quét mã QR từ email xác nhận hoặc nhập mã đặt bàn thủ công.</p>
+        </div>
+
+        <div class="admin-checkin-alerts">
+            @if (TempData["Success"] != null)
+            {
+                <div class="admin-checkin-alert success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>@TempData["Success"]</span>
+                </div>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="admin-checkin-alert error">
+                    <i class="fas fa-times-circle"></i>
+                    <span>@TempData["Error"]</span>
+                </div>
+            }
+
+            @if (TempData["Warning"] != null)
+            {
+                <div class="admin-checkin-alert warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>@TempData["Warning"]</span>
+                </div>
+            }
+        </div>
+
+        <div class="admin-checkin-grid">
+            <section class="admin-checkin-card scanner-card">
+                <div class="admin-checkin-card-header green">
+                    <div>
+                        <strong>Quét bằng camera</strong>
+                        <span>Đưa mã QR vào giữa khung quét</span>
+                    </div>
+                    <i class="fas fa-camera"></i>
+                </div>
+
+                <div class="admin-checkin-card-body">
+                    <div class="admin-reader-wrap">
+                        <div id="reader"></div>
+                    </div>
+
+                    <div id="scanner-status" class="admin-scanner-status info">
+                        Đang khởi động camera...
+                    </div>
+                </div>
+            </section>
+
+            <section class="admin-checkin-card manual-card">
+                <div class="admin-checkin-card-header dark">
+                    <div>
+                        <strong>Nhập mã thủ công</strong>
+                        <span>Dùng khi QR khó quét hoặc camera lỗi</span>
+                    </div>
+                    <i class="fas fa-keyboard"></i>
+                </div>
+
+                <div class="admin-checkin-card-body manual-body">
+                    <form id="checkInForm" asp-controller="Admin" asp-action="ProcessCheckIn" method="post">
+                        <label class="admin-checkin-label">
+                            Mã đặt bàn
+                            <small>Ví dụ: GS-PQYSTK</small>
+                        </label>
+
+                        <input type="text"
+                               id="bookingCodeInput"
+                               name="bookingCode"
+                               class="admin-checkin-input"
+                               placeholder="NHẬP MÃ VÀO ĐÂY"
+                               autocomplete="off"
+                               required />
+
+                        <button type="submit" class="admin-checkin-submit">
+                            <i class="fas fa-check-circle"></i>
+                            Xác nhận check-in
+                        </button>
+                    </form>
+
+                    <div class="admin-checkin-tips">
+                        <h3>Lưu ý nhanh</h3>
+                        <ul>
+                            <li>Mã hợp lệ thường bắt đầu bằng <strong>GS-</strong>.</li>
+                            <li>Khách đã check-in sẽ được hệ thống cảnh báo.</li>
+                            <li>Nếu camera không bật, hãy kiểm tra quyền camera của trình duyệt.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var readerId = "reader";
+        var statusBox = document.getElementById("scanner-status");
+        var bookingCodeInput = document.getElementById("bookingCodeInput");
+        var checkInForm = document.getElementById("checkInForm");
+
+        var qrScanner = null;
+        var isProcessing = false;
+
+        function setScannerStatus(message, type) {
+            if (!statusBox) return;
+
+            var alertClass = "alert-info";
+
+            if (type === "success") alertClass = "alert-success";
+            if (type === "error") alertClass = "alert-danger";
+            if (type === "warning") alertClass = "alert-warning";
+
+            statusBox.className = "alert " + alertClass + " mt-3 mb-0 py-2 small";
+            statusBox.innerText = message;
+        }
+
+        function extractBookingCode(rawText) {
+            var value = (rawText || "").trim();
+
+            if (!value) return "";
+
+            // Trường hợp QR là URL, ví dụ:
+            // https://yourdomain.com/Admin/ProcessCheckIn?bookingCode=GS-ABC123
+            // hoặc https://yourdomain.com/checkin/GS-ABC123
+            try {
+                var url = new URL(value);
+
+                value =
+                    url.searchParams.get("bookingCode") ||
+                    url.searchParams.get("code") ||
+                    url.pathname.split("/").filter(Boolean).pop() ||
+                    value;
+            } catch (e) {
+                // Không phải URL thì giữ nguyên text QR
+            }
+
+            // Lấy đúng mã dạng GS-XXXX nếu QR chứa thêm chữ khác
+            var match = value.match(/GS-[A-Z0-9]+/i);
+
+            if (match) {
+                value = match[0];
+            }
+
+            return value.trim().toUpperCase();
+        }
+
+        function onScanSuccess(decodedText) {
+            if (isProcessing) return;
+
+            var bookingCode = extractBookingCode(decodedText);
+
+            if (!bookingCode) {
+                setScannerStatus("QR không chứa mã đặt bàn hợp lệ.", "warning");
+                return;
+            }
+
+            isProcessing = true;
+
+            bookingCodeInput.value = bookingCode;
+            setScannerStatus("Đã quét được mã " + bookingCode + ". Đang xử lý check-in...", "success");
+
+            if (qrScanner) {
+                qrScanner.stop()
+                    .then(function () {
+                        checkInForm.submit();
+                    })
+                    .catch(function () {
+                        checkInForm.submit();
+                    });
+            } else {
+                checkInForm.submit();
+            }
+        }
+
+        function onScanFailure(error) {
+            // Không cần hiện lỗi liên tục vì camera sẽ báo rất nhiều lần khi chưa thấy QR
+        }
+
+        function startScanner() {
+            if (typeof Html5Qrcode === "undefined") {
+                setScannerStatus("Không tải được thư viện quét QR. Kiểm tra kết nối mạng hoặc CDN html5-qrcode.", "error");
+                return;
+            }
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                setScannerStatus("Trình duyệt không cho phép dùng camera. Hãy mở bằng HTTPS hoặc localhost.", "error");
+                return;
+            }
+
+            qrScanner = new Html5Qrcode(readerId);
+
+            Html5Qrcode.getCameras()
+                .then(function (devices) {
+                    if (!devices || devices.length === 0) {
+                        setScannerStatus("Không tìm thấy camera trên thiết bị.", "error");
+                        return;
+                    }
+
+                    var backCamera = devices.find(function (device) {
+                        return /back|rear|environment/i.test(device.label);
+                    });
+
+                    var cameraId = backCamera ? backCamera.id : devices[0].id;
+
+                    return qrScanner.start(
+                        cameraId,
+                        {
+                            fps: 10,
+                            qrbox: {
+                                width: 250,
+                                height: 250
+                            },
+                            aspectRatio: 1.0
+                        },
+                        onScanSuccess,
+                        onScanFailure
+                    );
+                })
+                .then(function () {
+                    setScannerStatus("Camera đã sẵn sàng. Đưa mã QR vào khung quét.", "success");
+                })
+                .catch(function (err) {
+                    console.warn("Lỗi camera:", err);
+                    setScannerStatus("Không mở được camera. Hãy cấp quyền camera, đóng app đang dùng camera, hoặc mở web bằng HTTPS/localhost.", "error");
+                });
+        }
+
+        startScanner();
+    });
+</script>
+</body>
+</html>

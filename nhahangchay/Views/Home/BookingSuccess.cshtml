@@ -1,0 +1,407 @@
+﻿@model nhahangchay.Models.Booking
+@using System.Security.Claims
+@using nhahangchay.Models
+
+@{
+    var bookingCode = Model.BookingCode ?? "";
+    var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+    var canCancelBooking =
+        User.Identity?.IsAuthenticated == true
+        && Model.Status == 0
+        && !string.IsNullOrEmpty(Model.AppUserId)
+        && Model.AppUserId == currentUserId;
+
+    var preOrderDetails = Model.BookingDetails?.ToList() ?? new List<BookingDetail>();
+    var preOrderTotal = preOrderDetails.Sum(x => x.LineTotal);
+
+    ViewData["Title"] =
+        Model.Status == 2
+            ? "Đơn Đã Hủy"
+            : Model.DepositAmount > 0 && Model.PaymentStatus == 0
+                ? "Thanh Toán Đặt Cọc"
+                : "Đặt Bàn Thành Công";
+}
+
+<div id="booking-status-page" class="section wb" style="padding: 150px 0 100px 0; min-height: 80vh; background-color: #f4f7f6;">
+    <div class="container text-center">
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success font-weight-bold text-center mb-4" style="max-width: 650px; margin: 0 auto;">
+                <i class="fas fa-check-circle"></i>
+                @TempData["SuccessMessage"]
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger font-weight-bold text-center mb-4" style="max-width: 650px; margin: 0 auto;">
+                <i class="fas fa-exclamation-triangle"></i>
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["MailError"] != null)
+        {
+            <div class="alert alert-danger font-weight-bold text-center mb-4" style="max-width: 650px; margin: 0 auto;">
+                <i class="fas fa-exclamation-triangle"></i>
+                CẢNH BÁO TỪ HỆ THỐNG:<br />
+                @TempData["MailError"]
+            </div>
+        }
+
+        @if (Model.Status == 2)
+        {
+            <div class="success-box" style="background: white; padding: 50px 40px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.08); max-width: 650px; margin: 0 auto; border-top: 10px solid #dc3545;">
+
+                <i class="fa fa-times-circle" style="font-size: 80px; color: #dc3545; margin-bottom: 20px;"></i>
+
+                <h2 style="font-weight: bold; color: #333; font-size: 2.2rem;">
+                    Đơn đặt bàn đã bị hủy
+                </h2>
+
+                <p style="font-size: 1.1rem; color: #666; margin-bottom: 25px;">
+                    Mã đơn <strong style="color: #dc3545;">@bookingCode</strong> hiện không còn hiệu lực.
+                </p>
+
+                <div style="background: #fff5f5; border: 1px dashed #dc3545; border-radius: 15px; padding: 20px; margin-bottom: 25px;">
+                    <p style="margin-bottom: 8px; color: #333;">
+                        <strong>Loại bàn:</strong> @Model.BookingType
+                    </p>
+
+                    <p style="margin-bottom: 8px; color: #333;">
+                        <strong>Thời gian đặt:</strong> @Model.BookingDate.ToString("dd/MM/yyyy HH:mm")
+                    </p>
+
+                    <p style="margin-bottom: 0; color: #333;">
+                        <strong>Tiền cọc:</strong> @Model.DepositAmount.ToString("N0")đ
+                    </p>
+                </div>
+
+                @if (Model.DepositAmount > 0 && Model.PaymentStatus == 1)
+                {
+                    <div class="alert alert-warning font-weight-bold text-left" style="border-radius: 12px;">
+                        <i class="fas fa-info-circle"></i>
+                        Đơn này đã thanh toán cọc @Model.DepositAmount.ToString("N0")đ.
+                        Nhà hàng sẽ liên hệ để xử lý hoàn cọc hoặc chuyển cọc sang đơn đặt bàn khác.
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-light border font-weight-bold" style="border-radius: 12px;">
+                        Đơn này chưa thanh toán cọc nên không phát sinh xử lý hoàn tiền.
+                    </div>
+                }
+
+                <a href="/" class="hvr-radial-in" style="background-color: #7DBA4E; color: white; padding: 15px 40px; font-size: 1.1rem; border-radius: 50px; text-decoration: none; display: inline-block; font-weight: bold;">
+                    Trở Về Trang Chủ
+                </a>
+            </div>
+        }
+        else if (Model.DepositAmount > 0 && Model.PaymentStatus == 0)
+        {
+            <div class="momo-checkout-box" style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.08); max-width: 550px; margin: 0 auto; border-top: 10px solid #a50064;">
+
+                <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png"
+                     alt="MoMo Logo"
+                     style="height: 60px; margin-bottom: 20px;" />
+
+                <h3 style="font-weight: bold; color: #333; margin-bottom: 5px;">
+                    Thanh Toán Tiền Cọc
+                </h3>
+
+                <p style="color: #666; font-size: 14px;">
+                    Mã đơn:
+                    <strong style="color: #a50064;">@bookingCode</strong>
+                </p>
+
+                <div style="background: #fdf5f9; border-radius: 15px; padding: 25px; margin: 20px 0;">
+                    <p style="color: #555; margin-bottom: 5px; font-weight: 500;">
+                        Số tiền cần thanh toán:
+                    </p>
+
+                    <h1 style="color: #a50064; font-weight: 900; margin: 0; font-size: 38px;">
+                        @Model.DepositAmount.ToString("N0") VNĐ
+                    </h1>
+                </div>
+
+                <div style="background: #fff8fc; border: 1px dashed #a50064; border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+                    <p style="margin-bottom: 6px; color: #333;">
+                        <strong>Loại bàn:</strong> @Model.BookingType
+                    </p>
+
+                    @if (Model.BookingType == "Omakase Chay" && !string.IsNullOrWhiteSpace(Model.OmakaseTier))
+                    {
+                        <p style="margin-bottom: 6px; color: #333;">
+                            <strong>Gói Omakase:</strong> @Model.OmakaseTier
+                        </p>
+                    }
+
+                    <p style="margin-bottom: 6px; color: #333;">
+                        <strong>Số khách:</strong> @Model.NumberOfGuests
+                    </p>
+
+                    <p style="margin-bottom: 0; color: #333;">
+                        <strong>Thời gian đến:</strong> @Model.BookingDate.ToString("dd/MM/yyyy HH:mm")
+                    </p>
+                </div>
+
+
+                @if (preOrderDetails.Any())
+                {
+                    <div style="background: #f8fff4; border: 1px solid #d8edce; border-left: 5px solid #7DBA4E; border-radius: 14px; padding: 16px; margin-bottom: 22px; text-align: left;">
+                        <h5 style="font-weight: 900; color: #2f6b1f; margin-bottom: 12px;">
+                            Món đã chọn trước
+                        </h5>
+
+                        @foreach (var detail in preOrderDetails)
+                        {
+                            <div style="display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px dashed #dbead2; font-size: 14px;">
+                                <span>@detail.DishName x @detail.Quantity</span>
+                                <strong>@detail.LineTotal.ToString("N0")đ</strong>
+                            </div>
+                        }
+
+                        <div style="display: flex; justify-content: space-between; margin-top: 12px; font-weight: 900; color: #1f3b20;">
+                            <span>Tổng tạm tính</span>
+                            <span>@preOrderTotal.ToString("N0")đ</span>
+                        </div>
+
+                        <p style="margin: 10px 0 0; color: #777; font-size: 13px;">
+                            Tổng tiền món chỉ là tạm tính, thanh toán trực tiếp tại nhà hàng.
+                        </p>
+                    </div>
+                }
+
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=MOMO-PAYMENT-DEMO-@Uri.EscapeDataString(bookingCode)"
+                     alt="Momo QR"
+                     style="border: 2px solid #a50064; border-radius: 10px; padding: 5px; margin-bottom: 20px;" />
+
+                <p style="font-size: 13px; color: #888; font-style: italic; margin-bottom: 25px;">
+                    * Mở ứng dụng MoMo để quét mã QR trên.<br />
+                    Đây là môi trường giả lập cho đồ án.
+                </p>
+
+                <form asp-controller="Home" asp-action="DemoMoMoPayment" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" name="code" value="@bookingCode" />
+                    <div class="text-left mb-3"
+                         style="background: #fff8e1; border-left: 5px solid #ffc107; border-radius: 12px; padding: 16px; font-size: 14px; color: #333;">
+                        <h6 style="font-weight: 800; color: #8a5a00; margin-bottom: 10px;">
+                            <i class="fas fa-info-circle"></i>
+                            Chính sách hủy và xử lý tiền cọc
+                        </h6>
+
+                        @if (Model.BookingType == "Omakase Chay")
+                        {
+                            <ul style="padding-left: 18px; margin-bottom: 8px;">
+                                <li>Hủy trước <strong>48 tiếng</strong>: hỗ trợ hoàn/chuyển <strong>100% tiền cọc</strong>.</li>
+                                <li>Hủy từ <strong>24 đến dưới 48 tiếng</strong>: hỗ trợ hoàn/chuyển <strong>50% tiền cọc</strong>.</li>
+                                <li>Hủy dưới <strong>24 tiếng</strong>: tiền cọc không được hoàn do nhà hàng đã chuẩn bị nguyên liệu và suất phục vụ riêng.</li>
+                            </ul>
+                        }
+                        else if (Model.BookingType == "Bàn VIP")
+                        {
+                            <ul style="padding-left: 18px; margin-bottom: 8px;">
+                                <li>Hủy trước <strong>24 tiếng</strong>: hỗ trợ hoàn/chuyển <strong>100% tiền cọc</strong>.</li>
+                                <li>Hủy dưới <strong>24 tiếng</strong>: tiền cọc không được hoàn do nhà hàng đã giữ phòng riêng và chuẩn bị dịch vụ.</li>
+                            </ul>
+                        }
+                        else
+                        {
+                            <ul style="padding-left: 18px; margin-bottom: 8px;">
+                                <li>Bàn tiêu chuẩn không yêu cầu cọc.</li>
+                                <li>Khách có thể hủy online nếu còn hơn <strong>1 tiếng</strong> trước giờ đến.</li>
+                            </ul>
+                        }
+
+                        <p style="margin-bottom: 0; color: #777; font-size: 13px;">
+                            Do đây là thanh toán mô phỏng cho đồ án, việc hoàn/chuyển cọc sẽ được nhà hàng liên hệ và xử lý thủ công.
+                        </p>
+                    </div>
+
+                    <div class="form-check text-left mb-3"
+                         style="background: #f8f9fa; border-radius: 10px; padding: 12px 12px 12px 36px;">
+                        <input class="form-check-input"
+                               type="checkbox"
+                               id="acceptCancellationPolicy"
+                               name="acceptCancellationPolicy"
+                               value="true"
+                               required />
+
+                        <label class="form-check-label font-weight-bold"
+                               for="acceptCancellationPolicy"
+                               style="font-size: 14px; color: #333;">
+                            Tôi đã đọc và đồng ý với chính sách hủy/hoàn cọc của SenVie.
+                        </label>
+                    </div>
+                    <button type="submit"
+                            style="background-color: #a50064; color: white; padding: 15px 30px; font-size: 16px; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 5px 15px rgba(165,0,100,0.3); transition: all 0.3s;">
+                        <i class="fas fa-check-circle"></i>
+                        Xác nhận đã thanh toán Demo
+                    </button>
+                </form>
+
+                @if (canCancelBooking)
+                {
+                    <form asp-controller="Home"
+                          asp-action="CancelMyBooking"
+                          method="post"
+                          class="mt-3"
+                          onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn @bookingCode không?');">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="code" value="@bookingCode" />
+
+                        <button type="submit"
+                                class="btn btn-outline-danger rounded-pill font-weight-bold px-4 py-2"
+                                style="width: 100%;">
+                            <i class="fas fa-ban"></i>
+                            Hủy đơn này
+                        </button>
+                    </form>
+                }
+
+                <div class="mt-4">
+                    <a href="/" style="color: #777; font-weight: 600; text-decoration: none;">
+                        <i class="fas fa-arrow-left"></i>
+                        Quay về trang chủ
+                    </a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="success-box" style="background: white; padding: 50px 40px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.08); max-width: 650px; margin: 0 auto; border-top: 10px solid #7DBA4E;">
+
+                <i class="fa fa-check-circle" style="font-size: 80px; color: #7DBA4E; margin-bottom: 20px;"></i>
+
+                @if (Model.DepositAmount > 0)
+                {
+                    <h2 style="font-weight: bold; color: #333; font-size: 2.2rem;">
+                        Thanh Toán Thành Công!
+                    </h2>
+                }
+                else
+                {
+                    <h2 style="font-weight: bold; color: #333; font-size: 2.5rem;">
+                        Đặt Bàn Thành Công!
+                    </h2>
+                }
+
+                <p style="font-size: 1.1rem; color: #666; margin-bottom: 30px;">
+                    Cảm ơn bạn đã lựa chọn SenVie. Dưới đây là mã nhận diện đơn hàng của bạn.
+                </p>
+
+                <div style="background: #f8fff4; border: 1px dashed #7DBA4E; border-radius: 15px; padding: 18px; margin-bottom: 25px; text-align: left;">
+                    <p style="margin-bottom: 8px; color: #333;">
+                        <strong>Khách hàng:</strong> @Model.CustomerName
+                    </p>
+
+                    <p style="margin-bottom: 8px; color: #333;">
+                        <strong>Loại bàn:</strong> @Model.BookingType
+                    </p>
+
+                    @if (Model.BookingType == "Omakase Chay" && !string.IsNullOrWhiteSpace(Model.OmakaseTier))
+                    {
+                        <p style="margin-bottom: 8px; color: #333;">
+                            <strong>Gói Omakase:</strong> @Model.OmakaseTier
+                        </p>
+                    }
+
+                    <p style="margin-bottom: 8px; color: #333;">
+                        <strong>Số khách:</strong> @Model.NumberOfGuests
+                    </p>
+
+                    <p style="margin-bottom: 8px; color: #333;">
+                        <strong>Thời gian đến:</strong> @Model.BookingDate.ToString("dd/MM/yyyy HH:mm")
+                    </p>
+
+                    <p style="margin-bottom: 0; color: #333;">
+                        <strong>Tiền cọc:</strong>
+                        @if (Model.DepositAmount > 0)
+                        {
+                            <span>@Model.DepositAmount.ToString("N0")đ - Đã thanh toán</span>
+                        }
+                        else
+                        {
+                            <span>Không yêu cầu cọc</span>
+                        }
+                    </p>
+                </div>
+
+
+                @if (preOrderDetails.Any())
+                {
+                    <div style="background: #f8fff4; border: 1px solid #d8edce; border-left: 5px solid #7DBA4E; border-radius: 14px; padding: 16px; margin-bottom: 22px; text-align: left;">
+                        <h5 style="font-weight: 900; color: #2f6b1f; margin-bottom: 12px;">
+                            Món đã chọn trước
+                        </h5>
+
+                        @foreach (var detail in preOrderDetails)
+                        {
+                            <div style="display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px dashed #dbead2; font-size: 14px;">
+                                <span>@detail.DishName x @detail.Quantity</span>
+                                <strong>@detail.LineTotal.ToString("N0")đ</strong>
+                            </div>
+                        }
+
+                        <div style="display: flex; justify-content: space-between; margin-top: 12px; font-weight: 900; color: #1f3b20;">
+                            <span>Tổng tạm tính</span>
+                            <span>@preOrderTotal.ToString("N0")đ</span>
+                        </div>
+
+                        <p style="margin: 10px 0 0; color: #777; font-size: 13px;">
+                            Tổng tiền món chỉ là tạm tính, thanh toán trực tiếp tại nhà hàng.
+                        </p>
+                    </div>
+                }
+
+                <div class="code-area" style="margin: 30px 0; padding: 30px 20px; background: #f9fbf8; border: 2px dashed #7DBA4E; border-radius: 15px;">
+                    <h1 style="font-size: 3.5rem; color: #7DBA4E; letter-spacing: 8px; margin: 0; font-weight: 900;">
+                        @bookingCode
+                    </h1>
+
+                    <p style="margin-top: 15px; color: #777; font-size: 1rem;">
+                        Vui lòng đưa mã này hoặc mã QR bên dưới cho lễ tân khi đến nhà hàng để được phục vụ nhanh nhất.
+                    </p>
+
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=@Uri.EscapeDataString(bookingCode)"
+                         alt="QR Code Đặt Bàn"
+                         style="margin-top: 25px; border: 8px solid white; border-radius: 10px; box-shadow: 0 6px 15px rgba(0,0,0,0.1);" />
+                </div>
+
+                @if (canCancelBooking)
+                {
+                    <form asp-controller="Home"
+                          asp-action="CancelMyBooking"
+                          method="post"
+                          class="mb-3"
+                          onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn @bookingCode không?');">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="code" value="@bookingCode" />
+
+                        <button type="submit"
+                                class="btn btn-outline-danger rounded-pill font-weight-bold px-4 py-2">
+                            <i class="fas fa-ban"></i>
+                            Hủy đơn đặt bàn
+                        </button>
+                    </form>
+                }
+
+                <a href="/" class="hvr-radial-in" style="background-color: #7DBA4E; color: white; padding: 15px 40px; font-size: 1.1rem; border-radius: 50px; text-decoration: none; display: inline-block; font-weight: bold; transition: all 0.3s;">
+                    Trở Về Trang Chủ
+                </a>
+            </div>
+        }
+    </div>
+</div>
+@section Scripts {
+    <script>
+        // Booking đã được lưu vào database, xóa món chọn trước khỏi trình duyệt để tránh gửi lặp ở đơn sau.
+        localStorage.removeItem('senvie_preorder_items');
+    </script>
+}

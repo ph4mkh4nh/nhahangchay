@@ -1,0 +1,50 @@
+﻿@{
+    var pageTitle = ViewData["Title"]?.ToString() ?? "SenVie Admin";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@pageTitle - SenVie Admin</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/admin-custom.css" asp-append-version="true" />
+</head>
+
+<body class="senvie-admin-page">
+    <nav class="admin-navbar">
+        <a class="admin-brand" asp-controller="Admin" asp-action="Index">
+            <span class="admin-brand-icon"><i class="fas fa-leaf"></i></span>
+            <span>SenVie Admin</span>
+        </a>
+
+        <div class="admin-nav-actions">
+            <span class="admin-hello">Xin chào, Quản Lý</span>
+            <a asp-controller="Admin" asp-action="ChatManager" class="admin-chat-btn">
+                <i class="fas fa-comments"></i>
+                <span>Quản lý Chat</span>
+                <span id="chat-badge" class="admin-chat-badge">0</span>
+            </a>
+            <a href="/" class="admin-site-btn">Xem Website</a>
+        </div>
+    </nav>
+
+    <main class="admin-shell">
+        @RenderBody()
+    </main>
+
+    <div id="adminProcessingOverlay" class="admin-processing-overlay">
+        <div>
+            <i class="fas fa-circle-notch fa-spin"></i>
+            <strong id="adminProcessingText">Đang xử lý...</strong>
+            <span>Vui lòng không tắt trang hoặc bấm lại nhiều lần.</span>
+        </div>
+    </div>
+
+    <script src="~/js/admin-common.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

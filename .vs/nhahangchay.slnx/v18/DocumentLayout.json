@@ -1,0 +1,181 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|c:\\users\\admin\\source\\repos\\nhahangchay\\nhahangchay\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|solutionrelative:nhahangchay\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|c:\\users\\admin\\source\\repos\\nhahangchay\\nhahangchay\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|solutionrelative:nhahangchay\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|c:\\users\\admin\\source\\repos\\nhahangchay\\nhahangchay\\views\\account\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|solutionrelative:nhahangchay\\views\\account\\register.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|c:\\users\\admin\\source\\repos\\nhahangchay\\nhahangchay\\views\\account\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|solutionrelative:nhahangchay\\views\\account\\login.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|c:\\users\\admin\\source\\repos\\nhahangchay\\nhahangchay\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|solutionrelative:nhahangchay\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|c:\\users\\admin\\source\\repos\\nhahangchay\\nhahangchay\\wwwroot\\css\\custom.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|solutionrelative:nhahangchay\\wwwroot\\css\\custom.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|c:\\users\\admin\\source\\repos\\nhahangchay\\nhahangchay\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|solutionrelative:nhahangchay\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|c:\\users\\admin\\source\\repos\\nhahangchay\\nhahangchay\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|solutionrelative:nhahangchay\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|c:\\users\\admin\\source\\repos\\nhahangchay\\nhahangchay\\views\\home\\bookingsuccess.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|solutionrelative:nhahangchay\\views\\home\\bookingsuccess.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|c:\\users\\admin\\source\\repos\\nhahangchay\\nhahangchay\\views\\admin\\details.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{88D097FA-9879-7335-C6C6-F292C316805F}|nhahangchay\\nhahangchay.csproj|solutionrelative:nhahangchay\\views\\admin\\details.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\Program.cs",
+              "RelativeDocumentMoniker": "nhahangchay\\Program.cs",
+              "ToolTip": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\Program.cs",
+              "RelativeToolTip": "nhahangchay\\Program.cs",
+              "ViewState": "AgIAAE4AAAAAAAAAAAAwwFwAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-30T05:36:37.855Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\appsettings.json",
+              "RelativeDocumentMoniker": "nhahangchay\\appsettings.json",
+              "ToolTip": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\appsettings.json",
+              "RelativeToolTip": "nhahangchay\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-06-30T05:35:54.366Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Register.cshtml",
+              "DocumentMoniker": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\Views\\Account\\Register.cshtml",
+              "RelativeDocumentMoniker": "nhahangchay\\Views\\Account\\Register.cshtml",
+              "ToolTip": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\Views\\Account\\Register.cshtml",
+              "RelativeToolTip": "nhahangchay\\Views\\Account\\Register.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-06-30T05:20:30.023Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "HomeController.cs",
+              "DocumentMoniker": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\Controllers\\HomeController.cs",
+              "RelativeDocumentMoniker": "nhahangchay\\Controllers\\HomeController.cs",
+              "ToolTip": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\Controllers\\HomeController.cs",
+              "RelativeToolTip": "nhahangchay\\Controllers\\HomeController.cs",
+              "ViewState": "AgIAADgAAAAAAAAAAAAIwE4AAAA0AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-29T13:07:40.846Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "custom.css",
+              "DocumentMoniker": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\wwwroot\\css\\custom.css",
+              "RelativeDocumentMoniker": "nhahangchay\\wwwroot\\css\\custom.css",
+              "ToolTip": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\wwwroot\\css\\custom.css",
+              "RelativeToolTip": "nhahangchay\\wwwroot\\css\\custom.css",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAABkAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-06-29T10:04:53.477Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\Views\\Home\\Index.cshtml",
+              "RelativeDocumentMoniker": "nhahangchay\\Views\\Home\\Index.cshtml",
+              "ToolTip": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\Views\\Home\\Index.cshtml",
+              "RelativeToolTip": "nhahangchay\\Views\\Home\\Index.cshtml",
+              "ViewState": "AgIAAGUBAAAAAAAAAAD4v3UBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-06-29T09:48:04.574Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "BookingSuccess.cshtml",
+              "DocumentMoniker": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\Views\\Home\\BookingSuccess.cshtml",
+              "RelativeDocumentMoniker": "nhahangchay\\Views\\Home\\BookingSuccess.cshtml",
+              "ToolTip": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\Views\\Home\\BookingSuccess.cshtml",
+              "RelativeToolTip": "nhahangchay\\Views\\Home\\BookingSuccess.cshtml",
+              "ViewState": "AgIAAIMBAAAAAAAAAAD4v5EBAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-06-29T09:38:45.067Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "AdminController.cs",
+              "DocumentMoniker": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\Controllers\\AdminController.cs",
+              "RelativeDocumentMoniker": "nhahangchay\\Controllers\\AdminController.cs",
+              "ToolTip": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\Controllers\\AdminController.cs",
+              "RelativeToolTip": "nhahangchay\\Controllers\\AdminController.cs",
+              "ViewState": "AgIAACYCAAAAAAAAAAAIwDQCAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-29T09:35:50.554Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Details.cshtml",
+              "DocumentMoniker": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\Views\\Admin\\Details.cshtml",
+              "RelativeDocumentMoniker": "nhahangchay\\Views\\Admin\\Details.cshtml",
+              "ToolTip": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\Views\\Admin\\Details.cshtml",
+              "RelativeToolTip": "nhahangchay\\Views\\Admin\\Details.cshtml",
+              "ViewState": "AgIAAEYAAAAAAAAAAAD4v1QAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-06-29T09:33:19.428Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Login.cshtml",
+              "DocumentMoniker": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\Views\\Account\\Login.cshtml",
+              "RelativeDocumentMoniker": "nhahangchay\\Views\\Account\\Login.cshtml",
+              "ToolTip": "C:\\Users\\ADMIN\\source\\repos\\nhahangchay\\nhahangchay\\Views\\Account\\Login.cshtml",
+              "RelativeToolTip": "nhahangchay\\Views\\Account\\Login.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAABIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-06-29T09:30:13.95Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
