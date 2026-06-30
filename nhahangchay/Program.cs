@@ -12,6 +12,10 @@ var builder = WebApplication.CreateBuilder(args);
 var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
+// PostgreSQL/Npgsql xử lý DateTime khác SQL Server.
+// Dòng này giúp giảm lỗi DateTime khi chuyển project từ SQL Server sang PostgreSQL.
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 // Ưu tiên đọc ConnectionStrings__DefaultConnection từ Environment Variables.
 // Nếu không có thì fallback về appsettings.json để chạy local.
 var connectionString =
@@ -23,8 +27,9 @@ if (string.IsNullOrWhiteSpace(connectionString))
     throw new InvalidOperationException("Chưa cấu hình ConnectionStrings__DefaultConnection.");
 }
 
+// Đổi từ SQL Server sang PostgreSQL.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(connectionString));
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddSignalR();
@@ -57,7 +62,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// Trên Render, SSL nằm ở proxy phía ngoài. Dòng này thường vẫn ổn.
+// Trên Render, SSL nằm ở proxy phía ngoài.
 // Nếu deploy bị vòng lặp redirect/502 thì tạm comment dòng dưới để test.
 app.UseHttpsRedirection();
 
