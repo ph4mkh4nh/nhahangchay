@@ -25,10 +25,6 @@ namespace nhahangchay.Controllers
             _context = context; // Gán ống nước vào
         }
 
-        // =================================================================
-        // KHU VỰC LOGIC CŨ CỦA BẠN (GIỮ NGUYÊN 100%)
-        // =================================================================
-
         [HttpGet]
         public IActionResult Login()
         {
@@ -69,26 +65,64 @@ namespace nhahangchay.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(string fullName, string email, string password)
+        public async Task<IActionResult> Register(string fullName, string email, string password, string confirmPassword)
         {
-            if (string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+            fullName = fullName?.Trim() ?? "";
+            email = email?.Trim().ToLower() ?? "";
+
+            if (string.IsNullOrWhiteSpace(fullName) ||
+                string.IsNullOrWhiteSpace(email) ||
+                string.IsNullOrWhiteSpace(password) ||
+                string.IsNullOrWhiteSpace(confirmPassword))
             {
                 ViewBag.Error = "Vui lòng điền đầy đủ thông tin!";
                 return View();
             }
 
-            // Tạo khung dữ liệu User mới
-            var user = new AppUser { UserName = email, Email = email, FullName = fullName };
+            if (password != confirmPassword)
+            {
+                ViewBag.Error = "Mật khẩu nhập lại không khớp.";
+                return View();
+            }
+
+            if (password.Length < 6)
+            {
+                ViewBag.Error = "Mật khẩu phải có ít nhất 6 ký tự.";
+                return View();
+            }
+
+            var weakPasswords = new[] { "123456", "12345678", "111111", "password", "qwerty", "abc123" };
+
+            if (weakPasswords.Contains(password.ToLower()))
+            {
+                ViewBag.Error = "Mật khẩu quá dễ đoán. Vui lòng chọn mật khẩu khác an toàn hơn.";
+                return View();
+            }
+
+            var existedUser = await _userManager.FindByEmailAsync(email);
+            if (existedUser != null)
+            {
+                ViewBag.Error = "Email này đã được đăng ký. Vui lòng đăng nhập hoặc dùng email khác.";
+                return View();
+            }
+
+            var user = new AppUser
+            {
+                UserName = email,
+                Email = email,
+                FullName = fullName,
+                EmailConfirmed = true
+            };
+
             var result = await _userManager.CreateAsync(user, password);
 
             if (result.Succeeded)
             {
-                // Đăng ký xong thì hệ thống tự động Đăng nhập luôn cho khách
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return RedirectToAction("Index", "Home");
             }
 
-            ViewBag.Error = "Đăng ký thất bại! Email đã tồn tại hoặc mật khẩu quá ngắn.";
+            ViewBag.Error = string.Join(" ", result.Errors.Select(e => e.Description));
             return View();
         }
 

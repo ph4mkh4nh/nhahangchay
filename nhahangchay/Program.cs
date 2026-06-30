@@ -27,7 +27,6 @@ if (string.IsNullOrWhiteSpace(connectionString))
     throw new InvalidOperationException("Chưa cấu hình ConnectionStrings__DefaultConnection.");
 }
 
-// Đổi từ SQL Server sang PostgreSQL.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
@@ -44,7 +43,6 @@ builder.Services.AddScoped<CloudinaryService>();
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
-    // Dùng cho đồ án/test. Khi deploy thật nên bật lại quy tắc mật khẩu mạnh hơn.
     options.Password.RequireDigit = false;
     options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;
@@ -62,8 +60,6 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// Trên Render, SSL nằm ở proxy phía ngoài.
-// Nếu deploy bị vòng lặp redirect/502 thì tạm comment dòng dưới để test.
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
@@ -79,11 +75,7 @@ app.MapHub<ChatHub>("/chatHub");
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
-// Áp migration và tạo tài khoản admin mặc định nếu database chưa có.
-// Phù hợp cho đồ án/demo. Nếu production thật, nên chạy migration thủ công.
-// Áp migration và đảm bảo có tài khoản admin mặc định.
-// Dùng cho đồ án/demo. Sau khi deploy ổn nên đổi mật khẩu admin.
+//  tài khoản admin mặc định.
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
