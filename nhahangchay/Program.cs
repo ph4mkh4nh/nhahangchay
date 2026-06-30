@@ -82,19 +82,29 @@ app.MapControllerRoute(
 
 // Áp migration và tạo tài khoản admin mặc định nếu database chưa có.
 // Phù hợp cho đồ án/demo. Nếu production thật, nên chạy migration thủ công.
+// Áp migration và đảm bảo có tài khoản admin mặc định.
+// Dùng cho đồ án/demo. Sau khi deploy ổn nên đổi mật khẩu admin.
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await db.Database.MigrateAsync();
 
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
     var adminEmail = "admin@uef.com";
-    var existingAdmin = await userManager.FindByEmailAsync(adminEmail);
+    var adminPassword = "123456";
 
-    if (existingAdmin == null)
+    if (!await roleManager.RoleExistsAsync("Admin"))
     {
-        var newAdmin = new AppUser
+        await roleManager.CreateAsync(new IdentityRole("Admin"));
+    }
+
+    var admin = await userManager.FindByEmailAsync(adminEmail);
+
+    if (admin == null)
+    {
+        admin = new AppUser
         {
             UserName = adminEmail,
             Email = adminEmail,
@@ -102,8 +112,30 @@ using (var scope = app.Services.CreateScope())
             EmailConfirmed = true
         };
 
-        // Mật khẩu mặc định phục vụ test đồ án. Nên đổi sau khi chạy lần đầu.
-        await userManager.CreateAsync(newAdmin, "123456");
+        await userManager.CreateAsync(admin, adminPassword);
+    }
+    else
+    {
+        admin.UserName = adminEmail;
+        admin.Email = adminEmail;
+        admin.FullName = string.IsNullOrWhiteSpace(admin.FullName) ? "Quản Lý" : admin.FullName;
+        admin.EmailConfirmed = true;
+
+        await userManager.UpdateAsync(admin);
+
+        var hasPassword = await userManager.HasPasswordAsync(admin);
+
+        if (hasPassword)
+        {
+            await userManager.RemovePasswordAsync(admin);
+        }
+
+        await userManager.AddPasswordAsync(admin, adminPassword);
+    }
+
+    if (!await userManager.IsInRoleAsync(admin, "Admin"))
+    {
+        await userManager.AddToRoleAsync(admin, "Admin");
     }
 }
 
