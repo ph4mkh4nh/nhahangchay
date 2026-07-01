@@ -8,7 +8,6 @@
 <link rel="stylesheet" href="~/css/custom.css" asp-append-version="true" />
 
 <style>
-    /* Home polish - scoped fixes, giữ logic cũ */
     #mainNav .navbar-nav .nav-link,
     #mainNav .navbar-nav li a,
     .navbar .navbar-nav .nav-link,
@@ -814,11 +813,9 @@
 
 <script>
     function selectBookingService(serviceValue) {
-        // Hỗ trợ cả form V1 (txtBookingType) và form V2 (bookingTypeSelect)
         var selectElement = document.getElementById('bookingTypeSelect') || document.getElementById('txtBookingType');
 
         if (selectElement) {
-            // Gán giá trị loại bàn
             selectElement.value = serviceValue;
 
             // Để bảng chọn Sinh nhật/Kỷ niệm của form VIP tự động mở ra
@@ -829,7 +826,7 @@
     }
 </script>
 
-<!--form đặt bàn (ĐÃ NÂNG CẤP DYNAMIC FORM)-->
+<!--form đặt bàn-->
 <div id="contact" class="section db" style="padding: 40px 0; background-attachment: fixed;">
     <div class="container">
         <div class="section-title text-center" style="margin-bottom: 25px;">
@@ -993,83 +990,100 @@
                                 </button>
                             </div>
                         </div>
-                    </form>
-                    <!--bản đồ nhà hàng-->
-                    <div id="map" class="section wb senvie-map-section">
-                        <div class="container">
-                            <div class="section-title text-center">
-                                <h3>Bản Đồ & Thông Tin Liên Hệ</h3>
-                                <p>Xem đường đi đến SenVie và liên hệ nhà hàng khi cần hỗ trợ đặt bàn.</p>
-                            </div>
-
-                            <div class="row align-items-stretch">
-                                <div class="col-lg-7 mb-4">
-                                    <div class="senvie-map-card">
-                                        <iframe src="https://www.google.com/maps?q=H%E1%BB%93%20Ch%C3%AD%20Minh%2C%20Vi%E1%BB%87t%20Nam&output=embed"
-                                                width="100%"
-                                                height="420"
-                                                style="border:0;"
-                                                allowfullscreen=""
-                                                loading="lazy"
-                                                referrerpolicy="no-referrer-when-downgrade">
-                                        </iframe>
-                                    </div>
-                                </div>
-
-                                <div class="col-lg-5 mb-4">
-                                    <div class="senvie-contact-card">
-                                        <span class="senvie-contact-badge">SenVie Vegan Dining</span>
-
-                                        <h4>Thông tin nhà hàng</h4>
-
-                                        <div class="senvie-contact-line">
-                                            <i class="fa fa-map-marker"></i>
-                                            <div>
-                                                <strong>Địa chỉ</strong>
-                                                <p>Hồ Chí Minh, Việt Nam</p>
-                                            </div>
-                                        </div>
-
-                                        <div class="senvie-contact-line">
-                                            <i class="fa fa-phone"></i>
-                                            <div>
-                                                <strong>Hotline</strong>
-                                                <p>+84 123 456 789</p>
-                                            </div>
-                                        </div>
-
-                                        <div class="senvie-contact-line">
-                                            <i class="fa fa-clock-o"></i>
-                                            <div>
-                                                <strong>Giờ mở cửa</strong>
-                                                <p>09:00 - 23:00 hằng ngày</p>
-                                            </div>
-                                        </div>
-
-                                        <div class="senvie-contact-note">
-                                            Khách đặt VIP hoặc Omakase nên đặt trước để nhà hàng chuẩn bị phòng riêng, nguyên liệu và trải nghiệm phục vụ tốt hơn.
-                                        </div>
-
-                                        <a class="senvie-map-button"
-                                           href="https://www.google.com/maps/search/?api=1&query=H%E1%BB%93%20Ch%C3%AD%20Minh%2C%20Vi%E1%BB%87t%20Nam"
-                                           target="_blank"
-                                           rel="noopener">
-                                            <i class="fa fa-location-arrow"></i> Mở Google Maps
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    </form>               
                 </div>
             </div>
         </div>
     </div>
 </div>
+<!--bản đồ nhà hàng-->
+<div id="map" class="section wb senvie-map-section">
+    <div class="container">
+        <div class="section-title text-center senvie-map-title">
+            <h3>Bản Đồ & Thông Tin Liên Hệ</h3>
+            <p>Xem đường đi đến SenVie và liên hệ nhà hàng khi cần hỗ trợ đặt bàn.</p>
+        </div>
 
+        @{
+            var restaurantAddress = "141-145 Điện Biên Phủ, Phường Gia Định, TP.HCM, Việt Nam";
+            var encodedMapAddress = Uri.EscapeDataString(restaurantAddress);
+            var googleMapEmbedUrl = $"https://www.google.com/maps?q={encodedMapAddress}&output=embed";
+            var googleMapOpenUrl = $"https://www.google.com/maps/search/?api=1&query={encodedMapAddress}";
+        }
+
+        <div class="senvie-map-wide-card">
+            <iframe src="@googleMapEmbedUrl"
+                    width="100%"
+                    height="100%"
+                    style="border:0;"
+                    allowfullscreen=""
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+
+            <a class="senvie-map-click-layer"
+               href="@googleMapOpenUrl"
+               target="_blank"
+               rel="noopener"
+               aria-label="Mở địa chỉ SenVie trên Google Maps">
+            </a>
+
+            <div class="senvie-map-floating-label">
+                <i class="fa fa-map-marker"></i>
+                <span>Nhấn vào bản đồ để mở Google Maps</span>
+            </div>
+        </div>
+
+        <div class="senvie-contact-info-grid">
+            <div class="senvie-contact-info-card">
+                <div class="senvie-contact-icon">
+                    <i class="fa fa-map-marker"></i>
+                </div>
+                <div>
+                    <h4>Địa chỉ</h4>
+                    <p>@restaurantAddress</p>
+                </div>
+            </div>
+
+            <div class="senvie-contact-info-card">
+                <div class="senvie-contact-icon">
+                    <i class="fa fa-phone"></i>
+                </div>
+                <div>
+                    <h4>Hotline</h4>
+                    <p>+84 123 456 789</p>
+                </div>
+            </div>
+
+            <div class="senvie-contact-info-card">
+                <div class="senvie-contact-icon">
+                    <i class="fa fa-clock-o"></i>
+                </div>
+                <div>
+                    <h4>Giờ mở cửa</h4>
+                    <p>09:00 - 23:00 hằng ngày</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="senvie-map-note-box">
+            <div>
+                <strong>Lưu ý đặt bàn:</strong>
+                Khách đặt VIP hoặc Omakase nên đặt trước để nhà hàng chuẩn bị phòng riêng, nguyên liệu và trải nghiệm phục vụ tốt hơn.
+            </div>
+
+            <a class="senvie-map-button"
+               href="@googleMapOpenUrl"
+               target="_blank"
+               rel="noopener">
+                <i class="fa fa-location-arrow"></i>
+                Mở Google Maps
+            </a>
+        </div>
+    </div>
+</div>
 
 <style>
-    /* Featured menu cards - safe local CSS for Home/Index */
     .senvie-featured-menu-row {
         margin-top: 18px;
     }
@@ -1188,15 +1202,11 @@
     }
 </style>
 
-<!-- =========================================================
-     JAVASCRIPT: BỘ NÃO CỦA FORM ĐỘNG
-     ========================================================= -->
+<!-- FORM ĐỘNG -->
 @section Scripts {
     <script>
         $(document).ready(function () {
-            // =====================================================
             // 1. KHÓA NGÀY GIỜ QUÁ KHỨ + BẮT ĐẶT TRƯỚC TỐI THIỂU 1 TIẾNG
-            // =====================================================
 
             function padDatePart(value) {
                 return String(value).padStart(2, '0');
@@ -1348,9 +1358,7 @@
                 }
             });
 
-            // =====================================================
             // 2. PRE-ORDER MÓN CHỌN TRƯỚC
-            // =====================================================
 
             var preOrderStorageKey = "senvie_preorder_items";
 
@@ -1433,10 +1441,7 @@
                 updatePreOrderSummary($('#bookingTypeSelect').val());
             };
 
-            // =====================================================
             // 3. FORM ĐỘNG: VIP / OMAKASE / TIỀN CỌC
-            // =====================================================
-
             function updateDynamicForm() {
                 var bookingType = $('#bookingTypeSelect').val();
                 var guests = parseInt($('#numberOfGuestsInput').val()) || 1;
@@ -1494,144 +1499,29 @@
 }
 
 <style>
+    /* FORM ĐẶT BÀN */
     .custom-input {
         height: 38px !important;
-        border-radius: 5px !important;
+        border-radius: 6px !important;
         border: 1px solid #ced4da !important;
         padding-left: 12px;
         font-size: 14px;
         color: #333;
         font-family: inherit !important;
-        transition: all 0.3s ease-in-out !important;
+        transition: all 0.25s ease-in-out !important;
         background-color: #fff !important;
     }
 
         .custom-input:focus {
             border-color: #7DBA4E !important;
-            box-shadow: 0 0 6px rgba(125, 186, 78, 0.25) !important;
+            box-shadow: 0 0 0 3px rgba(125, 186, 78, 0.18) !important;
+            outline: none !important;
         }
 
     textarea.custom-input {
         height: auto !important;
-    }
-    /* Map + contact section */
-    .senvie-map-section {
-        background: #ffffff;
-        padding-top: 70px;
-        padding-bottom: 70px;
-    }
-
-    .senvie-map-card {
-        height: 100%;
-        min-height: 420px;
-        border-radius: 18px;
-        overflow: hidden;
-        border: 1px solid #e4eddf;
-        box-shadow: 0 14px 34px rgba(30, 55, 30, 0.08);
-        background: #f6f9f3;
-    }
-
-        .senvie-map-card iframe {
-            display: block;
-            width: 100%;
-            height: 100%;
-            min-height: 420px;
-        }
-
-    .senvie-contact-card {
-        height: 100%;
-        padding: 30px;
-        border-radius: 18px;
-        background: #f8fff4;
-        border: 1px solid #dcebd3;
-        box-shadow: 0 14px 34px rgba(30, 55, 30, 0.08);
-    }
-
-    .senvie-contact-badge {
-        display: inline-block;
-        padding: 7px 13px;
-        border-radius: 999px;
-        background: #edf7e8;
-        color: #4d7f2f;
-        font-size: 12px;
-        font-weight: 900;
-        text-transform: uppercase;
-        margin-bottom: 15px;
-    }
-
-    .senvie-contact-card h4 {
-        color: #1f2f1f;
-        font-weight: 900;
-        margin-bottom: 22px;
-    }
-
-    .senvie-contact-line {
-        display: flex;
-        gap: 14px;
-        margin-bottom: 18px;
-        color: #314031;
-    }
-
-        .senvie-contact-line i {
-            width: 34px;
-            height: 34px;
-            min-width: 34px;
-            border-radius: 50%;
-            background: #7DBA4E;
-            color: #ffffff;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .senvie-contact-line strong {
-            display: block;
-            color: #1f2f1f;
-            font-weight: 900;
-            margin-bottom: 3px;
-        }
-
-        .senvie-contact-line p {
-            margin: 0;
-            color: #4f5d4f;
-            font-weight: 600;
-            line-height: 1.5;
-        }
-
-    .senvie-contact-note {
-        margin: 20px 0;
-        padding: 14px 16px;
-        border-radius: 12px;
-        background: #ffffff;
-        border-left: 4px solid #7DBA4E;
-        color: #425042;
-        font-weight: 600;
-        line-height: 1.6;
-    }
-
-    .senvie-map-button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        width: 100%;
-        min-height: 46px;
-        border-radius: 999px;
-        background: #1f3b20;
-        color: #ffffff !important;
-        font-weight: 900;
-        text-decoration: none !important;
-    }
-
-        .senvie-map-button:hover {
-            background: #7DBA4E;
-            color: #ffffff !important;
-        }
-
-    /* Fix nhẹ form + map trên laptop nhỏ/mobile */
-    #contact .container,
-    .senvie-map-section .container {
-        max-width: 1180px;
+        min-height: 72px;
+        resize: vertical;
     }
 
     .custom-booking-form {
@@ -1639,6 +1529,190 @@
         box-sizing: border-box;
     }
 
+    #contact .container {
+        max-width: 1180px;
+    }
+
+    /* MAP SECTION - NGANG RỘNG */
+    .senvie-map-section {
+        background: #ffffff !important;
+        padding: 76px 0 82px !important;
+    }
+
+        .senvie-map-section .container {
+            max-width: 1180px;
+        }
+
+    .senvie-map-title {
+        margin-bottom: 34px;
+    }
+
+        .senvie-map-title h3 {
+            color: #7DBA4E;
+            font-weight: 800;
+            font-size: 36px;
+            line-height: 1.25;
+            margin-bottom: 12px;
+        }
+
+        .senvie-map-title p {
+            max-width: 760px;
+            margin-left: auto;
+            margin-right: auto;
+            color: #5f6d5f;
+            font-weight: 600;
+            line-height: 1.65;
+        }
+
+    .senvie-map-wide-card {
+        position: relative;
+        width: 100%;
+        height: 430px;
+        border-radius: 24px;
+        overflow: hidden;
+        border: 1px solid #dfeadc;
+        background: #f6f9f3;
+        box-shadow: 0 18px 46px rgba(31, 59, 32, 0.13);
+    }
+
+        .senvie-map-wide-card iframe {
+            display: block;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+    .senvie-map-click-layer {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        display: block;
+    }
+
+    .senvie-map-floating-label {
+        position: absolute;
+        left: 22px;
+        bottom: 22px;
+        z-index: 3;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 11px 16px;
+        border-radius: 999px;
+        background: rgba(31, 59, 32, 0.94);
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 13px;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+        pointer-events: none;
+    }
+
+        .senvie-map-floating-label i {
+            color: #9ee06c;
+        }
+
+    /* CONTACT INFO DƯỚI MAP */
+    .senvie-contact-info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-top: 24px;
+    }
+
+    .senvie-contact-info-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        min-height: 120px;
+        padding: 22px 24px;
+        border-radius: 20px;
+        background: #f8fff4;
+        border: 1px solid #dcebd3;
+        box-shadow: 0 12px 30px rgba(31, 59, 32, 0.08);
+    }
+
+    .senvie-contact-icon {
+        width: 42px;
+        height: 42px;
+        min-width: 42px;
+        border-radius: 50%;
+        background: #7DBA4E;
+        color: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 2px;
+    }
+
+    .senvie-contact-info-card h4 {
+        color: #1f2f1f;
+        font-size: 16px;
+        font-weight: 900;
+        margin: 0 0 7px;
+    }
+
+    .senvie-contact-info-card p {
+        color: #4f5d4f;
+        font-size: 14px;
+        font-weight: 650;
+        line-height: 1.55;
+        margin: 0;
+    }
+
+    .senvie-map-note-box {
+        margin-top: 22px;
+        padding: 18px 20px;
+        border-radius: 20px;
+        background: #fffaf2;
+        border: 1px solid #f1dfbd;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        color: #4f503f;
+        font-weight: 650;
+        line-height: 1.6;
+    }
+
+        .senvie-map-note-box strong {
+            color: #1f2f1f;
+        }
+
+    .senvie-map-button {
+        min-width: 190px;
+        min-height: 46px;
+        padding: 0 22px;
+        border-radius: 999px;
+        background: #1f3b20;
+        color: #ffffff !important;
+        font-weight: 900;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        text-decoration: none !important;
+        box-shadow: 0 10px 24px rgba(31, 59, 32, 0.18);
+        white-space: nowrap;
+        transition: 0.2s ease;
+    }
+
+        .senvie-map-button:hover {
+            background: #7DBA4E;
+            color: #ffffff !important;
+            transform: translateY(-1px);
+        }
+
+    .senvie-map-row,
+    .senvie-map-card,
+    .senvie-contact-card,
+    .senvie-contact-line,
+    .senvie-contact-note,
+    .senvie-contact-badge,
+    .senvie-contact-intro {
+        box-sizing: border-box;
+    }
+
+    /*RESPONSIVE */
     @@media (max-width: 991px) {
         #contact {
             padding-left: 12px !important;
@@ -1650,9 +1724,21 @@
             max-width: 100% !important;
         }
 
-        .senvie-map-card,
-        .senvie-map-card iframe {
-            min-height: 320px;
+        .senvie-map-wide-card {
+            height: 380px;
+        }
+
+        .senvie-contact-info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .senvie-map-note-box {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .senvie-map-button {
+            width: 100%;
         }
     }
 
@@ -1668,8 +1754,43 @@
             border-radius: 14px !important;
         }
 
-        .senvie-contact-card {
-            padding: 22px 18px;
+        .senvie-map-section {
+            padding: 58px 0 64px !important;
+        }
+
+        .senvie-map-title h3 {
+            font-size: 28px;
+        }
+
+        .senvie-map-title p {
+            font-size: 14px;
+            padding: 0 8px;
+        }
+
+        .senvie-map-wide-card {
+            height: 320px;
+            border-radius: 18px;
+        }
+
+        .senvie-map-floating-label {
+            left: 12px;
+            right: 12px;
+            bottom: 12px;
+            justify-content: center;
+            text-align: center;
+            font-size: 12px;
+            padding: 10px 12px;
+        }
+
+        .senvie-contact-info-card {
+            padding: 18px;
+            min-height: auto;
+            border-radius: 16px;
+        }
+
+        .senvie-map-note-box {
+            padding: 16px;
+            border-radius: 16px;
         }
 
         .guest-chat-wrapper {
