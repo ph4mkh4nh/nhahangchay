@@ -1,16 +1,14 @@
-using MailKit.Net.Smtp;
-using MailKit.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using MimeKit;
 using nhahangchay.Data;
 using nhahangchay.Models;
+using nhahangchay.Services;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,6 +19,7 @@ namespace nhahangchay.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<AppUser> _userManager;
         private readonly IConfiguration _config;
+        private readonly EmailService _emailService;
         private static readonly SemaphoreSlim _bookingLock = new SemaphoreSlim(1, 1);
         private const int BookingPending = 0;
         private const int BookingCheckedIn = 1;
@@ -32,11 +31,12 @@ namespace nhahangchay.Controllers
         private const int RestaurantCapacity = 100;
         private const int BookingCooldownMinutes = 2;
         private const int DepositExpireMinutes = 15;
-        public HomeController(ApplicationDbContext context, UserManager<AppUser> userManager, IConfiguration config)
+        public HomeController(ApplicationDbContext context, UserManager<AppUser> userManager, IConfiguration config, EmailService emailService)
         {
             _context = context;
             _userManager = userManager;
             _config = config;
+            _emailService = emailService;
         }
 
         [HttpGet]
@@ -273,7 +273,12 @@ namespace nhahangchay.Controllers
                         return RedirectToBookingForm();
                     }
 
-                    await SendConfirmationEmail(model);
+                    var bookingUrl = Url.Action(nameof(BookingSuccess),
+                        "Home",
+                        new { code = model.BookingCode },
+                        Request.Scheme
+                     );
+                    await _emailService.SendBookingConfirmationEmailAsync(model, bookingUrl);
 
                     return RedirectToAction("BookingSuccess", new { code = model.BookingCode });
                 }
@@ -320,50 +325,98 @@ namespace nhahangchay.Controllers
             return View(booking);
         }
 
-        // HÀM GIẢ LẬP THANH TOÁN MOMO DÀNH CHO ĐỒ ÁN
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult DemoMoMoPayment(string code, bool acceptCancellationPolicy)
+        public async Task<IActionResult> DemoMoMoPayment(string code, bool acceptCancellationPolicy)
         {
-            if (string.IsNullOrWhiteSpace(code))
+            try
             {
-                TempData["ErrorMessage"] = "Mã đơn không hợp lệ.";
+                if (string.IsNullOrWhiteSpace(code))
+                {
+                    TempData["ErrorMessage"] = "Mã đơn không hợp lệ.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                if (!acceptCancellationPolicy)
+                {
+                    TempData["ErrorMessage"] = "Vui lòng đọc và đồng ý với chính sách hủy/hoàn cọc trước khi thanh toán.";
+                    return RedirectToAction(nameof(BookingSuccess), new { code });
+                }
+
+                var booking = await _context.Bookings
+                    .FirstOrDefaultAsync(b => b.BookingCode == code);
+
+                if (booking == null)
+                {
+                    TempData["ErrorMessage"] = "Không tìm thấy đơn đặt bàn.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                if (booking.Status == BookingCancelled)
+                {
+                    TempData["ErrorMessage"] = "Đơn đặt bàn này đã bị hủy, không thể thanh toán.";
+                    return RedirectToAction(nameof(BookingSuccess), new { code });
+                }
+
+                if (booking.PaymentStatus == PaymentPaid)
+                {
+                    TempData["SuccessMessage"] = "Đơn này đã được thanh toán cọc trước đó.";
+                    return RedirectToAction(nameof(BookingSuccess), new { code });
+                }
+
+                if (booking.DepositAmount <= 0)
+                {
+                    TempData["ErrorMessage"] = "Đơn này không yêu cầu thanh toán cọc.";
+                    return RedirectToAction(nameof(BookingSuccess), new { code });
+                }
+
+                booking.PaymentStatus = PaymentPaid;
+                await _context.SaveChangesAsync();
+
+                try
+                {
+                    var bookingUrl = Url.Action(
+                        nameof(BookingSuccess),
+                        "Home",
+                        new { code = booking.BookingCode },
+                        Request.Scheme
+                    );
+
+                    var emailSent = await _emailService.SendBookingConfirmationEmailAsync(
+                        booking,
+                        bookingUrl
+                    );
+
+                    TempData["SuccessMessage"] = emailSent
+                        ? "Thanh toán cọc thành công. SenVie đã gửi mã QR check-in về email của bạn."
+                        : "Thanh toán cọc thành công, nhưng hệ thống chưa gửi được email QR. Bạn vẫn có thể xem mã QR tại trang này.";
+                }
+                catch (Exception emailEx)
+                {
+                    Console.WriteLine("========== SEND QR EMAIL AFTER PAYMENT ERROR ==========");
+                    Console.WriteLine(emailEx.ToString());
+                    Console.WriteLine("=======================================================");
+
+                    TempData["SuccessMessage"] = "Thanh toán cọc thành công, nhưng hệ thống chưa gửi được email QR. Bạn vẫn có thể xem mã QR tại trang này.";
+                }
+
+                return RedirectToAction(nameof(BookingSuccess), new { code });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("========== DEMO MOMO PAYMENT ERROR ==========");
+                Console.WriteLine(ex.ToString());
+                Console.WriteLine("=============================================");
+
+                TempData["ErrorMessage"] = "Có lỗi khi xử lý thanh toán mô phỏng. Vui lòng thử lại hoặc liên hệ nhà hàng.";
+
+                if (!string.IsNullOrWhiteSpace(code))
+                {
+                    return RedirectToAction(nameof(BookingSuccess), new { code });
+                }
+
                 return RedirectToAction(nameof(Index));
             }
-            if (!acceptCancellationPolicy)
-            {
-                TempData["ErrorMessage"] = "Vui lòng đọc và đồng ý với chính sách hủy/hoàn cọc trước khi thanh toán.";
-                return RedirectToAction(nameof(BookingSuccess), new { code });
-            }
-            var booking = _context.Bookings.FirstOrDefault(b => b.BookingCode == code);
-
-            if (booking == null)
-            {
-                TempData["ErrorMessage"] = "Không tìm thấy đơn đặt bàn.";
-                return RedirectToAction(nameof(Index));
-            }
-
-            if (booking.Status == BookingCancelled)
-            {
-                TempData["ErrorMessage"] = "Đơn đặt bàn này đã bị hủy, không thể thanh toán.";
-                return RedirectToAction(nameof(BookingSuccess), new { code });
-            }
-
-            if (booking.PaymentStatus == PaymentPaid)
-            {
-                return RedirectToAction(nameof(BookingSuccess), new { code });
-            }
-
-            if (booking.DepositAmount <= 0)
-            {
-                TempData["ErrorMessage"] = "Đơn này không yêu cầu thanh toán cọc.";
-                return RedirectToAction(nameof(BookingSuccess), new { code });
-            }
-
-            booking.PaymentStatus = PaymentPaid;
-            _context.SaveChanges();
-
-            return RedirectToAction(nameof(BookingSuccess), new { code });
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -422,7 +475,7 @@ namespace nhahangchay.Controllers
             booking.Status = BookingCancelled;
             await _context.SaveChangesAsync();
 
-            await SendCustomerCancelEmail(
+            await _emailService.SendCustomerCancelledBookingEmailAsync(
                 booking,
                 policy.CustomerMessage,
                 policy.RefundAmount,
@@ -565,184 +618,7 @@ namespace nhahangchay.Controllers
 
             return code;
         }
-        // GỬI MAIL
-        private async Task SendConfirmationEmail(Booking booking)
-        {
-            try
-            {
-                var senderEmail = _config["EmailSettings:SenderEmail"];
-                var senderPassword = _config["EmailSettings:SenderPassword"];
-
-                if (string.IsNullOrWhiteSpace(senderEmail) || string.IsNullOrWhiteSpace(senderPassword))
-                {
-                    return;
-                }
-
-                var emailMessage = new MimeMessage();
-                emailMessage.From.Add(new MailboxAddress("SenVie Restaurant", senderEmail));
-                emailMessage.To.Add(new MailboxAddress("Quý Khách", booking.Email));
-                emailMessage.ReplyTo.Add(new MailboxAddress("No Reply", "noreply@senvierestaurant.com"));
-
-                var paymentUrl = Url.Action(
-                    nameof(BookingSuccess),
-                    "Home",
-                    new { code = booking.BookingCode },
-                    Request.Scheme
-                );
-
-                var qrImageUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={booking.BookingCode}";
-
-                string paymentOrQrBlock;
-
-                if (booking.DepositAmount > 0 && booking.PaymentStatus == PaymentUnpaid)
-                {
-                    emailMessage.Subject = "Yêu cầu thanh toán cọc đặt bàn - SenVie";
-
-                    paymentOrQrBlock = $@"
-                <div style='background:#fff8e1; padding:15px; border-radius:8px; border-left:4px solid #ffc107; margin-top:15px;'>
-                    <h3 style='margin-top:0; color:#8a5a00;'>Đơn của bạn cần thanh toán cọc</h3>
-                    <p>Số tiền cọc cần thanh toán: <strong style='color:#d9534f'>{booking.DepositAmount:N0}đ</strong></p>
-                    <p>Vui lòng hoàn tất thanh toán cọc để nhận mã QR check-in.</p>
-                    <p>
-                        <a href='{paymentUrl}' style='display:inline-block; background:#a50064; color:white; padding:12px 20px; border-radius:25px; text-decoration:none; font-weight:bold;'>
-                            Đi đến trang thanh toán
-                        </a>
-                    </p>
-                </div>
-
-                <div style='background:#f8f9fa; padding:15px; border-radius:8px; margin-top:15px;'>
-                    <h3 style='margin-top:0;'>Chính sách hủy / hoàn cọc</h3>
-                    <ul>
-                        <li><strong>Bàn VIP:</strong> Hủy trước 24 tiếng được hỗ trợ hoàn/chuyển 100% cọc. Hủy dưới 24 tiếng không hoàn cọc.</li>
-                        <li><strong>Omakase Chay:</strong> Hủy trước 48 tiếng hoàn/chuyển 100%; từ 24 đến dưới 48 tiếng hoàn/chuyển 50%; dưới 24 tiếng không hoàn cọc.</li>
-                        <li>Việc hoàn/chuyển cọc được nhà hàng liên hệ và xử lý thủ công.</li>
-                    </ul>
-                </div>";
-                }
-                else
-                {
-                    emailMessage.Subject = "Xác nhận đặt bàn & mã QR check-in - SenVie";
-
-                    paymentOrQrBlock = $@"
-                <p>Vui lòng đưa <strong>Mã QR</strong> dưới đây cho lễ tân quét khi bạn đến nhà hàng:</p>
-                <img src='{qrImageUrl}' alt='Mã QR Check-in của bạn' style='border: 2px solid #333; padding: 5px; border-radius: 10px;' />";
-                }
-
-                emailMessage.Body = new BodyBuilder
-                {
-                    HtmlBody = $@"
-                <div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #7DBA4E; border-radius: 10px;'>
-                    <h2 style='color: #7DBA4E;'>CẢM ƠN BẠN ĐÃ ĐẶT BÀN!</h2>
-
-                    <p>Kính chào <strong>{booking.CustomerName}</strong>,</p>
-                    <p>Nhà hàng chay SenVie đã nhận được yêu cầu giữ chỗ của bạn.</p>
-
-                    <ul>
-                        <li><strong>Mã đơn hàng:</strong> <span style='color: red; font-size: 18px;'>{booking.BookingCode}</span></li>
-                        <li><strong>Loại bàn:</strong> {booking.BookingType}</li>
-                        <li><strong>Thời gian đến:</strong> {booking.BookingDate:dd/MM/yyyy HH:mm}</li>
-                        <li><strong>Số khách:</strong> {booking.NumberOfGuests}</li>
-                        <li><strong>Tiền cọc:</strong> {booking.DepositAmount:N0}đ</li>
-                    </ul>
-
-                    {paymentOrQrBlock}
-
-                    <br/>
-                    <p><i>Hẹn gặp lại bạn tại SenVie!</i></p>
-                    <p style='color: #888; font-size: 12px; margin-top: 20px;'>* Vui lòng không trả lời email này vì đây là hộp thư tự động.</p>
-                </div>"
-                }.ToMessageBody();
-
-                using var smtp = new MailKit.Net.Smtp.SmtpClient();
-
-                smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
-                await smtp.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-                await smtp.AuthenticateAsync(senderEmail, senderPassword);
-                await smtp.SendAsync(emailMessage);
-                await smtp.DisconnectAsync(true);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Lỗi gửi mail hệ thống: " + ex.Message);
-            }
-        }
-        private async Task SendCustomerCancelEmail(
-            Booking booking,
-            string policyMessage,
-            decimal refundAmount,
-            decimal feeAmount)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(booking.Email))
-                {
-                    return;
-                }
-
-                var senderEmail = _config["EmailSettings:SenderEmail"];
-                var senderPassword = _config["EmailSettings:SenderPassword"];
-
-                if (string.IsNullOrWhiteSpace(senderEmail) || string.IsNullOrWhiteSpace(senderPassword))
-                {
-                    return;
-                }
-
-                var emailMessage = new MimeMessage();
-                emailMessage.From.Add(new MailboxAddress("SenVie Restaurant", senderEmail));
-                emailMessage.To.Add(new MailboxAddress(booking.CustomerName, booking.Email));
-                emailMessage.Subject = "Xác nhận hủy đơn đặt bàn - SenVie";
-
-                emailMessage.Body = new BodyBuilder
-                {
-                    HtmlBody = $@"
-                <div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #dc3545; border-radius: 10px;'>
-                    <h2 style='color: #dc3545;'>XÁC NHẬN HỦY ĐƠN ĐẶT BÀN</h2>
-
-                    <p>Kính chào <strong>{booking.CustomerName}</strong>,</p>
-
-                    <p>SenVie xác nhận đơn đặt bàn mã 
-                        <strong style='color:red'>{booking.BookingCode}</strong> 
-                        đã được hủy theo yêu cầu của bạn.
-                    </p>
-
-                    <ul>
-                        <li><strong>Thời gian đặt bàn:</strong> {booking.BookingDate:dd/MM/yyyy HH:mm}</li>
-                        <li><strong>Loại bàn:</strong> {booking.BookingType}</li>
-                        <li><strong>Số khách:</strong> {booking.NumberOfGuests}</li>
-                        <li><strong>Tiền cọc đã ghi nhận:</strong> {booking.DepositAmount:N0}đ</li>
-                        <li><strong>Số tiền dự kiến hoàn/chuyển:</strong> {refundAmount:N0}đ</li>
-                        <li><strong>Phí giữ chỗ/hủy:</strong> {feeAmount:N0}đ</li>
-                    </ul>
-
-                    <div style='background:#fff8e1; padding:15px; border-radius:8px; border-left:4px solid #ffc107;'>
-                        <strong>Chính sách xử lý cọc:</strong>
-                        <p style='margin-bottom:0;'>{policyMessage}</p>
-                    </div>
-
-                    <p style='margin-top:20px;'>
-                        Lưu ý: Do đây là hệ thống thanh toán mô phỏng, việc hoàn/chuyển cọc sẽ được nhà hàng liên hệ và xử lý thủ công.
-                    </p>
-
-                    <p>Nếu cần hỗ trợ thêm, vui lòng liên hệ nhà hàng hoặc chat trực tiếp trên website.</p>
-
-                    <br/>
-                    <p><i>Trân trọng,<br/>SenVie Restaurant</i></p>
-                </div>"
-                }.ToMessageBody();
-
-                using var smtp = new MailKit.Net.Smtp.SmtpClient();
-
-                smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
-                await smtp.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-                await smtp.AuthenticateAsync(senderEmail, senderPassword);
-                await smtp.SendAsync(emailMessage);
-                await smtp.DisconnectAsync(true);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Lỗi gửi email hủy đơn cho khách: " + ex.Message);
-            }
-        }
+        
         private (bool CanCancelOnline, decimal RefundAmount, decimal FeeAmount, string CustomerMessage)
     GetCancellationPolicy(Booking booking, DateTime vietnamTimeNow)
         {

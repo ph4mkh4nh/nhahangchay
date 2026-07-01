@@ -1,40 +1,26 @@
-/******************************************
-    Version: 1.0
-/****************************************** */
 
 (function($) {
     "use strict";
-	
-	
-	
-	// Smooth scrolling using jQuery easing
 	$('a.js-scroll-trigger[href*="#"]:not([href="#"])').click(function () {
 		if (location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '') && location.hostname == this.hostname) {
 			var target = $(this.hash);
 			target = target.length ? target : $('[name=' + this.hash.slice(1) + ']');
 			if (target.length) {
-				// --- BẮT ĐẦU CHIẾN THUẬT: BỊT MẮT CAMERA ---
 				var $clickedButton = $(this);
 
-				// 1. Rút điện Camera (Tắt Scrollspy) để nó không quét màu bậy bạ lúc đang trượt
 				$('body').scrollspy('dispose');
 
-				// 2. Xóa màu tất cả các nút và ép sáng ngay lập tức cho nút được bấm
 				$('.js-scroll-trigger').removeClass('active');
 				$clickedButton.addClass('active');
 
-				// 3. Thực hiện hiệu ứng trượt màn hình
 				$('html, body').animate({
 					scrollTop: (target.offset().top - 54)
 				}, 1000, "easeInOutExpo", function () {
-					// 4. HÀM CALLBACK: Chạy khi màn hình ĐÃ TRƯỢT TỚI ĐÍCH an toàn
-					// Cắm điện bật lại Camera để khách hàng cuộn chuột bình thường
 					$('body').scrollspy({
 						target: '#mainNav',
 						offset: 56
 					});
 				});
-				// --- KẾT THÚC CHIẾN THUẬT ---
 
 				return false;
 			}

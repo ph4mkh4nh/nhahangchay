@@ -844,7 +844,12 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="custom-booking-form" style="max-width: 850px; margin: 0 auto; background: rgba(255, 255, 255, 0.96); padding: 25px 35px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.2);">
-                    <form id="realBookingForm" asp-controller="Home" asp-action="SubmitBooking" method="post">
+                    <form id="realBookingForm"
+                          asp-controller="Home"
+                          asp-action="SubmitBooking"
+                          method="post"
+                          class="js-customer-submit-once"
+                          data-loading-text="Đang gửi yêu cầu đặt bàn...">
                         <div class="row">
 
                             @if (TempData["SuccessMessage"] != null)
@@ -985,7 +990,7 @@
                             <input type="hidden" name="DepositAmount" id="hiddenDepositAmount" value="0" />
 
                             <div class="col-md-12 text-center mt-2">
-                                <button type="submit" class="btn hvr-radial-in" style="background-color: #7DBA4E; color: white; padding: 10px 40px; font-weight: bold; font-size: 15px; text-transform: uppercase; border-radius: 30px; border: none; transition: all 0.3s;">
+                                <button type="submit" class="btn btn-success" style="background-color: #7DBA4E; color: white; padding: 10px 40px; font-weight: bold; font-size: 15px; text-transform: uppercase; border-radius: 30px; border: none; transition: all 0.3s;">
                                     Xác Nhận Đặt Bàn
                                 </button>
                             </div>

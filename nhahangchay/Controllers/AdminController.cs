@@ -1,11 +1,9 @@
-﻿using MailKit.Net.Smtp;
-using MailKit.Security;
+﻿
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Filters;
-using MimeKit;
 using nhahangchay.Data;
 using nhahangchay.Models;
 using nhahangchay.Services;
@@ -38,15 +36,14 @@ namespace nhahangchay.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _config;
         private readonly CloudinaryService _cloudinaryService;
+        private readonly EmailService _emailService;
 
-        public AdminController(
-            ApplicationDbContext context,
-            IConfiguration config,
-            CloudinaryService cloudinaryService)
+        public AdminController(ApplicationDbContext context, IConfiguration config, CloudinaryService cloudinaryService, EmailService emailService)
         {
             _context = context;
             _config = config;
             _cloudinaryService = cloudinaryService;
+            _emailService = emailService;
         }
         public override void OnActionExecuting(ActionExecutingContext context)
         {
@@ -337,7 +334,6 @@ namespace nhahangchay.Controllers
         [ValidateAntiForgeryToken]
         public Task<IActionResult> DeleteBooking(int id)
         {
-            // Giữ action cũ để không vỡ route cũ. Logic thực tế là hủy đơn, không xóa cứng.
             return CancelBooking(id);
         }
 
@@ -360,32 +356,24 @@ namespace nhahangchay.Controllers
             }
 
             booking.Status = BookingCancelled;
-
-            if (!string.IsNullOrWhiteSpace(booking.Email))
-            {
-                await SendCancellationEmail(booking.Email, booking.CustomerName, booking.BookingCode ?? "");
-            }
-
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = $"Đã hủy đơn {booking.BookingCode} và gửi email báo cho khách!";
+            var emailSent = await _emailService.SendAdminCancelledBookingEmailAsync(booking);
+
+            TempData["SuccessMessage"] = emailSent
+                ? $"Đã hủy đơn {booking.BookingCode} và gửi email báo cho khách."
+                : $"Đã hủy đơn {booking.BookingCode}, nhưng chưa gửi được email báo cho khách.";
+
             return RedirectToAction(nameof(Index));
         }
-
-        // =======================================================
         // CHAT
-        // =======================================================
-
         [HttpGet]
         public IActionResult ChatManager()
         {
             return View();
         }
 
-        // =======================================================
         // DISH MANAGEMENT
-        // =======================================================
-
         [HttpGet]
         public IActionResult AddDish()
         {
@@ -701,50 +689,5 @@ namespace nhahangchay.Controllers
             return value.Trim().ToUpperInvariant();
         }
 
-        private async Task SendCancellationEmail(string toEmail, string customerName, string bookingCode)
-        {
-            try
-            {
-                var senderEmail = _config["EmailSettings:SenderEmail"];
-                var senderPassword = _config["EmailSettings:SenderPassword"];
-
-                if (string.IsNullOrWhiteSpace(senderEmail) || string.IsNullOrWhiteSpace(senderPassword))
-                {
-                    Console.WriteLine("Thiếu cấu hình EmailSettings.");
-                    return;
-                }
-
-                var emailMessage = new MimeMessage();
-                emailMessage.From.Add(new MailboxAddress("SenVie Restaurant", senderEmail));
-                emailMessage.To.Add(new MailboxAddress("Quý Khách", toEmail));
-                emailMessage.ReplyTo.Add(new MailboxAddress("No Reply", "noreply@senvierstaurant.com"));
-                emailMessage.Subject = "THÔNG BÁO HỦY ĐƠN ĐẶT BÀN - SenVie";
-
-                emailMessage.Body = new BodyBuilder
-                {
-                    HtmlBody = $@"
-                        <div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #dc3545; border-radius: 10px;'>
-                            <h2 style='color: #dc3545;'>THÔNG BÁO HỦY ĐƠN ĐẶT BÀN</h2>
-                            <p>Kính chào <strong>{customerName}</strong>,</p>
-                            <p>Nhà hàng chay SenVie rất tiếc phải thông báo: Đơn đặt bàn có mã <strong style='color: red;'>{bookingCode}</strong> của bạn đã bị hủy bởi Quản trị viên hệ thống.</p>
-                            <p>Nếu bạn có bất kỳ thắc mắc nào hoặc muốn đặt lại bàn, vui lòng liên hệ Hotline: <strong>0123.456.789</strong> hoặc chat trực tiếp với Quản lý tại website.</p>
-                            <p style='color: #888; font-size: 12px; margin-top: 20px;'>* Vui lòng không trả lời email này vì đây là hộp thư tự động.</p>
-                            <br/>
-                            <p><i>Trân trọng,<br/>Ban Quản lý SenVie Restaurant</i></p>
-                        </div>"
-                }.ToMessageBody();
-
-                using var smtp = new MailKit.Net.Smtp.SmtpClient();
-
-                await smtp.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-                await smtp.AuthenticateAsync(senderEmail, senderPassword);
-                await smtp.SendAsync(emailMessage);
-                await smtp.DisconnectAsync(true);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Lỗi gửi mail hủy: " + ex.Message);
-            }
-        }
     }
 }

@@ -288,14 +288,17 @@
                                             <form asp-controller="Home"
                                                   asp-action="CancelMyBooking"
                                                   method="post"
-                                                  class="profile-cancel-form"
-                                                  onsubmit="return confirm(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(GetCancelConfirmText(item))));">
+                                                  onsubmit="return senvieConfirmSubmit(
+                                                this,
+                                                'Bạn có chắc chắn muốn hủy đơn đặt bàn này không? Sau khi hủy, đơn sẽ không thể check-in.',
+                                                'Đang hủy đơn đặt bàn...'
+                                                );">
                                                 @Html.AntiForgeryToken()
 
                                                 <input type="hidden" name="code" value="@item.BookingCode" />
 
-                                                <button type="submit" class="profile-cancel-btn">
-                                                    Hủy đơn
+                                                <button type="submit" class="btn btn-danger">
+                                                    <i class="fas fa-ban"></i> Hủy đơn
                                                 </button>
                                             </form>
                                         </td>
