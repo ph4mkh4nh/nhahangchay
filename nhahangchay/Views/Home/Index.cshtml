@@ -929,9 +929,20 @@
                                         <i class="far fa-calendar-alt text-success mr-1"></i> Thời gian đến nhà hàng *
                                     </label>
                                     <div style="font-size: 13px; color: #333; font-style: italic; margin-bottom: 8px;">
-                                        <span style="color: #17a2b8;">✦</span> Quý khách vui lòng đặt trước tối thiểu 1 tiếng.
+                                        <span style="color: red;">✦</span>
+                                        Quý khách vui lòng chọn thời gian sau hiện tại ít nhất <strong>1 tiếng</strong>.
                                     </div>
-                                    <input type="datetime-local" name="BookingDate" id="bookingDateInput" class="form-control custom-input" required />
+                                    <input type="datetime-local"
+                                           name="BookingDate"
+                                           id="bookingDateInput"
+                                           class="form-control custom-input"
+                                           required
+                                           autocomplete="off" />
+
+                                    <div id="bookingDateClientError"
+                                         class="text-danger font-weight-bold mt-1"
+                                         style="display:none; font-size: 13px;">
+                                    </div>
                                 </div>
                             </div>
 
@@ -1183,6 +1194,163 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
+            // =====================================================
+            // 1. KHÓA NGÀY GIỜ QUÁ KHỨ + BẮT ĐẶT TRƯỚC TỐI THIỂU 1 TIẾNG
+            // =====================================================
+
+            function padDatePart(value) {
+                return String(value).padStart(2, '0');
+            }
+
+            function getMinBookingDate() {
+                var minDate = new Date();
+
+                // Bắt đặt trước tối thiểu 60 phút
+                minDate.setMinutes(minDate.getMinutes() + 60);
+                minDate.setSeconds(0);
+                minDate.setMilliseconds(0);
+
+                return minDate;
+            }
+
+            function toDateTimeLocalValue(date) {
+                var year = date.getFullYear();
+                var month = padDatePart(date.getMonth() + 1);
+                var day = padDatePart(date.getDate());
+                var hours = padDatePart(date.getHours());
+                var minutes = padDatePart(date.getMinutes());
+
+                return year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
+            }
+
+            function formatVietnamDateTime(date) {
+                return padDatePart(date.getDate()) + '/' +
+                    padDatePart(date.getMonth() + 1) + '/' +
+                    date.getFullYear() + ' lúc ' +
+                    padDatePart(date.getHours()) + ':' +
+                    padDatePart(date.getMinutes());
+            }
+
+            function updateBookingDateMin() {
+                var input = document.getElementById('bookingDateInput');
+
+                if (!input) {
+                    return null;
+                }
+
+                var minDate = getMinBookingDate();
+                input.min = toDateTimeLocalValue(minDate);
+
+                return minDate;
+            }
+
+            function showBookingDateError(message) {
+                $('#bookingDateClientError')
+                    .text(message)
+                    .show();
+            }
+
+            function hideBookingDateError() {
+                $('#bookingDateClientError')
+                    .text('')
+                    .hide();
+            }
+
+            function getBookingDateErrorMessage(minDate) {
+                return 'Vui lòng chọn thời gian từ ' +
+                    formatVietnamDateTime(minDate) +
+                    ' trở đi để nhà hàng có ít nhất 1 tiếng chuẩn bị món và không gian.';
+            }
+
+            function validateBookingDate(showMessage) {
+                var input = document.getElementById('bookingDateInput');
+
+                if (!input) {
+                    return true;
+                }
+
+                var minDate = updateBookingDateMin();
+                var selectedValue = input.value;
+
+                input.setCustomValidity('');
+                hideBookingDateError();
+
+                if (!selectedValue) {
+                    return true;
+                }
+
+                var selectedDate = new Date(selectedValue);
+
+                if (selectedDate < minDate) {
+                    var message = getBookingDateErrorMessage(minDate);
+
+                    input.setCustomValidity(message);
+
+                    if (showMessage) {
+                        showBookingDateError(message);
+                    }
+
+                    return false;
+                }
+
+                return true;
+            }
+
+            var bookingDateInput = document.getElementById('bookingDateInput');
+
+            if (bookingDateInput) {
+                updateBookingDateMin();
+
+                bookingDateInput.addEventListener('focus', function () {
+                    updateBookingDateMin();
+                });
+
+                bookingDateInput.addEventListener('click', function () {
+                    updateBookingDateMin();
+                });
+
+                bookingDateInput.addEventListener('input', function () {
+                    validateBookingDate(false);
+                });
+
+                bookingDateInput.addEventListener('change', function () {
+                    validateBookingDate(true);
+                });
+
+                bookingDateInput.addEventListener('blur', function () {
+                    validateBookingDate(true);
+                });
+
+                // Khi trình duyệt tự chặn vì min/required, đổi sang thông báo tiếng Việt
+                bookingDateInput.addEventListener('invalid', function () {
+                    var minDate = updateBookingDateMin();
+                    var message = getBookingDateErrorMessage(minDate);
+
+                    if (!bookingDateInput.value) {
+                        message = 'Vui lòng chọn thời gian đến nhà hàng.';
+                    }
+
+                    bookingDateInput.setCustomValidity(message);
+                    showBookingDateError(message);
+                });
+            }
+
+            $('#realBookingForm').on('submit', function (e) {
+                if (!validateBookingDate(true)) {
+                    e.preventDefault();
+
+                    if (bookingDateInput) {
+                        bookingDateInput.reportValidity();
+                        bookingDateInput.focus();
+                    }
+
+                    return false;
+                }
+            });
+
+            // =====================================================
+            // 2. PRE-ORDER MÓN CHỌN TRƯỚC
+            // =====================================================
 
             var preOrderStorageKey = "senvie_preorder_items";
 
@@ -1237,6 +1405,7 @@
                 cart.forEach(function (item) {
                     var quantity = parseInt(item.quantity) || 1;
                     var price = parseFloat(item.price) || 0;
+
                     total += quantity * price;
 
                     submitItems.push({
@@ -1264,55 +1433,50 @@
                 updatePreOrderSummary($('#bookingTypeSelect').val());
             };
 
+            // =====================================================
+            // 3. FORM ĐỘNG: VIP / OMAKASE / TIỀN CỌC
+            // =====================================================
 
-            // Hàm tính toán và cập nhật giao diện
             function updateDynamicForm() {
                 var bookingType = $('#bookingTypeSelect').val();
                 var guests = parseInt($('#numberOfGuestsInput').val()) || 1;
 
                 if (bookingType === 'Bàn Tiêu Chuẩn') {
-                    // 1. Chế độ Tiêu Chuẩn: Ẩn hết, không thu tiền cọc
                     $('#vipOptionsDiv').slideUp();
                     $('#omakaseOptionsDiv').slideUp();
                     $('#depositInfoDiv').slideUp();
 
                     $('#hiddenDepositAmount').val(0);
 
-                    // Trả Label ghi chú về mặc định
                     $('#specialRequestLabel').html('<i class="far fa-comment-dots text-success mr-1"></i> Yêu cầu đặc biệt (Nếu có):');
                     $('#specialRequestInput').attr('placeholder', 'Ví dụ: Không hành tỏi, thích ngồi gần cửa sổ...');
-
-                } else if (bookingType === 'Bàn VIP') {
-                    // 2. Chế độ VIP: Hiện thông báo Custom, Tính cọc cứng 1 triệu
+                }
+                else if (bookingType === 'Bàn VIP') {
                     $('#vipOptionsDiv').slideDown();
                     $('#omakaseOptionsDiv').slideUp();
                     $('#depositInfoDiv').slideDown();
 
                     var vipDeposit = 1000000;
+
                     $('#hiddenDepositAmount').val(vipDeposit);
                     $('#depositAmountText').text(vipDeposit.toLocaleString('vi-VN') + ' VNĐ');
-                    $('#depositDescription').text('Phí giữ phòng VIP biệt lập & Cam kết không gian.');
+                    $('#depositDescription').text('Phí giữ phòng VIP biệt lập & cam kết không gian.');
 
-                    // Nhắc khách nhập yêu cầu Custom
                     $('#specialRequestLabel').html('<i class="fas fa-gift text-danger mr-1"></i> Ghi chú Trang trí / Custom (Nếu có):');
                     $('#specialRequestInput').attr('placeholder', 'Ví dụ: Setup hoa hồng, nến, bóng bay sinh nhật...');
-
-                } else if (bookingType === 'Omakase Chay') {
-                    // 3. Chế độ Omakase: Hiện bảng chọn Gói, Tính cọc 50% theo đầu người
+                }
+                else if (bookingType === 'Omakase Chay') {
                     $('#vipOptionsDiv').slideUp();
                     $('#omakaseOptionsDiv').slideDown();
                     $('#depositInfoDiv').slideDown();
 
-                    // Lấy giá tiền của Gói Omakase đang được chọn
-                    var tierPrice = parseInt($('#omakaseTierSelect').find(':selected').data('price'));
-                    // Thu cọc 50% = (Giá gói * Số người) / 2
+                    var tierPrice = parseInt($('#omakaseTierSelect').find(':selected').data('price')) || 0;
                     var omakaseDeposit = (tierPrice * guests) * 0.5;
 
                     $('#hiddenDepositAmount').val(omakaseDeposit);
                     $('#depositAmountText').text(omakaseDeposit.toLocaleString('vi-VN') + ' VNĐ');
                     $('#depositDescription').text('Cọc 50% trải nghiệm Omakase cho ' + guests + ' khách.');
 
-                    // Omakase đặc biệt quan tâm đến Dị ứng
                     $('#specialRequestLabel').html('<i class="fas fa-exclamation-triangle text-warning mr-1"></i> Ghi chú Dị ứng thực phẩm (Bắt buộc):');
                     $('#specialRequestInput').attr('placeholder', 'Ví dụ: Dị ứng đậu phộng, không ăn cay, dị ứng gluten...');
                 }
@@ -1320,12 +1484,10 @@
                 updatePreOrderSummary(bookingType);
             }
 
-            // Lắng nghe sự kiện: Bất cứ khi nào Khách đổi Loại bàn, Số người, hoặc Gói Omakase -> Chạy lại hàm tính toán
-            $('#bookingTypeSelect, #numberOfGuestsInput, #omakaseTierSelect').on('change keyup', function() {
+            $('#bookingTypeSelect, #numberOfGuestsInput, #omakaseTierSelect').on('change keyup', function () {
                 updateDynamicForm();
             });
 
-            // Chạy lần đầu tiên khi trang vừa load xong
             updateDynamicForm();
         });
     </script>
