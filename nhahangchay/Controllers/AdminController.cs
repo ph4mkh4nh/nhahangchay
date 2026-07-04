@@ -1,14 +1,14 @@
-﻿
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.EntityFrameworkCore;
 using nhahangchay.Data;
 using nhahangchay.Models;
 using nhahangchay.Services;
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace nhahangchay.Controllers
@@ -33,18 +33,22 @@ namespace nhahangchay.Controllers
             "image/jpg"
         };
 
+        private static readonly SemaphoreSlim DishCreateLock = new(1, 1);
+
         private readonly ApplicationDbContext _context;
-        private readonly IConfiguration _config;
         private readonly CloudinaryService _cloudinaryService;
         private readonly EmailService _emailService;
 
-        public AdminController(ApplicationDbContext context, IConfiguration config, CloudinaryService cloudinaryService, EmailService emailService)
+        public AdminController(
+            ApplicationDbContext context,
+            CloudinaryService cloudinaryService,
+            EmailService emailService)
         {
             _context = context;
-            _config = config;
             _cloudinaryService = cloudinaryService;
             _emailService = emailService;
         }
+
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             var currentEmail = User.Identity?.Name;
@@ -57,9 +61,6 @@ namespace nhahangchay.Controllers
 
             base.OnActionExecuting(context);
         }
-        // =======================================================
-        // BOOKING MANAGEMENT
-        // =======================================================
 
         [HttpGet]
         public async Task<IActionResult> Index(
@@ -72,9 +73,13 @@ namespace nhahangchay.Controllers
             int page = 1,
             int pageSize = 10)
         {
-            if (page < 1) page = 1;
+            if (page < 1)
+            {
+                page = 1;
+            }
 
             var allowedPageSizes = new[] { 10, 25, 50 };
+
             if (!allowedPageSizes.Contains(pageSize))
             {
                 pageSize = 10;
@@ -82,7 +87,6 @@ namespace nhahangchay.Controllers
 
             if (string.IsNullOrWhiteSpace(quickFilter))
             {
-                // Mặc định ưu tiên đơn đang cần nhân viên xử lý.
                 quickFilter = "pending";
             }
 
@@ -92,11 +96,20 @@ namespace nhahangchay.Controllers
             ViewBag.TodayCount = await _context.Bookings.CountAsync(b =>
                 b.BookingDate >= today && b.BookingDate < tomorrow);
 
-            ViewBag.PendingCount = await _context.Bookings.CountAsync(b => b.Status == BookingPending);
-            ViewBag.CheckedInCount = await _context.Bookings.CountAsync(b => b.Status == BookingCheckedIn);
-            ViewBag.CancelledCount = await _context.Bookings.CountAsync(b => b.Status == BookingCancelled);
+            ViewBag.PendingCount = await _context.Bookings.CountAsync(b =>
+                b.Status == BookingPending);
+
+            ViewBag.CheckedInCount = await _context.Bookings.CountAsync(b =>
+                b.Status == BookingCheckedIn);
+
+            ViewBag.CancelledCount = await _context.Bookings.CountAsync(b =>
+                b.Status == BookingCancelled);
+
             ViewBag.DepositDebtCount = await _context.Bookings.CountAsync(b =>
-                b.DepositAmount > 0 && b.PaymentStatus == PaymentUnpaid && b.Status == BookingPending);
+                b.DepositAmount > 0 &&
+                b.PaymentStatus == PaymentUnpaid &&
+                b.Status == BookingPending);
+
             ViewBag.TodayDepositCollected = await _context.Bookings
                 .Where(b =>
                     b.DepositAmount > 0 &&
@@ -111,6 +124,7 @@ namespace nhahangchay.Controllers
                     b.PaymentStatus == PaymentUnpaid &&
                     b.Status == BookingPending)
                 .SumAsync(b => (decimal?)b.DepositAmount) ?? 0;
+
             var bookings = _context.Bookings.AsNoTracking().AsQueryable();
 
             bookings = ApplyQuickFilter(bookings, quickFilter, today);
@@ -130,37 +144,7 @@ namespace nhahangchay.Controllers
                 bookings = bookings.Where(b => b.Status == statusFilter.Value);
             }
 
-            if (dateFilter == "today")
-            {
-                bookings = bookings.Where(b => b.BookingDate >= today && b.BookingDate < today.AddDays(1));
-            }
-            else if (dateFilter == "tomorrow")
-            {
-                var start = today.AddDays(1);
-                var end = today.AddDays(2);
-
-                bookings = bookings.Where(b => b.BookingDate >= start && b.BookingDate < end);
-            }
-            else if (dateFilter == "week")
-            {
-                var end = today.AddDays(7);
-
-                bookings = bookings.Where(b => b.BookingDate >= today && b.BookingDate < end);
-            }
-            else if (dateFilter == "range")
-            {
-                if (fromDate.HasValue)
-                {
-                    var start = fromDate.Value.Date;
-                    bookings = bookings.Where(b => b.BookingDate >= start);
-                }
-
-                if (toDate.HasValue)
-                {
-                    var end = toDate.Value.Date.AddDays(1);
-                    bookings = bookings.Where(b => b.BookingDate < end);
-                }
-            }
+            bookings = ApplyDateFilter(bookings, dateFilter, fromDate, toDate, today);
 
             var totalItems = await bookings.CountAsync();
             var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
@@ -182,7 +166,6 @@ namespace nhahangchay.Controllers
             ViewBag.CurrentFromDate = fromDate?.ToString("yyyy-MM-dd");
             ViewBag.CurrentToDate = toDate?.ToString("yyyy-MM-dd");
             ViewBag.CurrentQuickFilter = quickFilter;
-
             ViewBag.CurrentPage = page;
             ViewBag.PageSize = pageSize;
             ViewBag.TotalItems = totalItems;
@@ -198,7 +181,7 @@ namespace nhahangchay.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ProcessCheckIn(string bookingCode)
+        public async Task<IActionResult> ProcessCheckIn(string? bookingCode)
         {
             var normalizedCode = NormalizeBookingCode(bookingCode);
 
@@ -209,14 +192,15 @@ namespace nhahangchay.Controllers
             }
 
             var booking = await _context.Bookings
-                .FirstOrDefaultAsync(b => b.BookingCode != null && b.BookingCode.ToUpper() == normalizedCode);
+                .FirstOrDefaultAsync(b =>
+                    b.BookingCode != null &&
+                    b.BookingCode.ToUpper() == normalizedCode);
 
             if (booking == null)
             {
                 TempData["Error"] = $"Không tìm thấy đơn đặt bàn nào với mã '{normalizedCode}'!";
                 return RedirectToAction(nameof(CheckIn));
             }
-
 
             if (booking.Status == BookingCancelled)
             {
@@ -366,14 +350,13 @@ namespace nhahangchay.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-        // CHAT
+
         [HttpGet]
         public IActionResult ChatManager()
         {
             return View();
         }
 
-        // DISH MANAGEMENT
         [HttpGet]
         public IActionResult AddDish()
         {
@@ -384,6 +367,13 @@ namespace nhahangchay.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddDish(Dish model, IFormFile? imageFile)
         {
+            if (model == null)
+            {
+                TempData["ErrorMessage"] = "Dữ liệu món ăn không hợp lệ.";
+                return RedirectToAction(nameof(AddDish));
+            }
+
+            NormalizeDishInput(model);
             ValidateDishImage(imageFile, required: true);
 
             if (!ModelState.IsValid)
@@ -391,19 +381,41 @@ namespace nhahangchay.Controllers
                 return View(model);
             }
 
-            if (!await UploadDishImageToModel(model, imageFile!))
+            await DishCreateLock.WaitAsync();
+
+            try
             {
-                return View(model);
+                var duplicateSince = DateTime.Now.AddMinutes(-3);
+                var isRecentDuplicate = await _context.Dishes.AnyAsync(x =>
+                    x.Name == model.Name &&
+                    x.Category == model.Category &&
+                    x.Price == model.Price &&
+                    x.CreatedAt >= duplicateSince);
+
+                if (isRecentDuplicate)
+                {
+                    TempData["ErrorMessage"] = $"Món \"{model.Name}\" vừa được thêm trước đó. Hệ thống đã chặn thao tác gửi trùng.";
+                    return RedirectToAction(nameof(Dishes));
+                }
+
+                if (!await UploadDishImageToModel(model, imageFile!))
+                {
+                    return View(model);
+                }
+
+                model.CreatedAt = DateTime.Now;
+                model.IsAvailable = false;
+
+                _context.Dishes.Add(model);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = $"Đã thêm món '{model.Name}' vào thực đơn thành công!";
+                return RedirectToAction(nameof(Dishes));
             }
-
-            model.CreatedAt = DateTime.Now;
-            model.IsAvailable = false;
-
-            _context.Dishes.Add(model);
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = $"Đã thêm món '{model.Name}' vào thực đơn thành công!";
-            return RedirectToAction(nameof(Dishes));
+            finally
+            {
+                DishCreateLock.Release();
+            }
         }
 
         [HttpGet]
@@ -481,9 +493,8 @@ namespace nhahangchay.Controllers
                 TempData["ErrorMessage"] = "Không tìm thấy món ăn cần sửa.";
                 return RedirectToAction(nameof(Dishes));
             }
-
+            NormalizeDishInput(model);
             ValidateDishImage(imageFile, required: false);
-
             if (!ModelState.IsValid)
             {
                 model.ImageUrl = dish.ImageUrl;
@@ -510,9 +521,7 @@ namespace nhahangchay.Controllers
 
                 await TryDeleteCloudinaryImageAsync(oldPublicId);
             }
-
             await _context.SaveChangesAsync();
-
             TempData["SuccessMessage"] = $"Đã cập nhật món '{dish.Name}' thành công.";
             return RedirectToAction(nameof(Dishes));
         }
@@ -528,14 +537,10 @@ namespace nhahangchay.Controllers
                 TempData["ErrorMessage"] = "Không tìm thấy món ăn cần xóa.";
                 return RedirectToAction(nameof(Dishes));
             }
-
-            var hasBookingDetails = await _context.BookingDetails
-                .AnyAsync(x => x.DishId == id);
-
+            var hasBookingDetails = await _context.BookingDetails.AnyAsync(x => x.DishId == id);
             if (hasBookingDetails)
             {
                 dish.IsAvailable = false;
-
                 await _context.SaveChangesAsync();
 
                 TempData["SuccessMessage"] =
@@ -553,13 +558,8 @@ namespace nhahangchay.Controllers
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = $"Đã xóa món \"{dish.Name}\" khỏi hệ thống.";
-
             return RedirectToAction(nameof(Dishes));
         }
-
-        // =======================================================
-        // HELPERS
-        // =======================================================
 
         private IQueryable<Booking> ApplyQuickFilter(IQueryable<Booking> bookings, string quickFilter, DateTime today)
         {
@@ -574,6 +574,54 @@ namespace nhahangchay.Controllers
                 _ => bookings.Where(b => b.Status == BookingPending)
             };
         }
+        private IQueryable<Booking> ApplyDateFilter(
+            IQueryable<Booking> bookings,
+            string? dateFilter,
+            DateTime? fromDate,
+            DateTime? toDate,
+            DateTime today)
+        {
+            if (dateFilter == "today")
+            {
+                return bookings.Where(b => b.BookingDate >= today && b.BookingDate < today.AddDays(1));
+            }
+
+            if (dateFilter == "tomorrow")
+            {
+                var start = today.AddDays(1);
+                var end = today.AddDays(2);
+                return bookings.Where(b => b.BookingDate >= start && b.BookingDate < end);
+            }
+
+            if (dateFilter == "week")
+            {
+                var end = today.AddDays(7);
+                return bookings.Where(b => b.BookingDate >= today && b.BookingDate < end);
+            }
+
+            if (dateFilter == "range")
+            {
+                if (fromDate.HasValue)
+                {
+                    var start = fromDate.Value.Date;
+                    bookings = bookings.Where(b => b.BookingDate >= start);
+                }
+                if (toDate.HasValue)
+                {
+                    var end = toDate.Value.Date.AddDays(1);
+                    bookings = bookings.Where(b => b.BookingDate < end);
+                }
+            }
+
+            return bookings;
+        }
+
+        private void NormalizeDishInput(Dish dish)
+        {
+            dish.Name = dish.Name?.Trim() ?? "";
+            dish.Category = dish.Category?.Trim() ?? "";
+            dish.Description = dish.Description?.Trim();
+        }
 
         private void ValidateDishImage(IFormFile? imageFile, bool required)
         {
@@ -586,8 +634,8 @@ namespace nhahangchay.Controllers
 
                 return;
             }
-
-            if (!AllowedDishImageTypes.Contains(imageFile.ContentType.ToLower()))
+            var contentType = imageFile.ContentType?.ToLowerInvariant() ?? "";
+            if (!AllowedDishImageTypes.Contains(contentType))
             {
                 ModelState.AddModelError("ImageUrl", "Chỉ cho phép upload ảnh JPG, PNG hoặc WEBP.");
             }
@@ -613,7 +661,6 @@ namespace nhahangchay.Controllers
 
             return true;
         }
-
         private async Task TryDeleteCloudinaryImageAsync(string? publicId)
         {
             if (string.IsNullOrWhiteSpace(publicId))
@@ -627,27 +674,22 @@ namespace nhahangchay.Controllers
             }
             catch
             {
-                // Không chặn thao tác admin nếu Cloudinary lỗi khi xóa ảnh cũ.
             }
         }
 
-        private string NormalizeBookingCode(string rawCode)
+        private string NormalizeBookingCode(string? rawCode)
         {
             if (string.IsNullOrWhiteSpace(rawCode))
             {
                 return "";
             }
-
             var value = rawCode.Trim();
-
             if (Uri.TryCreate(value, UriKind.Absolute, out var uri))
             {
                 var query = uri.Query.TrimStart('?');
-
                 if (!string.IsNullOrEmpty(query))
                 {
                     var pairs = query.Split('&', StringSplitOptions.RemoveEmptyEntries);
-
                     foreach (var pair in pairs)
                     {
                         var parts = pair.Split('=', 2);
@@ -674,20 +716,16 @@ namespace nhahangchay.Controllers
                     value = uri.Segments.LastOrDefault()?.Trim('/') ?? value;
                 }
             }
-
             var index = value.IndexOf("GS-", StringComparison.OrdinalIgnoreCase);
-
             if (index >= 0)
             {
                 value = value.Substring(index);
             }
-
             value = value
                 .Split(new[] { ' ', '\r', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries)
                 .FirstOrDefault() ?? value;
 
             return value.Trim().ToUpperInvariant();
         }
-
     }
 }

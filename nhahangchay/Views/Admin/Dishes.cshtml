@@ -8,7 +8,7 @@
     <div>
         <p class="admin-eyebrow">Quản lý thực đơn</p>
         <h1>Danh sách món ăn</h1>
-        <p class="admin-subtitle">Xem món đã upload, kiểm tra ảnh Cloudinary và bật/tắt hiển thị trên website.</p>
+        <p class="admin-subtitle">Xem món đã upload và bật/tắt hiển thị trên website.</p>
     </div>
 
     <div class="d-flex flex-wrap" style="gap: 10px;">
@@ -126,11 +126,13 @@
                                     <form asp-action="DeleteDish"
                                           asp-route-id="@item.Id"
                                           method="post"
-                                          class="admin-inline-form"
-                                          onsubmit="return senvieConfirmSubmit(this, 'Bạn có chắc chắn muốn XÓA món @item.Name không? Ảnh trên Cloudinary cũng sẽ bị xóa nếu có.', 'Đang xóa món ăn...');">
+                                          class="d-inline">
                                         @Html.AntiForgeryToken()
 
-                                        <button type="submit" class="admin-icon-btn admin-icon-delete" title="Xóa món ăn">
+                                        <button type="submit"
+                                                class="btn btn-danger btn-sm"
+                                                title="Xóa món"
+                                                onclick="return confirm('Bạn có chắc chắn muốn xóa món ăn này không? Nếu món đã từng được khách chọn trong đơn đặt bàn, hệ thống sẽ không xóa khỏi lịch sử mà chỉ ẩn món khỏi menu khách hàng.');">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>

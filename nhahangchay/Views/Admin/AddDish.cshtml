@@ -9,7 +9,7 @@
     <div>
         <p class="admin-eyebrow">Quản lý thực đơn</p>
         <h1>Thêm món ăn mới</h1>
-        <p class="admin-subtitle">Upload ảnh món ăn lên Cloudinary và lưu thông tin vào menu SenVie.</p>
+        <p class="admin-subtitle">Upload ảnh món ăn và lưu thông tin vào menu SenVie.</p>
     </div>
 
     <a asp-controller="Admin" asp-action="Dishes" class="admin-btn admin-btn-reset">
@@ -22,7 +22,7 @@
     <form asp-action="AddDish"
           method="post"
           enctype="multipart/form-data"
-          onsubmit="return senvieSubmitOnce(this, 'Đang upload ảnh và lưu món ăn...');">
+          onsubmit="return senvieAddDishSubmitOnce(this);">
         @Html.AntiForgeryToken()
         <partial name="_DishFormFields" model="Model" />
     </form>
@@ -32,4 +32,36 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        function senvieAddDishSubmitOnce(form) {
+            if (!form) {
+                return true;
+            }
+
+            if (form.dataset.submitted === 'true') {
+                return false;
+            }
+
+            if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
+                return true;
+            }
+
+            form.dataset.submitted = 'true';
+
+            var buttons = form.querySelectorAll('button, input[type="submit"]');
+
+            buttons.forEach(function (button) {
+                button.disabled = true;
+
+                if (button.tagName.toLowerCase() === 'button') {
+                    button.dataset.originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Đang thêm món...';
+                } else {
+                    button.value = 'Đang thêm món...';
+                }
+            });
+
+            return true;
+        }
+    </script>
 }
