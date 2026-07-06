@@ -5,52 +5,255 @@
 <html lang="vi">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>Đăng ký Thành Viên - SenVie</title>
+
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
-</head>
-<body style="background: url('/uploads/slider-02.png') no-repeat center center fixed; background-size: cover; height: 100vh; display: flex; align-items: center;">
 
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: -1;"></div>
+    <style>
+            html,
+            body {
+                width: 100%;
+                min-height: 100%;
+                margin: 0;
+                overflow-x: hidden;
+            }
+
+                body.senvie-register-page {
+                    min-height: 100vh;
+                    min-height: 100svh;
+                    padding: 24px 12px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: linear-gradient(rgba(0, 0, 0, 0.58), rgba(0, 0, 0, 0.58)), url('/uploads/slider-02.png') center center / cover no-repeat;
+                    font-family: Arial, Helvetica, sans-serif;
+                }
+
+            .senvie-register-page .container {
+                width: 100%;
+                max-width: 480px;
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            .senvie-register-card {
+                width: 100%;
+                border-radius: 20px !important;
+                border: none !important;
+                overflow: hidden;
+                box-shadow: 0 20px 55px rgba(0, 0, 0, 0.26) !important;
+            }
+
+                .senvie-register-card .card-body {
+                    padding: 34px 32px !important;
+                }
+
+            .senvie-register-icon {
+                font-size: 40px;
+                color: #7DBA4E;
+            }
+
+            .senvie-register-title {
+                margin-top: 10px;
+                margin-bottom: 8px;
+                color: #172236;
+                font-size: 25px;
+                line-height: 1.22;
+                font-weight: 900;
+                text-align: center;
+            }
+
+            .senvie-register-subtitle {
+                margin-bottom: 0;
+                color: #6f7780;
+                font-size: 14px;
+                line-height: 1.5;
+                text-align: center;
+            }
+
+            .senvie-register-form label {
+                color: #1f2a33;
+                font-size: 14px;
+                font-weight: 800;
+                margin-bottom: 7px;
+            }
+
+            .senvie-register-form .form-group {
+                margin-bottom: 15px;
+            }
+
+            .senvie-register-form .input-group-text {
+                width: 46px;
+                min-height: 46px;
+                justify-content: center;
+                border-color: #d8e0d5;
+                background: #ffffff;
+            }
+
+            .senvie-register-form .form-control {
+                min-height: 46px;
+                border-color: #d8e0d5;
+                color: #1f2a33;
+                font-size: 15px;
+                box-shadow: none;
+            }
+
+                .senvie-register-form .form-control:focus {
+                    border-color: #7DBA4E;
+                    box-shadow: 0 0 0 3px rgba(125, 186, 78, 0.16);
+                }
+
+            .senvie-register-btn {
+                min-height: 50px;
+                border-radius: 999px !important;
+                padding: 12px !important;
+                background-color: #7DBA4E !important;
+                border: none !important;
+                color: #ffffff !important;
+                font-size: 15px;
+                font-weight: 900 !important;
+                letter-spacing: 0.2px;
+            }
+
+                .senvie-register-btn:hover {
+                    background-color: #659f3d !important;
+                    color: #ffffff !important;
+                }
+
+            .senvie-register-links {
+                margin-top: 22px;
+                text-align: center;
+                color: #6f7780;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+
+                .senvie-register-links a {
+                    color: #6f7780;
+                    text-decoration: none;
+                }
+
+                    .senvie-register-links a:hover {
+                        color: #7DBA4E;
+                        text-decoration: none;
+                    }
+
+            @@media (max-width: 575.98px) {
+                body.senvie-register-page {
+                    align-items: flex-start;
+                    padding: 18px 12px;
+                    background-attachment: scroll;
+                }
+
+                .senvie-register-page .container {
+                    max-width: 100%;
+                }
+
+                .senvie-register-card {
+                    border-radius: 18px !important;
+                }
+
+                    .senvie-register-card .card-body {
+                        padding: 26px 22px !important;
+                    }
+
+                .senvie-register-title {
+                    font-size: 23px;
+                }
+
+                .senvie-register-subtitle {
+                    font-size: 13.5px;
+                }
+
+                .senvie-register-form label {
+                    font-size: 13.5px;
+                }
+
+                .senvie-register-form .input-group-text,
+                .senvie-register-form .form-control {
+                    min-height: 44px;
+                }
+            }
+
+            @@media (max-width: 380px) {
+                .senvie-register-card .card-body {
+                    padding: 24px 18px !important;
+                }
+
+                .senvie-register-title {
+                    font-size: 21px;
+                }
+
+                .senvie-register-icon {
+                    font-size: 36px;
+                }
+            }
+    </style>
+</head>
+<body class="senvie-register-page">
 
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-5">
-                <div class="card shadow-lg" style="border-radius: 15px; border: none;">
-                    <div class="card-body p-5">
+            <div class="col-12 col-md-10 col-lg-9">
+                <div class="card shadow-lg senvie-register-card">
+                    <div class="card-body">
                         <div class="text-center mb-4">
-                            <i class="fas fa-seedling" style="font-size: 40px; color: #7DBA4E;"></i>
-                            <h3 class="mt-2 font-weight-bold">ĐĂNG KÝ THÀNH VIÊN</h3>
-                            <p class="text-muted">Thưởng thức những món ăn thuần chay tại SenVie.</p>
+                            <i class="fas fa-seedling senvie-register-icon"></i>
+                            <h3 class="senvie-register-title">ĐĂNG KÝ THÀNH VIÊN</h3>
+                            <p class="senvie-register-subtitle">Thưởng thức những món ăn thuần chay tại SenVie.</p>
                         </div>
 
                         @if (ViewBag.Error != null)
                         {
-                            <div class="alert alert-danger text-center">@ViewBag.Error</div>
+                            <div class="alert alert-danger text-center font-weight-bold">@ViewBag.Error</div>
                         }
 
-                        <form asp-controller="Account" asp-action="Register" method="post">
-                            <div class="form-group mb-3">
-                                <label class="font-weight-bold">Họ và Tên</label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend"><span class="input-group-text bg-white"><i class="fas fa-user text-muted"></i></span></div>
-                                    <input type="text" name="fullName" class="form-control border-left-0" placeholder="Nguyễn Văn A" required>
-                                </div>
-                            </div>
+                        <form asp-controller="Account"
+                              asp-action="Register"
+                              method="post"
+                              class="senvie-register-form js-customer-submit-once"
+                              data-loading-text="Đang tạo tài khoản và gửi mã OTP...">
+                            @Html.AntiForgeryToken()
 
-                            <div class="form-group mb-3">
-                                <label class="font-weight-bold">Địa chỉ Email</label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend"><span class="input-group-text bg-white"><i class="fas fa-envelope text-muted"></i></span></div>
-                                    <input type="email" name="email" class="form-control border-left-0" placeholder="email@gmail.com" required>
-                                </div>
-                            </div>
-
-                            <div class="form-group mb-3">
-                                <label class="font-weight-bold">Mật khẩu</label>
+                            <div class="form-group">
+                                <label>Họ và Tên</label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
-                                        <span class="input-group-text bg-white">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-user text-muted"></i>
+                                        </span>
+                                    </div>
+                                    <input type="text"
+                                           name="fullName"
+                                           class="form-control border-left-0"
+                                           placeholder="Nguyễn Văn A"
+                                           required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Địa chỉ Email</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-envelope text-muted"></i>
+                                        </span>
+                                    </div>
+                                    <input type="email"
+                                           name="email"
+                                           class="form-control border-left-0"
+                                           placeholder="email@gmail.com"
+                                           required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Mật khẩu</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
                                             <i class="fas fa-lock text-muted"></i>
                                         </span>
                                     </div>
@@ -64,10 +267,10 @@
                             </div>
 
                             <div class="form-group mb-4">
-                                <label class="font-weight-bold">Nhập lại mật khẩu</label>
+                                <label>Nhập lại mật khẩu</label>
                                 <div class="input-group">
                                     <div class="input-group-prepend">
-                                        <span class="input-group-text bg-white">
+                                        <span class="input-group-text">
                                             <i class="fas fa-shield-alt text-muted"></i>
                                         </span>
                                     </div>
@@ -80,19 +283,23 @@
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn btn-block text-white" style="background-color: #7DBA4E; border-radius: 50px; padding: 12px; font-weight: bold;">
+                            <button type="submit" class="btn btn-block senvie-register-btn">
                                 TẠO TÀI KHOẢN
                             </button>
                         </form>
 
-                        <div class="text-center mt-4">
-                            <a href="/Account/Login" class="text-muted">Đã có tài khoản? Đăng nhập ngay</a><br />
-                            <a href="/" class="text-muted mt-2 d-inline-block"><i class="fas fa-arrow-left"></i> Về trang chủ</a>
+                        <div class="senvie-register-links">
+                            <a href="/Account/Login">Đã có tài khoản? Đăng nhập ngay</a><br />
+                            <a href="/" class="d-inline-block mt-2">
+                                <i class="fas fa-arrow-left"></i> Về trang chủ
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script src="~/js/customer-common.js" asp-append-version="true"></script>
 </body>
 </html>
