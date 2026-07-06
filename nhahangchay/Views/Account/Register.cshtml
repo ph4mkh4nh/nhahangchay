@@ -190,6 +190,107 @@
                     font-size: 36px;
                 }
             }
+            /* Register mobile + loading overlay fix */
+            .customer-processing-overlay {
+                position: fixed;
+                inset: 0;
+                z-index: 999999;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                background: rgba(18, 28, 18, 0.55);
+                backdrop-filter: blur(3px);
+            }
+
+                .customer-processing-overlay.show {
+                    display: flex;
+                }
+
+            .customer-processing-box {
+                width: min(360px, calc(100vw - 40px));
+                padding: 28px 24px;
+                border-radius: 22px;
+                background: #ffffff;
+                box-shadow: 0 24px 70px rgba(0, 0, 0, 0.25);
+                text-align: center;
+                color: #1f2f1f;
+            }
+
+                .customer-processing-box i {
+                    display: block;
+                    margin-bottom: 16px;
+                    color: #7DBA4E;
+                    font-size: 34px;
+                }
+
+                .customer-processing-box strong {
+                    display: block;
+                    font-size: 20px;
+                    font-weight: 900;
+                    margin-bottom: 8px;
+                }
+
+                .customer-processing-box span {
+                    display: block;
+                    color: #667085;
+                    font-weight: 600;
+                    line-height: 1.5;
+                }
+
+            @@media (max-width: 767.98px) {
+                body.senvie-register-page {
+                    width: 100% !important;
+                    min-height: 100vh !important;
+                    min-height: 100svh !important;
+                    padding: 18px 12px !important;
+                    align-items: flex-start !important;
+                    justify-content: center !important;
+                    overflow-x: hidden !important;
+                    background-attachment: scroll !important;
+                }
+
+                .senvie-register-page .container {
+                    width: 100% !important;
+                    max-width: 430px !important;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                    padding-left: 0 !important;
+                    padding-right: 0 !important;
+                }
+
+                .senvie-register-page .row {
+                    width: 100% !important;
+                    margin-left: 0 !important;
+                    margin-right: 0 !important;
+                    justify-content: center !important;
+                }
+
+                .senvie-register-page [class*="col-"] {
+                    flex: 0 0 100% !important;
+                    max-width: 100% !important;
+                    width: 100% !important;
+                    padding-left: 0 !important;
+                    padding-right: 0 !important;
+                }
+
+                .senvie-register-card {
+                    width: 100% !important;
+                    max-width: 430px !important;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                }
+
+                .senvie-register-form .form-control,
+                .senvie-register-form .input-group-text,
+                .senvie-register-btn {
+                    font-size: 16px !important;
+                }
+
+                .senvie-register-btn {
+                    min-height: 50px !important;
+                    white-space: normal !important;
+                }
+            }
     </style>
 </head>
 <body class="senvie-register-page">

@@ -500,173 +500,6 @@
         z-index: 9998 !important;
     }
 }
-/* =====================================================
-   SenVie Home Mobile - Testimonials
-===================================================== */
-
-@media (max-width: 767.98px) {
-    #testimonials {
-        padding-top: 48px !important;
-        padding-bottom: 52px !important;
-        overflow: hidden !important;
-    }
-
-        #testimonials .container,
-        #testimonials .container-fluid {
-            padding-left: 16px !important;
-            padding-right: 16px !important;
-        }
-
-        #testimonials .section-title {
-            margin-bottom: 26px !important;
-        }
-
-            #testimonials .section-title h3 {
-                font-size: 25px !important;
-                line-height: 1.25 !important;
-                margin-bottom: 12px !important;
-            }
-
-            #testimonials .section-title p {
-                max-width: 100% !important;
-                font-size: 14px !important;
-                line-height: 1.65 !important;
-                letter-spacing: 0 !important;
-            }
-
-        #testimonials .testi-carousel,
-        #testimonials .owl-stage-outer,
-        #testimonials .owl-stage,
-        #testimonials .owl-item {
-            max-width: 100% !important;
-        }
-
-        #testimonials .testimonial {
-            width: 100% !important;
-            max-width: 360px !important;
-            margin: 0 auto !important;
-            padding: 0 !important;
-            display: block !important;
-            text-align: center !important;
-            overflow: visible !important;
-        }
-
-        #testimonials .testi-meta {
-            float: none !important;
-            width: 100% !important;
-            max-width: 260px !important;
-            margin: 0 auto 16px !important;
-            padding: 14px !important;
-            border-radius: 18px !important;
-            background: #333333 !important;
-            text-align: center !important;
-        }
-
-            #testimonials .testi-meta img {
-                width: 100% !important;
-                max-width: 210px !important;
-                height: 210px !important;
-                object-fit: cover !important;
-                display: block !important;
-                margin: 0 auto 12px !important;
-                border-radius: 0 !important;
-            }
-
-            #testimonials .testi-meta h4 {
-                margin: 0 !important;
-                color: #ffffff !important;
-                font-size: 18px !important;
-                line-height: 1.25 !important;
-                letter-spacing: 0.5px !important;
-                white-space: normal !important;
-            }
-
-        #testimonials .desc {
-            float: none !important;
-            width: 100% !important;
-            max-width: 360px !important;
-            min-height: 0 !important;
-            margin: 0 auto !important;
-            padding: 22px 20px !important;
-            border-radius: 20px !important;
-            background: #7DBA4E !important;
-            color: #ffffff !important;
-            border: none !important;
-            outline: none !important;
-            box-shadow: 0 12px 28px rgba(30, 55, 30, 0.12) !important;
-        }
-
-            #testimonials .desc::before,
-            #testimonials .desc::after {
-                display: none !important;
-            }
-
-            #testimonials .desc h3 {
-                color: #ffffff !important;
-                font-size: 22px !important;
-                line-height: 1.3 !important;
-                margin: 0 0 12px !important;
-                padding: 0 !important;
-                word-break: normal !important;
-                white-space: normal !important;
-            }
-
-                #testimonials .desc h3 i {
-                    display: inline-block !important;
-                    margin-right: 6px !important;
-                }
-
-            #testimonials .desc p,
-            #testimonials .desc .lead {
-                color: #ffffff !important;
-                font-size: 14px !important;
-                line-height: 1.7 !important;
-                margin: 0 !important;
-                letter-spacing: 0 !important;
-                word-break: normal !important;
-                white-space: normal !important;
-            }
-
-        #testimonials .owl-nav {
-            margin-top: 18px !important;
-            text-align: center !important;
-        }
-
-            #testimonials .owl-nav button,
-            #testimonials .owl-prev,
-            #testimonials .owl-next {
-                position: static !important;
-                width: 38px !important;
-                height: 38px !important;
-                margin: 0 6px !important;
-                border-radius: 50% !important;
-                background: #7DBA4E !important;
-                color: #ffffff !important;
-                display: inline-flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                transform: none !important;
-            }
-}
-
-@media (max-width: 390px) {
-    #testimonials .testi-meta {
-        max-width: 240px !important;
-    }
-
-        #testimonials .testi-meta img {
-            max-width: 190px !important;
-            height: 190px !important;
-        }
-
-    #testimonials .desc {
-        padding: 20px 16px !important;
-    }
-
-        #testimonials .desc h3 {
-            font-size: 20px !important;
-        }
-}
 /* Fix iOS datetime input overflow in booking form */
 @media (max-width: 767.98px) {
     #realBookingForm,
@@ -706,5 +539,235 @@
         #realBookingForm .col-md-12 {
             min-width: 0 !important;
             max-width: 100% !important;
+        }
+}
+/* SenVie Home Mobile - Testimonials stable */
+@media (max-width: 767.98px) {
+    #testimonials {
+        padding-top: 46px !important;
+        padding-bottom: 46px !important;
+        overflow: hidden !important;
+    }
+
+        #testimonials .container,
+        #testimonials .container-fluid {
+            padding-left: 14px !important;
+            padding-right: 14px !important;
+        }
+
+        #testimonials .section-title {
+            margin-bottom: 24px !important;
+        }
+
+            #testimonials .section-title h3 {
+                font-size: 25px !important;
+                line-height: 1.25 !important;
+                margin-bottom: 12px !important;
+            }
+
+            #testimonials .section-title p {
+                max-width: 100% !important;
+                font-size: 14px !important;
+                line-height: 1.65 !important;
+                letter-spacing: 0 !important;
+            }
+
+        #testimonials .testi-carousel {
+            display: block !important;
+            width: 100% !important;
+            max-width: 390px !important;
+            margin: 0 auto !important;
+        }
+
+        #testimonials .owl-stage-outer {
+            height: auto !important;
+            overflow: visible !important;
+        }
+
+        #testimonials .owl-stage {
+            width: 100% !important;
+            height: auto !important;
+            transform: none !important;
+            transition: none !important;
+            display: block !important;
+        }
+
+        #testimonials .owl-item {
+            width: 100% !important;
+            float: none !important;
+            display: block !important;
+            margin: 0 0 18px !important;
+        }
+
+            #testimonials .owl-item.cloned {
+                display: none !important;
+            }
+
+        #testimonials .owl-nav,
+        #testimonials .owl-dots {
+            display: none !important;
+        }
+
+        #testimonials .testimonial {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 auto !important;
+            padding: 0 !important;
+            display: block !important;
+            text-align: center !important;
+            overflow: hidden !important;
+            border-radius: 20px !important;
+            background: #ffffff !important;
+            box-shadow: 0 12px 26px rgba(30, 55, 30, 0.08) !important;
+        }
+
+        #testimonials .testi-meta {
+            float: none !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 16px 16px 12px !important;
+            background: #333333 !important;
+            text-align: center !important;
+        }
+
+            #testimonials .testi-meta img {
+                width: 150px !important;
+                height: 150px !important;
+                object-fit: cover !important;
+                display: block !important;
+                margin: 0 auto 12px !important;
+                border-radius: 14px !important;
+            }
+
+            #testimonials .testi-meta h4 {
+                margin: 0 !important;
+                color: #ffffff !important;
+                font-size: 17px !important;
+                line-height: 1.25 !important;
+                letter-spacing: 0.4px !important;
+            }
+
+        #testimonials .desc {
+            float: none !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-height: 0 !important;
+            margin: 0 !important;
+            padding: 20px 18px 22px !important;
+            background: #7DBA4E !important;
+            color: #ffffff !important;
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+            #testimonials .desc::before,
+            #testimonials .desc::after {
+                display: none !important;
+            }
+
+            #testimonials .desc h3 {
+                color: #ffffff !important;
+                font-size: 20px !important;
+                line-height: 1.35 !important;
+                margin: 0 0 10px !important;
+                padding: 0 !important;
+                word-break: normal !important;
+                white-space: normal !important;
+            }
+
+            #testimonials .desc p,
+            #testimonials .desc .lead {
+                color: #ffffff !important;
+                font-size: 14px !important;
+                line-height: 1.65 !important;
+                margin: 0 !important;
+                letter-spacing: 0 !important;
+                word-break: normal !important;
+                white-space: normal !important;
+            }
+}
+/* SenVie Home Mobile - Booking form balance */
+
+@media (max-width: 767.98px) {
+    #contact {
+        overflow-x: hidden !important;
+    }
+
+        #contact .container,
+        #contact .container-fluid {
+            padding-left: 12px !important;
+            padding-right: 12px !important;
+        }
+
+        #contact .custom-booking-form {
+            width: calc(100% - 8px) !important;
+            max-width: 430px !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            padding: 22px 18px !important;
+            border-radius: 22px !important;
+            box-sizing: border-box !important;
+        }
+
+    #realBookingForm,
+    #realBookingForm .row {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+        #realBookingForm [class*="col-"] {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            box-sizing: border-box !important;
+        }
+
+        #realBookingForm .form-group {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
+        #realBookingForm input,
+        #realBookingForm select,
+        #realBookingForm textarea {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+            font-size: 16px !important;
+        }
+
+            #bookingDateInput,
+            #realBookingForm input[type="datetime-local"] {
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                height: 50px !important;
+                padding: 10px 12px !important;
+                border-radius: 10px !important;
+                box-sizing: border-box !important;
+                -webkit-appearance: none !important;
+                appearance: none !important;
+                line-height: 1.3 !important;
+                overflow: hidden !important;
+            }
+
+        #realBookingForm button[type="submit"] {
+            width: 100% !important;
+            max-width: 300px !important;
+            min-height: 50px !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            white-space: normal !important;
         }
 }
