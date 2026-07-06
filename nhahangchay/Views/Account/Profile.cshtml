@@ -196,7 +196,7 @@
                 </div>
 
                 <div class="senvie-table-wrap">
-                    <table class="table table-hover table-senvie">
+                    <table class="table table-hover table-senvie profile-mobile-table profile-current-table">
                         <thead>
                             <tr>
                                 <th class="text-center">Mã Nhận Diện</th>
@@ -212,7 +212,7 @@
                         <tbody>
                             @if (!currentBookings.Any())
                             {
-                                <tr>
+                                <tr class="profile-empty-row">
                                     <td colspan="7" class="p-0 border-0">
                                         <div class="empty-state-box">
                                             <span class="empty-state-icon">0</span>
@@ -230,7 +230,7 @@
                                 foreach (var item in currentBookings)
                                 {
                                     <tr>
-                                        <td class="text-center align-middle">
+                                        <td class="text-center align-middle" data-label="Mã nhận diện">
                                             <button type="button"
                                                     class="btn btn-show-qr btn-sm senvie-qr-btn"
                                                     data-code="@item.BookingCode">
@@ -238,17 +238,21 @@
                                             </button>
                                         </td>
 
-                                        <td class="date-muted align-middle">
-                                            @item.CreatedAt.ToString("dd/MM/yyyy") <br />
-                                            <small>@item.CreatedAt.ToString("HH:mm")</small>
+                                        <td class="date-muted align-middle" data-label="Ngày đặt bàn">
+                                            <div class="profile-date-stack">
+                                                <span class="profile-date-main">@item.CreatedAt.ToString("dd/MM/yyyy")</span>
+                                                <span class="profile-date-time">@item.CreatedAt.ToString("HH:mm")</span>
+                                            </div>
                                         </td>
 
-                                        <td class="date-strong align-middle">
-                                            @item.BookingDate.ToString("dd/MM/yyyy") <br />
-                                            @item.BookingDate.ToString("HH:mm")
+                                        <td class="date-strong align-middle" data-label="Thời gian dùng bữa">
+                                            <div class="profile-date-stack">
+                                                <span class="profile-date-main">@item.BookingDate.ToString("dd/MM/yyyy")</span>
+                                                <span class="profile-date-time">@item.BookingDate.ToString("HH:mm")</span>
+                                            </div>
                                         </td>
 
-                                        <td class="align-middle">
+                                        <td class="align-middle" data-label="Loại bàn">
                                             <span class="table-main-text">@item.BookingType</span>
 
                                             @if (item.DepositAmount > 0 && item.PaymentStatus == 1)
@@ -278,13 +282,13 @@
                                             }
                                         </td>
 
-                                        <td class="text-center table-main-text align-middle">@item.NumberOfGuests</td>
+                                        <td class="text-center table-main-text align-middle" data-label="Số khách">@item.NumberOfGuests</td>
 
-                                        <td class="text-center align-middle">
+                                        <td class="text-center align-middle" data-label="Trạng thái">
                                             <span class="badge badge-warning text-dark status-badge">Chờ duyệt / Chưa đến</span>
                                         </td>
 
-                                        <td class="text-center align-middle">
+                                        <td class="text-center align-middle" data-label="Thao tác">
                                             <form asp-controller="Home"
                                                   asp-action="CancelMyBooking"
                                                   method="post"
@@ -297,8 +301,8 @@
 
                                                 <input type="hidden" name="code" value="@item.BookingCode" />
 
-                                                <button type="submit" class="btn btn-danger">
-                                                    <i class="fas fa-ban"></i> Hủy đơn
+                                                <button type="submit" class="btn btn-danger profile-cancel-order-btn">
+                                                    Hủy đơn
                                                 </button>
                                             </form>
                                         </td>
@@ -312,7 +316,7 @@
 
             <div class="tab-pane fade" id="history" role="tabpanel">
                 <div class="senvie-table-wrap">
-                    <table class="table table-hover table-senvie">
+                    <table class="table table-hover table-senvie profile-mobile-table profile-history-table">
                         <thead>
                             <tr>
                                 <th class="text-center">Mã Đơn</th>
@@ -327,7 +331,7 @@
                         <tbody>
                             @if (!historyBookings.Any())
                             {
-                                <tr>
+                                <tr class="profile-empty-row">
                                     <td colspan="6" class="p-0 border-0">
                                         <div class="empty-state-box">
                                             <span class="empty-state-icon">—</span>
@@ -342,10 +346,10 @@
                                 foreach (var item in historyBookings)
                                 {
                                     <tr>
-                                        <td class="booking-code-text text-center">@item.BookingCode</td>
-                                        <td class="date-muted">@item.CreatedAt.ToString("dd/MM/yyyy - HH:mm")</td>
-                                        <td class="table-main-text">@item.BookingDate.ToString("dd/MM/yyyy - HH:mm")</td>
-                                        <td class="text-secondary font-weight-bold">
+                                        <td class="booking-code-text text-center" data-label="Mã đơn">@item.BookingCode</td>
+                                        <td class="date-muted" data-label="Ngày đặt bàn">@item.CreatedAt.ToString("dd/MM/yyyy - HH:mm")</td>
+                                        <td class="table-main-text" data-label="Thời gian dùng bữa">@item.BookingDate.ToString("dd/MM/yyyy - HH:mm")</td>
+                                        <td class="text-secondary font-weight-bold" data-label="Loại bàn">
                                             @item.BookingType
                                             @if (item.BookingDetails != null && item.BookingDetails.Any())
                                             {
@@ -353,8 +357,8 @@
                                                 <small class="text-success">@item.BookingDetails.Sum(x => x.Quantity) món chọn trước</small>
                                             }
                                         </td>
-                                        <td class="text-center text-secondary font-weight-bold">@item.NumberOfGuests</td>
-                                        <td class="text-center">
+                                        <td class="text-center text-secondary font-weight-bold" data-label="Số khách">@item.NumberOfGuests</td>
+                                        <td class="text-center" data-label="Trạng thái">
                                             @if (item.Status == 1)
                                             {
                                                 <span class="badge badge-primary status-badge">
@@ -403,7 +407,7 @@
                 </div>
 
                 <div class="senvie-table-wrap">
-                    <table class="table table-hover table-senvie mb-0">
+                    <table class="table table-hover table-senvie mb-0 profile-mobile-table profile-payment-table">
                         <thead>
                             <tr>
                                 <th class="text-center">Mã Đơn</th>
@@ -417,7 +421,7 @@
                         <tbody>
                             @if (!unpaidBookings.Any())
                             {
-                                <tr>
+                                <tr class="profile-empty-row">
                                     <td colspan="5" class="p-0 border-0">
                                         <div class="empty-state-box">
                                             <span class="empty-state-icon" style="color: #28a745;">✓</span>
@@ -435,23 +439,23 @@
                                     var minutesStr = timeLeft > 0 ? Math.Ceiling(timeLeft).ToString() : "0";
 
                                     <tr>
-                                        <td class="text-center align-middle font-weight-bold text-danger">@item.BookingCode</td>
+                                        <td class="text-center align-middle font-weight-bold text-danger" data-label="Mã đơn">@item.BookingCode</td>
 
-                                        <td class="align-middle">
+                                        <td class="align-middle" data-label="Loại bàn">
                                             <span class="table-main-text">@item.BookingType</span>
                                             <br />
                                             <small class="text-muted">Tạo lúc: @item.CreatedAt.ToString("HH:mm")</small>
                                         </td>
 
-                                        <td class="text-center align-middle font-weight-bold" style="font-size: 18px; color: #a50064;">
+                                        <td class="text-center align-middle font-weight-bold" data-label="Số tiền cần cọc" style="font-size: 18px; color: #a50064;">
                                             @item.DepositAmount.ToString("N0") đ
                                         </td>
 
-                                        <td class="text-center align-middle text-danger font-weight-bold">
+                                        <td class="text-center align-middle text-danger font-weight-bold" data-label="Hạn thanh toán">
                                             Còn @minutesStr phút
                                         </td>
 
-                                        <td class="text-center align-middle">
+                                        <td class="text-center align-middle" data-label="Thao tác">
                                             <div class="profile-payment-actions">
                                                 <a href="/Home/BookingSuccess?code=@item.BookingCode"
                                                    class="profile-pay-btn">
@@ -692,6 +696,209 @@
         .profile-pay-btn {
             min-width: 100px;
         }
+    }
+    /* Profile mobile table cards */
+    @@media (max-width: 768px) {
+        .senvie-profile-container .senvie-table-wrap {
+            overflow: visible !important;
+            padding: 0 !important;
+        }
+
+        .senvie-profile-container .profile-mobile-table {
+            width: 100% !important;
+            min-width: 0 !important;
+            border-collapse: separate !important;
+            border-spacing: 0 14px !important;
+            margin-bottom: 0 !important;
+        }
+
+            .senvie-profile-container .profile-mobile-table thead {
+                display: none !important;
+            }
+
+            .senvie-profile-container .profile-mobile-table tbody,
+            .senvie-profile-container .profile-mobile-table tr,
+            .senvie-profile-container .profile-mobile-table td {
+                display: block !important;
+                width: 100% !important;
+            }
+
+                .senvie-profile-container .profile-mobile-table tr:not(.profile-empty-row) {
+                    margin-bottom: 14px !important;
+                    padding: 14px !important;
+                    border-radius: 18px !important;
+                    background: #ffffff !important;
+                    border: 1px solid #e4efdc !important;
+                    box-shadow: 0 10px 24px rgba(30, 55, 30, 0.08) !important;
+                }
+
+                .senvie-profile-container .profile-mobile-table td[data-label] {
+                    border: none !important;
+                    border-bottom: 1px solid #edf3e9 !important;
+                    padding: 10px 0 !important;
+                    min-height: 42px !important;
+                    display: flex !important;
+                    align-items: flex-start !important;
+                    justify-content: space-between !important;
+                    gap: 14px !important;
+                    text-align: right !important;
+                    white-space: normal !important;
+                    word-break: break-word !important;
+                }
+
+                    .senvie-profile-container .profile-mobile-table td[data-label]::before {
+                        content: attr(data-label);
+                        flex: 0 0 42%;
+                        max-width: 42%;
+                        color: #5f6f5f;
+                        font-size: 12px;
+                        font-weight: 900;
+                        text-align: left;
+                        text-transform: uppercase;
+                        letter-spacing: 0.3px;
+                    }
+
+                    .senvie-profile-container .profile-mobile-table td[data-label] > * {
+                        max-width: 58%;
+                    }
+
+                    .senvie-profile-container .profile-mobile-table td[data-label]:last-child {
+                        border-bottom: none !important;
+                        padding-bottom: 0 !important;
+                    }
+
+            .senvie-profile-container .profile-mobile-table .btn-show-qr {
+                width: auto !important;
+                max-width: 100% !important;
+                white-space: normal !important;
+                justify-content: flex-end !important;
+            }
+
+            .senvie-profile-container .profile-mobile-table .senvie-code-mark {
+                margin-right: 6px !important;
+            }
+
+            .senvie-profile-container .profile-mobile-table .status-badge {
+                white-space: normal !important;
+                line-height: 1.35 !important;
+                text-align: center !important;
+            }
+
+            .senvie-profile-container .profile-mobile-table form {
+                width: 100% !important;
+                margin: 0 !important;
+            }
+
+                .senvie-profile-container .profile-mobile-table form button,
+                .senvie-profile-container .profile-payment-actions,
+                .senvie-profile-container .profile-pay-btn,
+                .senvie-profile-container .profile-cancel-btn {
+                    width: 100% !important;
+                    max-width: 100% !important;
+                }
+
+        .senvie-profile-container .profile-payment-actions {
+            align-items: stretch !important;
+        }
+
+        .senvie-profile-container .profile-empty-row {
+            display: table-row !important;
+        }
+
+            .senvie-profile-container .profile-empty-row td {
+                display: table-cell !important;
+                width: 100% !important;
+            }
+    }
+
+    @@media (max-width: 390px) {
+        .senvie-profile-container .profile-mobile-table tr:not(.profile-empty-row) {
+            padding: 12px !important;
+            border-radius: 16px !important;
+        }
+
+        .senvie-profile-container .profile-mobile-table td[data-label] {
+            gap: 10px !important;
+        }
+
+            .senvie-profile-container .profile-mobile-table td[data-label]::before {
+                flex-basis: 40%;
+                max-width: 40%;
+                font-size: 11px;
+            }
+
+            .senvie-profile-container .profile-mobile-table td[data-label] > * {
+                max-width: 60%;
+            }
+    }
+    @@media (max-width: 768px) {
+        .senvie-profile-container .profile-date-stack {
+            width: 100%;
+            max-width: 58% !important;
+            display: flex !important;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 2px;
+            line-height: 1.25;
+            text-align: right;
+        }
+
+        .senvie-profile-container .profile-date-main {
+            color: #233323;
+            font-size: 15px;
+            font-weight: 900;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+        }
+
+        .senvie-profile-container .profile-date-time {
+            color: #6f776f;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+        }
+
+        .senvie-profile-container .profile-mobile-table td[data-label="Thao tác"] {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+            justify-content: flex-start !important;
+            gap: 9px !important;
+        }
+
+            .senvie-profile-container .profile-mobile-table td[data-label="Thao tác"]::before {
+                flex: none !important;
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+
+            .senvie-profile-container .profile-mobile-table td[data-label="Thao tác"] > * {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+        .senvie-profile-container .profile-cancel-order-btn {
+            width: 100% !important;
+            height: 42px !important;
+            border: none !important;
+            border-radius: 12px !important;
+            background: #df3347 !important;
+            color: #ffffff !important;
+            font-size: 14px !important;
+            font-weight: 900 !important;
+            letter-spacing: 0.2px;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 18px rgba(223, 51, 71, 0.18);
+        }
+
+            .senvie-profile-container .profile-cancel-order-btn:hover {
+                background: #c82336 !important;
+                color: #ffffff !important;
+            }
     }
 </style>
 

@@ -1,7 +1,5 @@
-/* =========================================
-   SenVie Admin UI
-   Dùng cho Views/Admin/Index.cshtml và Details.cshtml
-========================================= */
+/* SenVie Admin UI
+   Dùng cho Views/Admin/Index.cshtml và Details.cshtml*/
 @import url('https://fonts.googleapis.com/css?family=Exo+2:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i');
 :root {
     --admin-green: #7DBA4E;
@@ -504,7 +502,6 @@
 }
 
 /* Details page */
-
 .admin-detail-page {
     display: flex;
     align-items: center;
@@ -631,7 +628,6 @@
 }
 
 /* Animation */
-
 @keyframes adminSlideInRight {
     from {
         transform: translateX(120%);
@@ -744,10 +740,7 @@
 .admin-primary-action {
     font-weight: 700;
 }
-/* =========================================
-   SenVie Admin Chat Manager
-   Dán vào cuối wwwroot/css/admin-custom.css
-========================================= */
+/* SenVie Admin Chat Manager*/
 
 .admin-chat-page {
     overflow: hidden;
@@ -1251,9 +1244,7 @@
         padding: 10px;
     }
 }
-/* =========================================
-   SenVie Admin Check-in Page
-========================================= */
+/* SenVie Admin Check-in Page */
 
 .admin-checkin-page {
     min-height: 100vh;
@@ -1580,9 +1571,7 @@
         font-size: 17px;
     }
 }
-/* =========================================
-   SenVie Admin Dish Form
-========================================= */
+/* SenVie Admin Dish Form*/
 
 .admin-dish-form-card {
     background: #ffffff;
@@ -1707,9 +1696,7 @@
         height: 260px;
     }
 }
-/* =========================================
-   SenVie Admin Menu Preview
-========================================= */
+/* SenVie Admin Menu Preview*/
 
 .admin-menu-preview-grid {
     display: grid;
@@ -1814,9 +1801,7 @@
         grid-template-columns: 1fr;
     }
 }
-/* =========================================
-   Admin Loading / Anti Double Submit
-========================================= */
+/* Admin Loading / Anti Double Submit */
 
 .admin-processing-overlay {
     display: none;
@@ -1924,9 +1909,7 @@
     border-radius: 12px;
     border: 1px solid #e5ebe3;
 }
-/* =========================================
-   Admin Booking Dashboard / Pagination
-========================================= */
+/* Admin Booking Dashboard / Pagination*/
 
 .admin-stat-grid {
     display: grid;
@@ -2043,10 +2026,7 @@
         width: 100%;
     }
 }
-/* =========================================
-   Admin Processing Overlay
-========================================= */
-
+/* Admin Processing Overlay */
 .admin-processing-overlay {
     display: none;
     position: fixed;
@@ -2094,9 +2074,7 @@
         font-weight: 500;
         line-height: 1.5;
     }
-/* =========================================
-   Admin Quick Filters
-========================================= */
+/* Admin Quick Filters */
 
 .admin-stat-card {
     text-decoration: none;
@@ -2154,4 +2132,219 @@
     color: #6f7c86;
     font-size: 12px;
     font-weight: 700;
+}
+/* Admin Check-in Mobile Scanner */
+
+@media (max-width: 768px) {
+    .admin-checkin-navbar {
+        height: 56px !important;
+        padding: 0 12px !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+    }
+
+        .admin-checkin-navbar .admin-brand {
+            max-width: 58%;
+            gap: 6px;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .admin-checkin-navbar .admin-brand-icon {
+            font-size: 15px;
+        }
+
+        .admin-checkin-navbar .admin-nav-actions {
+            width: auto !important;
+            flex: 0 0 auto;
+            flex-wrap: nowrap !important;
+            gap: 6px;
+        }
+
+        .admin-checkin-navbar .admin-hello {
+            display: none;
+        }
+
+        .admin-checkin-navbar .admin-site-btn {
+            min-height: 32px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+        }
+
+    .admin-checkin-shell {
+        max-width: 100%;
+        padding: 14px 10px 22px !important;
+    }
+
+    .admin-checkin-heading {
+        margin-bottom: 12px;
+    }
+
+        .admin-checkin-heading .admin-eyebrow {
+            display: none;
+        }
+
+        .admin-checkin-heading h1 {
+            font-size: 20px !important;
+            line-height: 1.25;
+            letter-spacing: 0.2px;
+        }
+
+        .admin-checkin-heading p {
+            margin-top: 5px;
+            font-size: 12.5px;
+            line-height: 1.45;
+        }
+
+    .admin-checkin-alerts {
+        margin-bottom: 12px;
+    }
+
+    .admin-checkin-alert {
+        padding: 10px 12px;
+        justify-content: flex-start;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .admin-checkin-grid {
+        display: flex !important;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .admin-checkin-card {
+        border-radius: 14px;
+        box-shadow: 0 8px 20px rgba(31, 42, 51, 0.08);
+    }
+
+    .admin-checkin-card-header {
+        min-height: 50px !important;
+        padding: 10px 12px !important;
+    }
+
+        .admin-checkin-card-header strong {
+            font-size: 13px;
+        }
+
+        .admin-checkin-card-header span {
+            font-size: 11px;
+        }
+
+        .admin-checkin-card-header i {
+            font-size: 18px;
+        }
+
+    .admin-checkin-card-body {
+        padding: 10px !important;
+    }
+
+    .admin-reader-wrap {
+        padding: 6px;
+        border-radius: 12px;
+    }
+
+    #reader {
+        min-height: 0 !important;
+        height: min(62vw, 330px) !important;
+        max-height: 330px;
+        border-radius: 10px;
+    }
+
+        #reader video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+    #reader__dashboard_section {
+        padding-top: 6px !important;
+        font-size: 11px;
+    }
+
+        #reader__dashboard_section button,
+        #reader__dashboard_section select {
+            min-height: 32px;
+            padding: 5px 8px !important;
+            font-size: 11px !important;
+        }
+
+    .admin-scanner-status,
+    #scanner-status {
+        margin-top: 8px !important;
+        padding: 8px 10px !important;
+        border-radius: 9px !important;
+        font-size: 12px !important;
+        line-height: 1.35;
+    }
+
+    .manual-body {
+        min-height: 0 !important;
+        display: block !important;
+    }
+
+    .admin-checkin-label {
+        margin-bottom: 7px;
+        font-size: 12px;
+    }
+
+        .admin-checkin-label small {
+            font-size: 11px;
+        }
+
+    .admin-checkin-input {
+        height: 44px;
+        border-radius: 10px;
+        font-size: 15px;
+        letter-spacing: 1px;
+    }
+
+    .admin-checkin-submit {
+        height: 44px;
+        margin-top: 10px;
+        border-radius: 10px;
+        font-size: 14px;
+    }
+
+    .admin-checkin-tips {
+        margin-top: 12px;
+        padding: 11px;
+        border-radius: 12px;
+    }
+
+        .admin-checkin-tips h3 {
+            font-size: 13px;
+        }
+
+        .admin-checkin-tips ul {
+            padding-left: 16px;
+            font-size: 12px;
+            line-height: 1.55;
+        }
+}
+
+@media (max-width: 390px) {
+    .admin-checkin-navbar .admin-brand {
+        max-width: 54%;
+        font-size: 13px;
+    }
+
+    .admin-checkin-heading h1 {
+        font-size: 18px !important;
+    }
+
+    #reader {
+        height: 270px !important;
+        max-height: 270px;
+    }
+
+    .admin-checkin-card-header strong {
+        font-size: 12px;
+    }
 }

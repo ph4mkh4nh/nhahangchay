@@ -5,6 +5,7 @@
 <html lang="vi">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Trạm Quét QR - SenVie Admin</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
@@ -14,7 +15,7 @@
 </head>
 <body class="senvie-admin-page admin-checkin-page">
 
-    <nav class="admin-navbar">
+    <nav class="admin-navbar admin-checkin-navbar">
         <a class="admin-brand" href="/Admin">
             <span class="admin-brand-icon"><i class="fas fa-arrow-left"></i></span>
             <span>Quay lại Admin</span>
@@ -132,6 +133,21 @@
 
         var qrScanner = null;
         var isProcessing = false;
+        function getScannerConfig() {
+        var isMobile = window.matchMedia("(max-width: 768px)").matches;
+        var qrSize = isMobile
+        ? Math.min(Math.max(Math.floor(window.innerWidth * 0.55), 180), 230)
+        : 250;
+
+        return {
+        fps: 10,
+        qrbox: {
+        width: qrSize,
+        height: qrSize
+        },
+        aspectRatio: 1.0
+        };
+        }
 
         function setScannerStatus(message, type) {
             if (!statusBox) return;
@@ -151,9 +167,8 @@
 
             if (!value) return "";
 
-            // Trường hợp QR là URL, ví dụ:
             // https://yourdomain.com/Admin/ProcessCheckIn?bookingCode=GS-ABC123
-            // hoặc https://yourdomain.com/checkin/GS-ABC123
+            // https://yourdomain.com/checkin/GS-ABC123
             try {
                 var url = new URL(value);
 
@@ -163,10 +178,8 @@
                     url.pathname.split("/").filter(Boolean).pop() ||
                     value;
             } catch (e) {
-                // Không phải URL thì giữ nguyên text QR
             }
 
-            // Lấy đúng mã dạng GS-XXXX nếu QR chứa thêm chữ khác
             var match = value.match(/GS-[A-Z0-9]+/i);
 
             if (match) {
@@ -205,7 +218,6 @@
         }
 
         function onScanFailure(error) {
-            // Không cần hiện lỗi liên tục vì camera sẽ báo rất nhiều lần khi chưa thấy QR
         }
 
         function startScanner() {
@@ -237,12 +249,7 @@
                     return qrScanner.start(
                         cameraId,
                         {
-                            fps: 10,
-                            qrbox: {
-                                width: 250,
-                                height: 250
-                            },
-                            aspectRatio: 1.0
+                        getScannerConfig(),
                         },
                         onScanSuccess,
                         onScanFailure

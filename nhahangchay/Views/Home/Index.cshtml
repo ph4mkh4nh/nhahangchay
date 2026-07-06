@@ -4,9 +4,9 @@
 @{
     var featuredDishes = ViewBag.FeaturedDishes as List<Dish> ?? new List<Dish>();
 }
-
-<link rel="stylesheet" href="~/css/custom.css" asp-append-version="true" />
-
+@section Styles {
+    <link rel="stylesheet" href="~/css/home-mobile.css" asp-append-version="true" />
+}
 <style>
     #mainNav .navbar-nav .nav-link,
     #mainNav .navbar-nav li a,
@@ -232,11 +232,11 @@
         }
     }
 </style>
-<section id="home" class="main-banner">
     <!--trang chủ / slider-->
+<section id="home" class="main-banner senvie-home-hero">
     <div class="slider-new-2 owl-carousel owl-theme">
 
-        <div class="item slider-screen">
+        <div class="item slider-screen senvie-hero-slide senvie-slide-1">
             <div class="slider-img-full">
                 <img src="~/uploads/slider-01.png" alt="" />
             </div>
@@ -251,7 +251,7 @@
             </div>
         </div>
 
-        <div class="item slider-screen">
+        <div class="item slider-screen senvie-hero-slide senvie-slide-2">
             <div class="slider-img-full">
                 <img src="~/uploads/slider-02.png" alt="" />
             </div>
@@ -266,7 +266,7 @@
             </div>
         </div>
 
-        <div class="item slider-screen">
+        <div class="item slider-screen senvie-hero-slide senvie-slide-3">
             <div class="slider-img-full">
                 <img src="~/uploads/slider-03.png" alt="" />
             </div>
@@ -285,8 +285,6 @@
 
 </section>
 
-	
-	
 <div id="about" class="section" style="background-color: transparent;">
     <div class="container-fluid">
         <div class="row align-items-center">
@@ -622,12 +620,11 @@
                             <p class="lead">SenVie có đội ngũ nhân viên và đầu bếp rất chuyên nghiệp. Các bạn nhân viên phục vụ cũng rất tận tình và chuyên nghiệp. </p>
                         </div>
                     </div>
-                    <!-- end testimonial -->
-                </div><!-- end carousel -->
-            </div><!-- end col -->
-        </div><!-- end row -->
-    </div><!-- end container -->
-</div><!-- end section -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <!--đầu bếp-->
 <div id="chef" class="section wb">
     <div class="container-fluid">
@@ -817,8 +814,6 @@
 
         if (selectElement) {
             selectElement.value = serviceValue;
-
-            // Để bảng chọn Sinh nhật/Kỷ niệm của form VIP tự động mở ra
             selectElement.dispatchEvent(new Event('change'));
         } else {
             console.warn("Không tìm thấy ô chọn Loại Bàn ở dưới Form!");
@@ -865,7 +860,7 @@
                                 </div>
                             }
 
-                            <!-- BƯỚC 1: CHỌN LOẠI BÀN -->
+                            <!--  CHỌN LOẠI BÀN -->
                             <div class="col-md-12 mb-2">
                                 <div class="form-group mb-0">
                                     <label class="font-weight-bold text-dark mb-1" style="font-size: 14px;"><i class="fas fa-utensils text-success mr-1"></i> Lựa chọn không gian:</label>
@@ -897,7 +892,7 @@
                                 </div>
                             </div>
 
-                            <!-- BƯỚC 2: THÔNG TIN KHÁCH HÀNG -->
+                            <!--  THÔNG TIN KHÁCH HÀNG -->
                             <div class="col-md-6 mb-2">
                                 <div class="form-group mb-0">
                                     <label class="font-weight-bold text-dark mb-1" style="font-size: 14px;">Họ và tên *</label>
@@ -948,7 +943,7 @@
                                 </div>
                             </div>
 
-                            <!-- MODULE: GHI CHÚ (THAY ĐỔI LABEL THEO LOẠI BÀN) -->
+                            <!-- GHI CHÚ (THAY ĐỔI LABEL THEO LOẠI BÀN) -->
                             <div class="col-md-12 mb-3">
                                 <div class="form-group mb-0">
                                     <label class="font-weight-bold text-dark mb-1" style="font-size: 14px;" id="specialRequestLabel">
@@ -1211,16 +1206,12 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-            // 1. KHÓA NGÀY GIỜ QUÁ KHỨ + BẮT ĐẶT TRƯỚC TỐI THIỂU 1 TIẾNG
-
             function padDatePart(value) {
                 return String(value).padStart(2, '0');
             }
 
             function getMinBookingDate() {
                 var minDate = new Date();
-
-                // Bắt đặt trước tối thiểu 60 phút
                 minDate.setMinutes(minDate.getMinutes() + 60);
                 minDate.setSeconds(0);
                 minDate.setMilliseconds(0);
@@ -1336,7 +1327,6 @@
                     validateBookingDate(true);
                 });
 
-                // Khi trình duyệt tự chặn vì min/required, đổi sang thông báo tiếng Việt
                 bookingDateInput.addEventListener('invalid', function () {
                     var minDate = updateBookingDateMin();
                     var message = getBookingDateErrorMessage(minDate);
@@ -1446,7 +1436,7 @@
                 updatePreOrderSummary($('#bookingTypeSelect').val());
             };
 
-            // 3. FORM ĐỘNG: VIP / OMAKASE / TIỀN CỌC
+            // 3. VIP / OMAKASE / TIỀN CỌC
             function updateDynamicForm() {
                 var bookingType = $('#bookingTypeSelect').val();
                 var guests = parseInt($('#numberOfGuestsInput').val()) || 1;

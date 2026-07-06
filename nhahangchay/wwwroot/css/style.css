@@ -1,27 +1,12 @@
-/*------------------------------------------------------------------
-    Version: 1.0
--------------------------------------------------------------------*/
-
-/*------------------------------------------------------------------
-    IMPORT FONTS
--------------------------------------------------------------------*/
-
+/*IMPORT FONTS*/
 @import url('https://fonts.googleapis.com/css?family=Exo+2:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i');
-
-/*------------------------------------------------------------------
-    IMPORT FILES
--------------------------------------------------------------------*/
-
+/*IMPORT FILES*/
 @import url(animate.css);
 @import url(flaticon.css);
 @import url(flaticon-1.css);
 @import url(prettyPhoto.css);
 @import url(owl.carousel.css);
 @import url(font-awesome.min.css);
-
-/*------------------------------------------------------------------
-    SKELETON
--------------------------------------------------------------------*/
 
 body {
     color: #999999;
@@ -174,9 +159,7 @@ ul, li, ol{
 }
 
 
-/*------------------------------------------------------------------
-    WP CORE
--------------------------------------------------------------------*/
+/*WP CORE*/
 
 .first {
     clear: both
@@ -230,7 +213,6 @@ a img.aligncenter {
     background: #fff;
     border: 1px solid #f0f0f0;
     max-width: 96%;
-    /* Image does not overflow the content area */
     padding: 5px 3px 10px;
     text-align: center;
 }
@@ -263,7 +245,6 @@ a img.aligncenter {
     padding: 0 4px 5px;
 }
 
-
 /* Text meant only for screen readers. */
 
 .screen-reader-text {
@@ -294,12 +275,7 @@ a img.aligncenter {
     z-index: 100000;
     /* Above WP toolbar. */
 }
-
-
-/*------------------------------------------------------------------
-    HEADER
--------------------------------------------------------------------*/
-
+/*HEADER*/
 .navbar-dark{
 	background: #ffffff;
 }
@@ -346,11 +322,7 @@ a img.aligncenter {
 	width: 84.5%;
 	height: 100%;
 }
-
-/*------------------------------------------------------------------
-    SECTIONS
--------------------------------------------------------------------*/
-
+/*SECTIONS*/
 .main-banner{
 	height: 100%;
 	position: relative;
@@ -506,8 +478,6 @@ a img.aligncenter {
 	-webkit-transition: all 2.9s;
 	transition: all 2.9s;
 }
-
-
 .cd-words-wrapper {
   display: inline-block;
   position: relative;
@@ -530,11 +500,6 @@ a img.aligncenter {
   opacity: 1;
 }
 
-/* -------------------------------- 
-
-xclip 
-
--------------------------------- */
 .cd-headline.clip span {
   display: inline-block;
   padding: .2em 0;
@@ -564,7 +529,6 @@ xclip
 .cd-headline.clip b.is-visible {
   opacity: 1;
 }
-
 
 #mainNav.navbar-shrink {
     padding-top: 10px;
@@ -858,9 +822,7 @@ xclip
 }
 
 
-/*------------------------------------------------------------------
-    PORTFOLIO
--------------------------------------------------------------------*/
+/*PORTFOLIO*/
 
 .item-h2,
 .item-h1 {
@@ -990,9 +952,7 @@ xclip
 }
 
 
-/*------------------------------------------------------------------
-    TESTIMONIALS
--------------------------------------------------------------------*/
+/*TESTIMONIALS*/
 
 .logos img {
     margin: auto;
@@ -1090,9 +1050,7 @@ xclip
 }
 
 
-/*------------------------------------------------------------------
-    PRICING TABLES
--------------------------------------------------------------------*/
+/*PRICING TABLES*/
 
 .pri-bg-a {
     background: url(../uploads/pri-bg-01.jpg) no-repeat center top;
@@ -1374,9 +1332,7 @@ xclip
     }
 }
 
-/*------------------------------------------------------------------
-    ICON BOXES
--------------------------------------------------------------------*/
+/*ICON BOXES*/
 
 .icon-wrapper {
     position: relative;
@@ -1449,9 +1405,7 @@ xclip
 }
 
 
-/*------------------------------------------------------------------
-    MESSAGE BOXES
--------------------------------------------------------------------*/
+/*MESSAGE BOXES*/
 
 .event_dit{
 	margin-top: 20px;
@@ -1973,9 +1927,7 @@ hr.invis1 {
 	color: #ffffff;
 }
 
-/*------------------------------------------------------------------
-    FEATURES
--------------------------------------------------------------------*/
+/*FEATURES*/
 
 .customwidget h1 {
     font-size: 44px;
@@ -2127,13 +2079,10 @@ hr.invis1 {
 }
 
 
-/*------------------------------------------------------------------
-    CONTACT
--------------------------------------------------------------------*/
+/*CONTACT*/
 
 .bootstrap-select {
     width: 100% \0;
-    /*IE9 and below*/
 }
 
 .bootstrap-select > .dropdown-toggle {
@@ -2445,9 +2394,6 @@ select.mobile-device {
     opacity: 0;
 }
 
-
-/*# sourceMappingURL=bootstrap-select.css.map */
-
 .bootstrap-select > .btn {
     background: rgba(0, 0, 0, 0) none repeat scroll 0 0;
     font-size: 15px;
@@ -2527,9 +2473,7 @@ select.mobile-device {
 	left: 0px;
 }
 
-/*------------------------------------------------------------------
-    FOOTER
--------------------------------------------------------------------*/
+/*FOOTER*/
 
 .cac {
     background-color: #232323;
@@ -2635,9 +2579,7 @@ select.mobile-device {
     overflow: hidden;
 }
 
-
 /* Footer left */
-
 .footer-distributed .footer-left {
 	text-align: center;
 }
@@ -2692,14 +2634,10 @@ select.mobile-device {
     width: 400px;
     padding: 18px 50px 18px 18px;
 }
-
 .footer-distributed form input:focus {
     outline: none;
 }
-
-
 /* Changing the placeholder color */
-
 .footer-distributed form input::-webkit-input-placeholder {
     color: #999;
 }
@@ -2712,8 +2650,6 @@ select.mobile-device {
 .footer-distributed form input:-ms-input-placeholder {
     color: #999;
 }
-
-
 /* The magnify glass icon */
 
 .footer-distributed form i {
@@ -2845,9 +2781,7 @@ select.mobile-device {
 
 
 
-/*------------------------------------------------------------------
-    MISC
--------------------------------------------------------------------*/
+/*MISC*/
 
 .dmtop.show {
     bottom: 15px;
@@ -2970,9 +2904,7 @@ select.mobile-device {
   100% { border-width: 10px;}
 }
 
-/*------------------------------------------------------------------
-    BUTTONS
--------------------------------------------------------------------*/
+/*BUTTONS*/
 
 .navbar-default .btn-light {
     padding: 0 20px;

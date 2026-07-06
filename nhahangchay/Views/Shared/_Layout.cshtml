@@ -1,6 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using nhahangchay.Models
-@* Tiêm công cụ UserManager vào thẳng giao diện *@
 @inject UserManager<AppUser> UserManager
 
 <!DOCTYPE html>
@@ -22,6 +21,8 @@
 	<link rel="stylesheet" href="~/css/style.css">
 	<link rel="stylesheet" href="~/css/responsive.css">
 	<link rel="stylesheet" href="~/css/custom.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/css/home-mobile.css" asp-append-version="true" />
+	@await RenderSectionAsync("Styles", required: false)
 	<script src="~/js/modernizr.js"></script>
 </head>
 <body id="page-top" class="politics_version">
@@ -45,15 +46,11 @@
 				<ul class="navbar-nav ml-auto">
 
 					@{
-						// Lấy tên Controller và Action hiện tại
 						var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
 						var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
-
-						// Kiểm tra xem có phải đang ở Trang chủ không (Bao gồm cả trường hợp mặc định lúc mới mở web)
 						bool isHome = (string.IsNullOrEmpty(currentController) || currentController == "Home")
 									  && (string.IsNullOrEmpty(currentAction) || currentAction == "Index");
 
-						// Thuật toán Tắc kè hoa: Ở nhà thì không có gạch chéo, đi xa thì thêm gạch chéo để chỉ đường về
 						var prefix = isHome ? "" : "/";
 					}
 					<li class="nav-item"><a class="nav-link js-scroll-trigger @(isHome ? "active" : "")" href="@prefix#home"><span>Trang chủ</span></a></li>
@@ -66,13 +63,10 @@
 					<li class="nav-item"><a class="nav-link js-scroll-trigger" href="@prefix#map"><span>Liên hệ</span></a></li>
 
 					<style>
-						/* Trạng thái bình thường của nút Chào */
 						.user-greeting {
 						color: #7DBA4E !important;
 						font-weight: bold;
 						}
-
-						/* Trạng thái khi di chuột (Hover) */
 						.user-greeting:hover {
 						color: #ffffff !important;
 						}
@@ -95,14 +89,11 @@
 
 					@if (User.Identity.IsAuthenticated)
 					{
-						// --- LOGIC MỚI: TỰ ĐỘNG TÌM HỌ TÊN KHÁCH HÀNG ---
 						var currentUser = await UserManager.GetUserAsync(User);
 						var displayName = currentUser != null ? currentUser.FullName : User.Identity.Name;
-						// -----------------------------------------------
 
 						@if (User.Identity.Name == "admin@uef.com")
 						{
-							// 1. Nếu là Admin: Thêm nút Quản lý Chat và in ra tên Admin
 							<li class="nav-item">
 								<a class="nav-link" asp-controller="Admin" asp-action="ChatManager" style="color: #7DBA4E !important; font-weight: bold; border: 1px solid #7DBA4E; border-radius: 20px; padding: 5px 15px !important; margin-top: 3px; margin-right: 10px;">
 									<i class="fa fa-comment-dots"></i> Quản lý Chat
@@ -116,7 +107,6 @@
 						}
 						else
 						{
-							// 2. Nếu là Khách hàng: In ra bằng displayName
 							<li class="nav-item">
 								<a class="nav-link user-greeting" asp-controller="Account" asp-action="Profile" title="Trang cá nhân">
 									<i class="fa fa-user-circle"></i> Chào, @displayName
@@ -130,7 +120,6 @@
 					}
 					else
 					{
-						// 3. Khách vãng lai chưa đăng nhập
 						<li class="nav-item">
 							<a class="nav-link" asp-controller="Account" asp-action="Login">Đăng Nhập</a>
 						</li>
