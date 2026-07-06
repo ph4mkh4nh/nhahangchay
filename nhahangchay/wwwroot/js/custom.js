@@ -13,14 +13,29 @@
 				$('.js-scroll-trigger').removeClass('active');
 				$clickedButton.addClass('active');
 
-				$('html, body').animate({
-					scrollTop: (target.offset().top - 54)
-				}, 1000, "easeInOutExpo", function () {
+				var targetTop = target.offset().top - 74;
+				var isMobile = window.matchMedia('(max-width: 991px)').matches;
+
+				if (isMobile) {
+					window.scrollTo({
+						top: targetTop,
+						behavior: 'auto'
+					});
+
 					$('body').scrollspy({
 						target: '#mainNav',
-						offset: 56
+						offset: 76
 					});
-				});
+				} else {
+					$('html, body').animate({
+						scrollTop: targetTop
+					}, 650, "easeInOutExpo", function () {
+						$('body').scrollspy({
+							target: '#mainNav',
+							offset: 76
+						});
+					});
+				}
 
 				return false;
 			}
@@ -85,8 +100,14 @@
 	
 	// Banner 
 	
-    $('.heading').height( $(window).height() );
-	$('.parallaxie').parallaxie();
+	$('.heading').height($(window).height());
+
+	var isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+	var isSmallScreen = window.matchMedia('(max-width: 991px)').matches;
+
+	if (!isTouchDevice && !isSmallScreen && $.fn.parallaxie) {
+		$('.parallaxie').parallaxie();
+	}
 	
 	// LOADER & SCROLLSPY REFRESH (XỬ LÝ ĐỘ TRỄ OWL-CAROUSEL)
 	$(window).on('load', function () {
@@ -227,24 +248,24 @@
     });
 
 	//NiceScroll	
-	$("body").niceScroll({
-		cursorcolor:		"#8dbd55",
-		cursorwidth: 		"12px",
-		cursorborder: 		"0px solid #000",
-		scrollspeed: 		80,
-		autohidemode: 		true,
-		background: 		'#ddd',
-		hidecursordelay: 	400,
-		cursorfixedheight: 	false,
-		cursorminheight: 	200,
-		enablekeyboard: 	true,
-		horizrailenabled: 	true,
-		bouncescroll: 		false,
-		smoothscroll: 		true,
-		iframeautoresize: 	true,
-		touchbehavior: 		false,
-		zindex: 9999
-	});
+	// $("body").niceScroll({
+	// 	cursorcolor:		"#8dbd55",
+	// 	cursorwidth: 		"12px",
+	// 	cursorborder: 		"0px solid #000",
+	// 	scrollspeed: 		80,
+	// 	autohidemode: 		true,
+	// 	background: 		'#ddd',
+	// 	hidecursordelay: 	400,
+	// 	cursorfixedheight: 	false,
+	// 	cursorminheight: 	200,
+	// 	enablekeyboard: 	true,
+	// 	horizrailenabled: 	true,
+	// 	bouncescroll: 		false,
+	// 	smoothscroll: 		true,
+	// 	iframeautoresize: 	true,
+	// 	touchbehavior: 		false,
+	// 	zindex: 9999
+	// });
 	
 	
 

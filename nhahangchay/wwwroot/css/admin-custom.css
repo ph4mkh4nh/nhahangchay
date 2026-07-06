@@ -2348,3 +2348,50 @@
         font-size: 12px;
     }
 }
+.admin-camera-actions {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.admin-camera-start-btn,
+.admin-camera-retry-btn {
+    min-height: 40px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 999px;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    cursor: pointer;
+}
+
+.admin-camera-start-btn {
+    background: #1f3b20;
+}
+
+.admin-camera-retry-btn {
+    background: #dc3545;
+}
+
+.admin-camera-start-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .admin-camera-actions {
+        margin-top: 8px;
+    }
+
+    .admin-camera-start-btn,
+    .admin-camera-retry-btn {
+        width: 100%;
+        min-height: 42px;
+    }
+}

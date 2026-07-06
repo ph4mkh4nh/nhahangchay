@@ -76,7 +76,19 @@
                     </div>
 
                     <div id="scanner-status" class="admin-scanner-status info">
-                        Đang khởi động camera...
+                        Bấm “Bật camera” để cấp quyền và bắt đầu quét QR.
+                    </div>
+
+                    <div class="admin-camera-actions">
+                        <button type="button" id="startCameraBtn" class="admin-camera-start-btn">
+                            <i class="fas fa-video"></i>
+                            Bật camera
+                        </button>
+
+                        <button type="button" id="retryCameraBtn" class="admin-camera-retry-btn" style="display:none;">
+                            <i class="fas fa-redo"></i>
+                            Thử lại
+                        </button>
                     </div>
                 </div>
             </section>
@@ -125,14 +137,37 @@
     </main>
 
     <script>
-    document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function () {
         var readerId = "reader";
         var statusBox = document.getElementById("scanner-status");
         var bookingCodeInput = document.getElementById("bookingCodeInput");
         var checkInForm = document.getElementById("checkInForm");
+        var startCameraBtn = document.getElementById("startCameraBtn");
+        var retryCameraBtn = document.getElementById("retryCameraBtn");
 
         var qrScanner = null;
         var isProcessing = false;
+        var isScannerStarted = false;
+        var startTimeout = null;
+
+        function setScannerStatus(message, type) {
+        if (!statusBox) return;
+
+        statusBox.className = "admin-scanner-status " + (type || "info");
+        statusBox.innerText = message;
+        }
+
+        function setCameraButtons(isStarting, canRetry) {
+        if (startCameraBtn) {
+        startCameraBtn.disabled = isStarting;
+        startCameraBtn.style.display = isScannerStarted ? "none" : "inline-flex";
+        }
+
+        if (retryCameraBtn) {
+        retryCameraBtn.style.display = canRetry ? "inline-flex" : "none";
+        }
+        }
+
         function getScannerConfig() {
         var isMobile = window.matchMedia("(max-width: 768px)").matches;
         var qrSize = isMobile
@@ -149,123 +184,144 @@
         };
         }
 
-        function setScannerStatus(message, type) {
-            if (!statusBox) return;
+        function extractBookingCode(rawText) {
+        var value = (rawText || "").trim();
 
-            var alertClass = "alert-info";
+        if (!value) return "";
 
-            if (type === "success") alertClass = "alert-success";
-            if (type === "error") alertClass = "alert-danger";
-            if (type === "warning") alertClass = "alert-warning";
+        try {
+        var url = new URL(value);
 
-            statusBox.className = "alert " + alertClass + " mt-3 mb-0 py-2 small";
-            statusBox.innerText = message;
+        value =
+        url.searchParams.get("bookingCode") ||
+        url.searchParams.get("code") ||
+        url.pathname.split("/").filter(Boolean).pop() ||
+        value;
+        } catch (e) {
         }
 
-        function extractBookingCode(rawText) {
-            var value = (rawText || "").trim();
+        var match = value.match(/GS-[A-Z0-9]+/i);
 
-            if (!value) return "";
+        if (match) {
+        value = match[0];
+        }
 
-            // https://yourdomain.com/Admin/ProcessCheckIn?bookingCode=GS-ABC123
-            // https://yourdomain.com/checkin/GS-ABC123
-            try {
-                var url = new URL(value);
-
-                value =
-                    url.searchParams.get("bookingCode") ||
-                    url.searchParams.get("code") ||
-                    url.pathname.split("/").filter(Boolean).pop() ||
-                    value;
-            } catch (e) {
-            }
-
-            var match = value.match(/GS-[A-Z0-9]+/i);
-
-            if (match) {
-                value = match[0];
-            }
-
-            return value.trim().toUpperCase();
+        return value.trim().toUpperCase();
         }
 
         function onScanSuccess(decodedText) {
-            if (isProcessing) return;
+        if (isProcessing) return;
 
-            var bookingCode = extractBookingCode(decodedText);
+        var bookingCode = extractBookingCode(decodedText);
 
-            if (!bookingCode) {
-                setScannerStatus("QR không chứa mã đặt bàn hợp lệ.", "warning");
-                return;
-            }
-
-            isProcessing = true;
-
-            bookingCodeInput.value = bookingCode;
-            setScannerStatus("Đã quét được mã " + bookingCode + ". Đang xử lý check-in...", "success");
-
-            if (qrScanner) {
-                qrScanner.stop()
-                    .then(function () {
-                        checkInForm.submit();
-                    })
-                    .catch(function () {
-                        checkInForm.submit();
-                    });
-            } else {
-                checkInForm.submit();
-            }
+        if (!bookingCode) {
+        setScannerStatus("QR không chứa mã đặt bàn hợp lệ.", "warning");
+        return;
         }
 
-        function onScanFailure(error) {
+        isProcessing = true;
+
+        bookingCodeInput.value = bookingCode;
+        setScannerStatus("Đã quét được mã " + bookingCode + ". Đang xử lý check-in...", "success");
+
+        if (qrScanner) {
+        qrScanner.stop()
+        .then(function () {
+        checkInForm.submit();
+        })
+        .catch(function () {
+        checkInForm.submit();
+        });
+        } else {
+        checkInForm.submit();
+        }
+        }
+
+        function onScanFailure() {
+        }
+
+        function startScannerWithCameraSource(cameraSource) {
+        return qrScanner.start(
+        cameraSource,
+        getScannerConfig(),
+        onScanSuccess,
+        onScanFailure
+        );
         }
 
         function startScanner() {
-            if (typeof Html5Qrcode === "undefined") {
-                setScannerStatus("Không tải được thư viện quét QR. Kiểm tra kết nối mạng hoặc CDN html5-qrcode.", "error");
-                return;
-            }
+        if (isProcessing) return;
 
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                setScannerStatus("Trình duyệt không cho phép dùng camera. Hãy mở bằng HTTPS hoặc localhost.", "error");
-                return;
-            }
-
-            qrScanner = new Html5Qrcode(readerId);
-
-            Html5Qrcode.getCameras()
-                .then(function (devices) {
-                    if (!devices || devices.length === 0) {
-                        setScannerStatus("Không tìm thấy camera trên thiết bị.", "error");
-                        return;
-                    }
-
-                    var backCamera = devices.find(function (device) {
-                        return /back|rear|environment/i.test(device.label);
-                    });
-
-                    var cameraId = backCamera ? backCamera.id : devices[0].id;
-
-                    return qrScanner.start(
-                        cameraId,
-                        {
-                        getScannerConfig(),
-                        },
-                        onScanSuccess,
-                        onScanFailure
-                    );
-                })
-                .then(function () {
-                    setScannerStatus("Camera đã sẵn sàng. Đưa mã QR vào khung quét.", "success");
-                })
-                .catch(function (err) {
-                    console.warn("Lỗi camera:", err);
-                    setScannerStatus("Không mở được camera. Hãy cấp quyền camera, đóng app đang dùng camera, hoặc mở web bằng HTTPS/localhost.", "error");
-                });
+        if (typeof Html5Qrcode === "undefined") {
+        setScannerStatus("Không tải được thư viện quét QR. Vui lòng kiểm tra kết nối mạng.", "error");
+        setCameraButtons(false, true);
+        return;
         }
 
-        startScanner();
-    });
-</script>
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setScannerStatus("Trình duyệt không cho phép dùng camera. Hãy mở bằng HTTPS và cấp quyền camera.", "error");
+        setCameraButtons(false, true);
+        return;
+        }
+
+        if (!qrScanner) {
+        qrScanner = new Html5Qrcode(readerId);
+        }
+
+        isScannerStarted = false;
+        setCameraButtons(true, false);
+        setScannerStatus("Đang xin quyền camera. Hãy bấm Cho phép nếu trình duyệt hỏi quyền.", "info");
+
+        clearTimeout(startTimeout);
+
+        startTimeout = setTimeout(function () {
+        if (!isScannerStarted) {
+        setScannerStatus("Camera chưa phản hồi. Hãy kiểm tra quyền camera hoặc bấm Thử lại.", "warning");
+        setCameraButtons(false, true);
+        }
+        }, 9000);
+
+        startScannerWithCameraSource({ facingMode: "environment" })
+        .then(function () {
+        clearTimeout(startTimeout);
+        isScannerStarted = true;
+        setScannerStatus("Camera đã sẵn sàng. Đưa mã QR vào khung quét.", "success");
+        setCameraButtons(false, false);
+        })
+        .catch(function () {
+        Html5Qrcode.getCameras()
+        .then(function (devices) {
+        if (!devices || devices.length === 0) {
+        throw new Error("Không tìm thấy camera.");
+        }
+
+        var backCamera = devices.find(function (device) {
+        return /back|rear|environment/i.test(device.label);
+        });
+
+        var cameraId = backCamera ? backCamera.id : devices[0].id;
+
+        return startScannerWithCameraSource(cameraId);
+        })
+        .then(function () {
+        clearTimeout(startTimeout);
+        isScannerStarted = true;
+        setScannerStatus("Camera đã sẵn sàng. Đưa mã QR vào khung quét.", "success");
+        setCameraButtons(false, false);
+        })
+        .catch(function () {
+        clearTimeout(startTimeout);
+        setScannerStatus("Không mở được camera. Hãy cấp quyền camera, đóng app đang dùng camera hoặc thử trình duyệt khác.", "error");
+        setCameraButtons(false, true);
+        });
+        });
+        }
+
+        startCameraBtn?.addEventListener("click", startScanner);
+        retryCameraBtn?.addEventListener("click", startScanner);
+
+        setCameraButtons(false, false);
+        });
+    </script>
 </body>
 </html>
