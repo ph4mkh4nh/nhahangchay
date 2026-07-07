@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using nhahangchay.Data;
 using nhahangchay.Models;
@@ -38,15 +39,17 @@ namespace nhahangchay.Controllers
         private readonly ApplicationDbContext _context;
         private readonly CloudinaryService _cloudinaryService;
         private readonly EmailService _emailService;
-
+        private readonly UserManager<AppUser> _userManager;
         public AdminController(
-            ApplicationDbContext context,
-            CloudinaryService cloudinaryService,
-            EmailService emailService)
+                ApplicationDbContext context,
+                CloudinaryService cloudinaryService,
+                EmailService emailService,
+                UserManager<AppUser> userManager)
         {
             _context = context;
             _cloudinaryService = cloudinaryService;
             _emailService = emailService;
+            _userManager = userManager;
         }
 
         public override void OnActionExecuting(ActionExecutingContext context)
@@ -356,7 +359,132 @@ namespace nhahangchay.Controllers
         {
             return View();
         }
+        [HttpGet]
+        public async Task<IActionResult> Users(string? searchString)
+        {
+            var usersQuery = _context.Users.AsNoTracking().AsQueryable();
 
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                var keyword = searchString.Trim().ToLower();
+
+                usersQuery = usersQuery.Where(u =>
+                    (u.Email != null && u.Email.ToLower().Contains(keyword)) ||
+                    (u.FullName != null && u.FullName.ToLower().Contains(keyword)));
+            }
+
+            var users = await usersQuery
+                .OrderBy(u => u.Email == "admin@uef.com" ? 0 : 1)
+                .ThenBy(u => u.Email)
+                .ToListAsync();
+
+            var bookingCounts = await _context.Bookings
+                .AsNoTracking()
+                .Where(b => b.AppUserId != null)
+                .GroupBy(b => b.AppUserId!)
+                .Select(g => new
+                {
+                    UserId = g.Key,
+                    Count = g.Count()
+                })
+                .ToDictionaryAsync(x => x.UserId, x => x.Count);
+
+            ViewBag.CurrentSearch = searchString;
+            ViewBag.BookingCounts = bookingCounts;
+            ViewBag.TotalUsers = await _context.Users.CountAsync();
+            ViewBag.ConfirmedUsers = await _context.Users.CountAsync(u => u.EmailConfirmed);
+            ViewBag.LockedUsers = await _context.Users.CountAsync(u =>
+                u.LockoutEnd != null && u.LockoutEnd > DateTimeOffset.UtcNow);
+
+            return View(users);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleUserLock(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tài khoản cần xử lý.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tài khoản cần xử lý.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            if (string.Equals(user.Email, "admin@uef.com", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "Không thể khóa tài khoản quản trị chính.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            var isLocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow;
+
+            if (isLocked)
+            {
+                await _userManager.SetLockoutEndDateAsync(user, null);
+                TempData["SuccessMessage"] = $"Đã mở khóa tài khoản {user.Email}.";
+            }
+            else
+            {
+                await _userManager.SetLockoutEnabledAsync(user, true);
+                await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
+                TempData["SuccessMessage"] = $"Đã khóa tài khoản {user.Email}.";
+            }
+
+            return RedirectToAction(nameof(Users));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tài khoản cần xóa.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tài khoản cần xóa.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            if (string.Equals(user.Email, "admin@uef.com", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "Không thể xóa tài khoản quản trị chính.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            var bookingCount = await _context.Bookings.CountAsync(b => b.AppUserId == user.Id);
+
+            if (bookingCount > 0)
+            {
+                await _userManager.SetLockoutEnabledAsync(user, true);
+                await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
+
+                TempData["ErrorMessage"] =
+                    $"Tài khoản {user.Email} đã có {bookingCount} đơn đặt bàn nên không xóa để tránh mất lịch sử. Hệ thống đã khóa tài khoản này.";
+
+                return RedirectToAction(nameof(Users));
+            }
+
+            var result = await _userManager.DeleteAsync(user);
+
+            TempData["SuccessMessage"] = result.Succeeded
+                ? $"Đã xóa tài khoản {user.Email}."
+                : "Không thể xóa tài khoản. Vui lòng thử lại.";
+
+            return RedirectToAction(nameof(Users));
+        }
         [HttpGet]
         public IActionResult AddDish()
         {

@@ -291,5 +291,53 @@ namespace nhahangchay.Services
                 htmlBody
             );
         }
+        public async Task<bool> SendPasswordResetEmailAsync(AppUser user, string resetUrl)
+        {
+            if (string.IsNullOrWhiteSpace(user.Email))
+            {
+                return false;
+            }
+
+            var safeName = WebUtility.HtmlEncode(user.FullName ?? "quý khách");
+            var safeResetUrl = WebUtility.HtmlEncode(resetUrl);
+
+            var htmlBody = $@"
+        <div style='font-family: Arial, sans-serif; max-width:620px; margin:0 auto; padding:24px; border:1px solid #dcebd3; border-radius:14px;'>
+            <h2 style='color:#7DBA4E; margin-top:0;'>ĐẶT LẠI MẬT KHẨU SEN VIE</h2>
+
+            <p>Kính chào <strong>{safeName}</strong>,</p>
+
+            <p>SenVie nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.</p>
+
+            <p style='margin-top:18px;'>
+                <a href='{safeResetUrl}' style='display:inline-block; background:#7DBA4E; color:white; padding:12px 22px; border-radius:25px; text-decoration:none; font-weight:bold;'>
+                    Đặt lại mật khẩu
+                </a>
+            </p>
+
+            <p style='margin-top:18px; color:#555;'>
+                Nếu nút trên không mở được, hãy sao chép đường dẫn dưới đây và dán vào trình duyệt:
+            </p>
+
+            <p style='word-break:break-all; background:#f6fbf2; padding:12px; border-radius:10px; color:#1f3b20;'>
+                {safeResetUrl}
+            </p>
+
+            <p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>
+
+            <hr style='border:none; border-top:1px solid #eee; margin:22px 0;' />
+
+            <p style='color:#888; font-size:12px; margin-bottom:0;'>
+                Đây là email tự động, vui lòng không trả lời email này.
+            </p>
+        </div>";
+
+            return await SendEmailAsync(
+                user.Email,
+                user.FullName ?? "Quý khách",
+                "Đặt lại mật khẩu tài khoản SenVie",
+                htmlBody
+            );
+        }
     }
 }

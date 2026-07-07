@@ -1,0 +1,580 @@
+﻿@model List<nhahangchay.Models.AppUser>
+@using System.Collections.Generic
+
+@{
+    ViewData["Title"] = "Quản lý tài khoản";
+    Layout = "_AdminLayout";
+
+    var bookingCounts = ViewBag.BookingCounts as Dictionary<string, int> ?? new Dictionary<string, int>();
+    var currentSearch = ViewBag.CurrentSearch as string ?? "";
+}
+
+<section class="admin-page-heading">
+    <div>
+        <span class="admin-eyebrow">QUẢN LÝ NGƯỜI DÙNG</span>
+        <h1>Danh sách tài khoản</h1>
+        <p>Theo dõi, tìm kiếm, khóa hoặc xóa tài khoản khách hàng của SenVie.</p>
+    </div>
+
+    <div class="admin-heading-actions">
+        <a asp-controller="Admin" asp-action="Index" class="admin-secondary-btn">
+            <i class="fas fa-arrow-left"></i> Về đơn đặt bàn
+        </a>
+    </div>
+</section>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="admin-alert success">
+        <i class="fas fa-check-circle"></i>
+        <span>@TempData["SuccessMessage"]</span>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="admin-alert danger">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>@TempData["ErrorMessage"]</span>
+    </div>
+}
+
+<section class="admin-user-stats">
+    <div class="admin-user-stat-card">
+        <span>Tổng tài khoản</span>
+        <strong>@ViewBag.TotalUsers</strong>
+    </div>
+    <div class="admin-user-stat-card">
+        <span>Đã xác nhận email</span>
+        <strong>@ViewBag.ConfirmedUsers</strong>
+    </div>
+    <div class="admin-user-stat-card">
+        <span>Đang bị khóa</span>
+        <strong>@ViewBag.LockedUsers</strong>
+    </div>
+</section>
+
+<section class="admin-user-toolbar">
+    <form asp-controller="Admin" asp-action="Users" method="get" class="admin-user-search-form">
+        <input type="text"
+               name="searchString"
+               value="@currentSearch"
+               placeholder="Tìm theo tên hoặc email..." />
+
+        <button type="submit">
+            <i class="fas fa-search"></i>
+            Tìm kiếm
+        </button>
+
+        @if (!string.IsNullOrWhiteSpace(currentSearch))
+        {
+            <a asp-controller="Admin" asp-action="Users">Xóa lọc</a>
+        }
+    </form>
+</section>
+
+<section class="admin-user-table-card">
+    @if (Model == null || !Model.Any())
+    {
+        <div class="admin-user-empty">
+            <i class="fas fa-user-slash"></i>
+            <strong>Không có tài khoản phù hợp</strong>
+            <span>Thử tìm kiếm bằng email hoặc tên khác.</span>
+        </div>
+    }
+    else
+    {
+        <table class="admin-user-table">
+            <thead>
+                <tr>
+                    <th>Người dùng</th>
+                    <th>Email</th>
+                    <th>Trạng thái</th>
+                    <th>Số đơn</th>
+                    <th>Khóa</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    var isAdmin = string.Equals(user.Email, "admin@uef.com", StringComparison.OrdinalIgnoreCase);
+                    var isLocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow;
+                    var count = bookingCounts.ContainsKey(user.Id) ? bookingCounts[user.Id] : 0;
+
+                    <tr>
+                        <td data-label="Người dùng">
+                            <div class="admin-user-name">
+                                <span class="admin-user-avatar">
+                                    <i class="fas fa-user"></i>
+                                </span>
+                                <div>
+                                    <strong>@(string.IsNullOrWhiteSpace(user.FullName) ? "Chưa có tên" : user.FullName)</strong>
+                                    @if (isAdmin)
+                                    {
+                                        <small>Quản trị viên</small>
+                                    }
+                                    else
+                                    {
+                                        <small>Khách hàng</small>
+                                    }
+                                </div>
+                            </div>
+                        </td>
+
+                        <td data-label="Email">
+                            <span class="admin-user-email">@user.Email</span>
+                        </td>
+
+                        <td data-label="Trạng thái">
+                            @if (user.EmailConfirmed)
+                            {
+                                <span class="admin-user-badge success">Đã xác nhận</span>
+                            }
+                            else
+                            {
+                                <span class="admin-user-badge warning">Chưa xác nhận</span>
+                            }
+                        </td>
+
+                        <td data-label="Số đơn">
+                            <strong>@count</strong>
+                        </td>
+
+                        <td data-label="Khóa">
+                            @if (isLocked)
+                            {
+                                <span class="admin-user-badge danger">Đang khóa</span>
+                            }
+                            else
+                            {
+                                <span class="admin-user-badge normal">Hoạt động</span>
+                            }
+                        </td>
+
+                        <td data-label="Thao tác">
+                            <div class="admin-user-actions">
+                                @if (!isAdmin)
+                                {
+                                    <form asp-controller="Admin"
+                                          asp-action="ToggleUserLock"
+                                          method="post"
+                                          class="admin-user-action-form"
+                                          data-confirm="Bạn có chắc chắn muốn @(isLocked ? "mở khóa" : "khóa") tài khoản này không?">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@user.Id" />
+
+                                        <button type="submit" class="admin-user-action-btn @(isLocked ? "unlock" : "lock")">
+                                            <i class="fas @(isLocked ? "fa-unlock" : "fa-lock")"></i>
+                                            @(isLocked ? "Mở khóa" : "Khóa")
+                                        </button>
+                                    </form>
+
+                                    <form asp-controller="Admin"
+                                          asp-action="DeleteUser"
+                                          method="post"
+                                          class="admin-user-action-form"
+                                          data-confirm="Bạn có chắc chắn muốn xóa tài khoản này không? Nếu tài khoản đã có đơn, hệ thống sẽ khóa thay vì xóa.">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@user.Id" />
+
+                                        <button type="submit" class="admin-user-action-btn delete">
+                                            <i class="fas fa-trash"></i>
+                                            Xóa
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="admin-user-note">Không thể thao tác</span>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</section>
+
+<style>
+    .admin-heading-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .admin-secondary-btn {
+        min-height: 42px;
+        padding: 0 18px;
+        border-radius: 999px;
+        background: #26333d;
+        color: #fff;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+        .admin-secondary-btn:hover {
+            color: #fff;
+            text-decoration: none;
+            background: #1f2a33;
+        }
+
+    .admin-user-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 18px;
+    }
+
+    .admin-user-stat-card {
+        padding: 20px;
+        border-radius: 18px;
+        background: #fff;
+        border: 1px solid #e2ecd9;
+        box-shadow: 0 10px 24px rgba(30,55,30,.06);
+    }
+
+        .admin-user-stat-card span {
+            display: block;
+            color: #677267;
+            font-weight: 800;
+            font-size: 13px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .admin-user-stat-card strong {
+            color: #1f2f1f;
+            font-size: 30px;
+            font-weight: 900;
+        }
+
+    .admin-user-toolbar {
+        margin-bottom: 18px;
+    }
+
+    .admin-user-search-form {
+        display: flex;
+        gap: 10px;
+        padding: 16px;
+        border-radius: 18px;
+        background: #fff;
+        border: 1px solid #e2ecd9;
+    }
+
+        .admin-user-search-form input {
+            flex: 1;
+            height: 46px;
+            border: 1px solid #d8e0d5;
+            border-radius: 12px;
+            padding: 0 14px;
+            font-weight: 700;
+        }
+
+        .admin-user-search-form button,
+        .admin-user-search-form a {
+            min-height: 46px;
+            border: none;
+            border-radius: 12px;
+            padding: 0 16px;
+            background: #7DBA4E;
+            color: #fff;
+            font-weight: 900;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            text-decoration: none;
+        }
+
+        .admin-user-search-form a {
+            background: #6c757d;
+        }
+
+    .admin-user-table-card {
+        border-radius: 22px;
+        overflow: hidden;
+        background: #fff;
+        border: 1px solid #e2ecd9;
+        box-shadow: 0 12px 28px rgba(30,55,30,.07);
+    }
+
+    .admin-user-table {
+        width: 100%;
+        margin: 0;
+        border-collapse: collapse;
+    }
+
+        .admin-user-table th {
+            padding: 16px;
+            background: #1f3b20;
+            color: #fff;
+            font-size: 13px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .admin-user-table td {
+            padding: 16px;
+            border-bottom: 1px solid #edf3e9;
+            vertical-align: middle;
+            color: #263326;
+            font-weight: 700;
+        }
+
+    .admin-user-name {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .admin-user-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: #edf8e7;
+        color: #7DBA4E;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .admin-user-name strong,
+    .admin-user-name small {
+        display: block;
+    }
+
+    .admin-user-name small {
+        color: #778177;
+        font-size: 12px;
+        margin-top: 2px;
+    }
+
+    .admin-user-email {
+        color: #425142;
+        word-break: break-word;
+    }
+
+    .admin-user-badge {
+        min-height: 30px;
+        padding: 0 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 900;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+    }
+
+        .admin-user-badge.success {
+            color: #0f7d3b;
+            background: #e6f7eb;
+        }
+
+        .admin-user-badge.warning {
+            color: #9a6700;
+            background: #fff3cd;
+        }
+
+        .admin-user-badge.danger {
+            color: #c82333;
+            background: #fde8eb;
+        }
+
+        .admin-user-badge.normal {
+            color: #4a6f32;
+            background: #eef8e8;
+        }
+
+    .admin-user-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .admin-user-action-form {
+        margin: 0;
+    }
+
+    .admin-user-action-btn {
+        min-height: 36px;
+        border: none;
+        border-radius: 10px;
+        padding: 0 12px;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 900;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+    }
+
+        .admin-user-action-btn.lock {
+            background: #495057;
+        }
+
+        .admin-user-action-btn.unlock {
+            background: #17a2b8;
+        }
+
+        .admin-user-action-btn.delete {
+            background: #dc3545;
+        }
+
+    .admin-user-note {
+        color: #889188;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .admin-user-empty {
+        padding: 50px 20px;
+        text-align: center;
+        color: #6c776c;
+    }
+
+        .admin-user-empty i {
+            display: block;
+            font-size: 42px;
+            color: #7DBA4E;
+            margin-bottom: 14px;
+        }
+
+        .admin-user-empty strong,
+        .admin-user-empty span {
+            display: block;
+        }
+
+    @@media (max-width: 768px) {
+        .admin-heading-actions {
+            justify-content: stretch;
+        }
+
+        .admin-secondary-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .admin-user-stats {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .admin-user-search-form {
+            display: block;
+            padding: 14px;
+        }
+
+            .admin-user-search-form input,
+            .admin-user-search-form button,
+            .admin-user-search-form a {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .admin-user-search-form a {
+                margin-bottom: 0;
+            }
+
+        .admin-user-table-card {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            overflow: visible;
+        }
+
+        .admin-user-table,
+        .admin-user-table thead,
+        .admin-user-table tbody,
+        .admin-user-table tr,
+        .admin-user-table td {
+            display: block;
+            width: 100%;
+        }
+
+            .admin-user-table thead {
+                display: none;
+            }
+
+            .admin-user-table tr {
+                margin-bottom: 14px;
+                padding: 14px;
+                border-radius: 18px;
+                background: #fff;
+                border: 1px solid #e2ecd9;
+                box-shadow: 0 10px 24px rgba(30,55,30,.07);
+            }
+
+            .admin-user-table td {
+                border: none;
+                border-bottom: 1px solid #edf3e9;
+                padding: 10px 0;
+                display: flex;
+                justify-content: space-between;
+                gap: 14px;
+                text-align: right;
+                word-break: break-word;
+            }
+
+                .admin-user-table td::before {
+                    content: attr(data-label);
+                    flex: 0 0 38%;
+                    max-width: 38%;
+                    color: #667266;
+                    font-size: 12px;
+                    font-weight: 900;
+                    text-align: left;
+                    text-transform: uppercase;
+                }
+
+                .admin-user-table td:last-child {
+                    border-bottom: none;
+                    display: block;
+                    text-align: left;
+                }
+
+                    .admin-user-table td:last-child::before {
+                        display: block;
+                        max-width: 100%;
+                        margin-bottom: 10px;
+                    }
+
+        .admin-user-name {
+            justify-content: flex-end;
+            text-align: right;
+        }
+
+        .admin-user-actions {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .admin-user-action-btn {
+            width: 100%;
+            justify-content: center;
+            min-height: 40px;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll(".admin-user-action-form").forEach(function (form) {
+            form.addEventListener("submit", function (event) {
+                var message = form.getAttribute("data-confirm") || "Bạn có chắc chắn muốn thực hiện thao tác này không?";
+
+                if (!confirm(message)) {
+                    event.preventDefault();
+                }
+            });
+        });
+    </script>
+}

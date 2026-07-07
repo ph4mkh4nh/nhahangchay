@@ -31,6 +31,19 @@
                                 @ViewBag.Error
                             </div>
                         }
+                        @if (TempData["SuccessMessage"] != null)
+                        {
+                            <div class="alert alert-success text-center font-weight-bold" style="border-radius: 10px;">
+                                @TempData["SuccessMessage"]
+                            </div>
+                        }
+
+                        @if (TempData["ErrorMessage"] != null)
+                        {
+                            <div class="alert alert-danger text-center font-weight-bold" style="border-radius: 10px;">
+                                @TempData["ErrorMessage"]
+                            </div>
+                        }
 
                         <form asp-controller="Account" asp-action="Login" method="post">
                             <div class="form-group mb-3">
@@ -52,7 +65,11 @@
                                     <input type="password" name="password" class="form-control border-left-0" placeholder="******" required>
                                 </div>
                             </div>
-
+                            <div class="text-right mb-3">
+                                <a href="/Account/ForgotPassword" style="color:#7DBA4E; font-weight:700; font-size:14px;">
+                                    Quên mật khẩu?
+                                </a>
+                            </div>
                             <button type="submit" class="btn btn-block text-white" style="background-color: #7DBA4E; border-radius: 50px; padding: 12px; font-weight: bold; font-size: 1.1rem;">
                                 ĐĂNG NHẬP
                             </button>

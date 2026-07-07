@@ -37,10 +37,7 @@ namespace nhahangchay.Controllers
             _emailService = emailService;
         }
 
-        // =======================================================
         // LOGIN
-        // =======================================================
-
         [HttpGet]
         public IActionResult Login()
         {
@@ -109,10 +106,7 @@ namespace nhahangchay.Controllers
             return View();
         }
 
-        // =======================================================
         // REGISTER + OTP
-        // =======================================================
-
         [HttpGet]
         public IActionResult Register()
         {
@@ -309,10 +303,7 @@ namespace nhahangchay.Controllers
             return RedirectToAction(nameof(VerifyEmailOtp), new { email });
         }
 
-        // =======================================================
         // OTP HELPERS
-        // =======================================================
-
         private static string GenerateOtpCode()
         {
             return RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
@@ -439,21 +430,158 @@ namespace nhahangchay.Controllers
 
             return (true, "Xác nhận email thành công.");
         }
+        // FORGOT PASSWORD
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                return RedirectToAction("Index", "Home");
+            }
 
-        // =======================================================
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            email = email?.Trim().ToLower() ?? "";
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                ViewBag.Error = "Vui lòng nhập email đã đăng ký.";
+                return View();
+            }
+
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null || !await _userManager.IsEmailConfirmedAsync(user))
+            {
+                ViewBag.Success = "Nếu email tồn tại trong hệ thống, SenVie sẽ gửi hướng dẫn đặt lại mật khẩu.";
+                return View();
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            var resetUrl = Url.Action(
+                nameof(ResetPassword),
+                "Account",
+                new
+                {
+                    email = user.Email,
+                    token
+                },
+                Request.Scheme
+            );
+
+            if (string.IsNullOrWhiteSpace(resetUrl))
+            {
+                ViewBag.Error = "Không tạo được liên kết đặt lại mật khẩu. Vui lòng thử lại.";
+                return View();
+            }
+
+            var sent = await _emailService.SendPasswordResetEmailAsync(user, resetUrl);
+
+            ViewBag.Success = sent
+                ? "SenVie đã gửi email hướng dẫn đặt lại mật khẩu. Vui lòng kiểm tra hộp thư."
+                : "Hệ thống chưa gửi được email đặt lại mật khẩu. Vui lòng thử lại sau.";
+
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult ResetPassword(string email, string token)
+        {
+            email = email?.Trim().ToLower() ?? "";
+            token = token ?? "";
+
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(token))
+            {
+                TempData["ErrorMessage"] = "Liên kết đặt lại mật khẩu không hợp lệ.";
+                return RedirectToAction(nameof(Login));
+            }
+
+            ViewBag.Email = email;
+            ViewBag.Token = token;
+
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(string email, string token, string password, string confirmPassword)
+        {
+            email = email?.Trim().ToLower() ?? "";
+            token = token ?? "";
+
+            ViewBag.Email = email;
+            ViewBag.Token = token;
+
+            if (string.IsNullOrWhiteSpace(email) ||
+                string.IsNullOrWhiteSpace(token) ||
+                string.IsNullOrWhiteSpace(password) ||
+                string.IsNullOrWhiteSpace(confirmPassword))
+            {
+                ViewBag.Error = "Vui lòng điền đầy đủ thông tin.";
+                return View();
+            }
+
+            if (password != confirmPassword)
+            {
+                ViewBag.Error = "Mật khẩu nhập lại không khớp.";
+                return View();
+            }
+
+            if (password.Length < 6)
+            {
+                ViewBag.Error = "Mật khẩu phải có ít nhất 6 ký tự.";
+                return View();
+            }
+
+            var weakPasswords = new[]
+            {
+        "123456",
+        "12345678",
+        "111111",
+        "password",
+        "qwerty",
+        "abc123"
+    };
+
+            if (weakPasswords.Contains(password.ToLower()))
+            {
+                ViewBag.Error = "Mật khẩu quá dễ đoán. Vui lòng chọn mật khẩu khác an toàn hơn.";
+                return View();
+            }
+
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+            {
+                ViewBag.Error = "Không tìm thấy tài khoản cần đặt lại mật khẩu.";
+                return View();
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, token, password);
+
+            if (!result.Succeeded)
+            {
+                ViewBag.Error = "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu gửi lại email.";
+                return View();
+            }
+
+            TempData["SuccessMessage"] = "Đặt lại mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.";
+            return RedirectToAction(nameof(Login));
+        }
         // LOGOUT
-        // =======================================================
-
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
         }
 
-        // =======================================================
         // PROFILE
-        // =======================================================
-
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> Profile()
