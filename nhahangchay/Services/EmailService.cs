@@ -93,10 +93,12 @@ namespace nhahangchay.Services
             var qrData = WebUtility.UrlEncode(booking.BookingCode ?? "");
             var qrImageUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={qrData}";
 
+            var isWaitingDeposit = booking.DepositAmount > 0 && booking.PaymentStatus == PaymentUnpaid;
+
             string subject;
             string actionBlock;
 
-            if (booking.DepositAmount > 0 && booking.PaymentStatus == PaymentUnpaid)
+            if (isWaitingDeposit)
             {
                 subject = "Yêu cầu thanh toán cọc đặt bàn - SenVie";
 
@@ -138,7 +140,20 @@ namespace nhahangchay.Services
             var omakaseLine = string.IsNullOrWhiteSpace(booking.OmakaseTier)
                 ? ""
                 : $"<li><strong>Gói Omakase:</strong> {omakaseTier}</li>";
-
+            var bookingInfoList = isWaitingDeposit
+    ? $@"
+        <li><strong>Loại bàn:</strong> {bookingType}</li>
+        {omakaseLine}
+        <li><strong>Thời gian đến:</strong> {booking.BookingDate:dd/MM/yyyy HH:mm}</li>
+        <li><strong>Số khách:</strong> {booking.NumberOfGuests}</li>
+        <li><strong>Tiền cọc cần thanh toán:</strong> {booking.DepositAmount:N0}đ</li>"
+    : $@"
+        <li><strong>Mã đơn:</strong> <span style='color:#dc3545; font-size:18px; font-weight:bold;'>{bookingCode}</span></li>
+        <li><strong>Loại bàn:</strong> {bookingType}</li>
+        {omakaseLine}
+        <li><strong>Thời gian đến:</strong> {booking.BookingDate:dd/MM/yyyy HH:mm}</li>
+        <li><strong>Số khách:</strong> {booking.NumberOfGuests}</li>
+        <li><strong>Tiền cọc:</strong> {booking.DepositAmount:N0}đ</li>";
             var htmlBody = $@"
                 <div style='font-family: Arial, sans-serif; max-width:620px; margin:0 auto; padding:24px; border:1px solid #dcebd3; border-radius:14px;'>
                     <h2 style='color:#7DBA4E; margin-top:0;'>CẢM ƠN BẠN ĐÃ ĐẶT BÀN!</h2>
@@ -147,13 +162,8 @@ namespace nhahangchay.Services
                     <p>Nhà hàng chay <strong>SenVie Vegan Dining</strong> đã nhận được yêu cầu giữ chỗ của bạn.</p>
 
                     <ul style='line-height:1.8; padding-left:20px;'>
-                        <li><strong>Mã đơn:</strong> <span style='color:#dc3545; font-size:18px; font-weight:bold;'>{bookingCode}</span></li>
-                        <li><strong>Loại bàn:</strong> {bookingType}</li>
-                        {omakaseLine}
-                        <li><strong>Thời gian đến:</strong> {booking.BookingDate:dd/MM/yyyy HH:mm}</li>
-                        <li><strong>Số khách:</strong> {booking.NumberOfGuests}</li>
-                        <li><strong>Tiền cọc:</strong> {booking.DepositAmount:N0}đ</li>
-                    </ul>
+    {bookingInfoList}
+</ul>
 
                     {actionBlock}
 

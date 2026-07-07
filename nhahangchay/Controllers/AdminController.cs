@@ -230,7 +230,11 @@ namespace nhahangchay.Controllers
                 TempData["Error"] = $"Không tìm thấy đơn đặt bàn nào với mã '{normalizedCode}'!";
                 return RedirectToAction(nameof(CheckIn));
             }
-
+            if (booking.DepositAmount > 0 && booking.PaymentStatus == 0)
+            {
+                TempData["ErrorMessage"] = $"Đơn {booking.BookingCode} chưa thanh toán cọc. Không thể check-in.";
+                return RedirectToAction(nameof(CheckIn));
+            }
             if (booking.Status == BookingCancelled)
             {
                 TempData["Warning"] = $"Đơn {booking.BookingCode} đã bị hủy, không thể check-in.";

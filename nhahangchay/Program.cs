@@ -42,10 +42,12 @@ builder.Services.Configure<CloudinarySettings>(
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings")
 );
-
+builder.Services.Configure<VnPaySettings>(
+    builder.Configuration.GetSection("VnPay")
+);
 builder.Services.AddScoped<CloudinaryService>();
 builder.Services.AddScoped<EmailService>();
-
+builder.Services.AddScoped<VnPayService>();
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = false;

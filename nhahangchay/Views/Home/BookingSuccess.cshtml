@@ -29,7 +29,6 @@
         @if (TempData["SuccessMessage"] != null)
         {
             <div class="alert alert-success font-weight-bold text-center mb-4" style="max-width: 650px; margin: 0 auto;">
-                <i class="fas fa-check-circle"></i>
                 @TempData["SuccessMessage"]
             </div>
         }
@@ -81,8 +80,7 @@
 
                 @if (Model.DepositAmount > 0 && Model.PaymentStatus == 1)
                 {
-                    <div class="alert alert-warning font-weight-bold text-left" style="border-radius: 12px;">
-                        <i class="fas fa-info-circle"></i>
+                    <div class="alert alert-warning font-weight-bold text-left" style="border-radius: 12px;">                      
                         Đơn này đã thanh toán cọc @Model.DepositAmount.ToString("N0")đ.
                         Nhà hàng sẽ liên hệ để xử lý hoàn cọc hoặc chuyển cọc sang đơn đặt bàn khác.
                     </div>
@@ -101,148 +99,148 @@
         }
         else if (Model.DepositAmount > 0 && Model.PaymentStatus == 0)
         {
-            <div class="momo-checkout-box" style="background: white; padding: 40px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.08); max-width: 550px; margin: 0 auto; border-top: 10px solid #a50064;">
-
-                <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png"
-                     alt="MoMo Logo"
-                     style="height: 60px; margin-bottom: 20px;" />
-
-                <h3 style="font-weight: bold; color: #333; margin-bottom: 5px;">
-                    Thanh Toán Tiền Cọc
-                </h3>
-
-                <p style="color: #666; font-size: 14px;">
-                    Mã đơn:
-                    <strong style="color: #a50064;">@bookingCode</strong>
-                </p>
-
-                <div style="background: #fdf5f9; border-radius: 15px; padding: 25px; margin: 20px 0;">
-                    <p style="color: #555; margin-bottom: 5px; font-weight: 500;">
-                        Số tiền cần thanh toán:
+            <div class="payment-choice-box">
+                <div class="payment-choice-header">
+                    <span class="payment-badge">Cần thanh toán cọc</span>
+                    <h2>Chọn phương thức thanh toán</h2>
+                    <p>
+                        Đơn đặt bàn cần thanh toán cọc để nhận mã QR check-in.
+                        Mã nhận diện sẽ hiển thị sau khi thanh toán thành công.
                     </p>
-
-                    <h1 style="color: #a50064; font-weight: 900; margin: 0; font-size: 38px;">
-                        @Model.DepositAmount.ToString("N0") VNĐ
-                    </h1>
                 </div>
 
-                <div style="background: #fff8fc; border: 1px dashed #a50064; border-radius: 12px; padding: 15px; margin-bottom: 20px;">
-                    <p style="margin-bottom: 6px; color: #333;">
-                        <strong>Loại bàn:</strong> @Model.BookingType
-                    </p>
+                <div class="payment-summary-card">
+                    <div>
+                        <span>Số tiền cọc</span>
+                        <strong>@Model.DepositAmount.ToString("N0")đ</strong>
+                    </div>
+
+                    <div>
+                        <span>Loại bàn</span>
+                        <strong>@Model.BookingType</strong>
+                    </div>
 
                     @if (Model.BookingType == "Omakase Chay" && !string.IsNullOrWhiteSpace(Model.OmakaseTier))
                     {
-                        <p style="margin-bottom: 6px; color: #333;">
-                            <strong>Gói Omakase:</strong> @Model.OmakaseTier
-                        </p>
+                        <div>
+                            <span>Gói Omakase</span>
+                            <strong>@Model.OmakaseTier</strong>
+                        </div>
                     }
 
-                    <p style="margin-bottom: 6px; color: #333;">
-                        <strong>Số khách:</strong> @Model.NumberOfGuests
-                    </p>
-
-                    <p style="margin-bottom: 0; color: #333;">
-                        <strong>Thời gian đến:</strong> @Model.BookingDate.ToString("dd/MM/yyyy HH:mm")
-                    </p>
+                    <div>
+                        <span>Thời gian đến</span>
+                        <strong>@Model.BookingDate.ToString("dd/MM/yyyy HH:mm")</strong>
+                    </div>
                 </div>
-
 
                 @if (preOrderDetails.Any())
                 {
-                    <div style="background: #f8fff4; border: 1px solid #d8edce; border-left: 5px solid #7DBA4E; border-radius: 14px; padding: 16px; margin-bottom: 22px; text-align: left;">
-                        <h5 style="font-weight: 900; color: #2f6b1f; margin-bottom: 12px;">
-                            Món đã chọn trước
-                        </h5>
+                    <div class="payment-preorder-card">
+                        <h5>Món đã chọn trước</h5>
 
                         @foreach (var detail in preOrderDetails)
                         {
-                            <div style="display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px dashed #dbead2; font-size: 14px;">
+                            <div class="payment-preorder-row">
                                 <span>@detail.DishName x @detail.Quantity</span>
                                 <strong>@detail.LineTotal.ToString("N0")đ</strong>
                             </div>
                         }
 
-                        <div style="display: flex; justify-content: space-between; margin-top: 12px; font-weight: 900; color: #1f3b20;">
+                        <div class="payment-preorder-total">
                             <span>Tổng tạm tính</span>
-                            <span>@preOrderTotal.ToString("N0")đ</span>
+                            <strong>@preOrderTotal.ToString("N0")đ</strong>
                         </div>
 
-                        <p style="margin: 10px 0 0; color: #777; font-size: 13px;">
-                            Tổng tiền món chỉ là tạm tính, thanh toán trực tiếp tại nhà hàng.
-                        </p>
+                        <p>Tổng tiền món chỉ là tạm tính, thanh toán trực tiếp tại nhà hàng.</p>
                     </div>
                 }
 
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=MOMO-PAYMENT-DEMO-@Uri.EscapeDataString(bookingCode)"
-                     alt="Momo QR"
-                     style="border: 2px solid #a50064; border-radius: 10px; padding: 5px; margin-bottom: 20px;" />
+                <div class="payment-policy-box">
+                    <h5>Chính sách hủy và xử lý tiền cọc</h5>
 
-                <p style="font-size: 13px; color: #888; font-style: italic; margin-bottom: 25px;">
-                    * Mở ứng dụng MoMo để quét mã QR trên.<br />
-                    Đây là môi trường giả lập cho đồ án.
-                </p>
+                    @if (Model.BookingType == "Omakase Chay")
+                    {
+                        <ul>
+                            <li>Hủy trước <strong>48 tiếng</strong>: hỗ trợ hoàn/chuyển <strong>100% tiền cọc</strong>.</li>
+                            <li>Hủy từ <strong>24 đến dưới 48 tiếng</strong>: hỗ trợ hoàn/chuyển <strong>50% tiền cọc</strong>.</li>
+                            <li>Hủy dưới <strong>24 tiếng</strong>: tiền cọc không được hoàn do nhà hàng đã chuẩn bị nguyên liệu và suất phục vụ riêng.</li>
+                        </ul>
+                    }
+                    else if (Model.BookingType == "Bàn VIP")
+                    {
+                        <ul>
+                            <li>Hủy trước <strong>24 tiếng</strong>: hỗ trợ hoàn/chuyển <strong>100% tiền cọc</strong>.</li>
+                            <li>Hủy dưới <strong>24 tiếng</strong>: tiền cọc không được hoàn do nhà hàng đã giữ phòng riêng và chuẩn bị dịch vụ.</li>
+                        </ul>
+                    }
 
-                <form asp-controller="Home" asp-action="DemoMoMoPayment" method="post">
-                    @Html.AntiForgeryToken()
+                    <p>
+                        Việc hoàn/chuyển cọc sẽ được nhà hàng liên hệ và xử lý thủ công.
+                    </p>
 
-                    <input type="hidden" name="code" value="@bookingCode" />
-                    <div class="text-left mb-3"
-                         style="background: #fff8e1; border-left: 5px solid #ffc107; border-radius: 12px; padding: 16px; font-size: 14px; color: #333;">
-                        <h6 style="font-weight: 800; color: #8a5a00; margin-bottom: 10px;">
-                            <i class="fas fa-info-circle"></i>
-                            Chính sách hủy và xử lý tiền cọc
-                        </h6>
+                    <label class="payment-policy-check">
+                        <input type="checkbox" id="acceptPaymentPolicy" />
+                        <span>Tôi đã đọc và đồng ý với chính sách hủy/hoàn cọc của SenVie.</span>
+                    </label>
+                </div>
 
-                        @if (Model.BookingType == "Omakase Chay")
-                        {
-                            <ul style="padding-left: 18px; margin-bottom: 8px;">
-                                <li>Hủy trước <strong>48 tiếng</strong>: hỗ trợ hoàn/chuyển <strong>100% tiền cọc</strong>.</li>
-                                <li>Hủy từ <strong>24 đến dưới 48 tiếng</strong>: hỗ trợ hoàn/chuyển <strong>50% tiền cọc</strong>.</li>
-                                <li>Hủy dưới <strong>24 tiếng</strong>: tiền cọc không được hoàn do nhà hàng đã chuẩn bị nguyên liệu và suất phục vụ riêng.</li>
-                            </ul>
-                        }
-                        else if (Model.BookingType == "Bàn VIP")
-                        {
-                            <ul style="padding-left: 18px; margin-bottom: 8px;">
-                                <li>Hủy trước <strong>24 tiếng</strong>: hỗ trợ hoàn/chuyển <strong>100% tiền cọc</strong>.</li>
-                                <li>Hủy dưới <strong>24 tiếng</strong>: tiền cọc không được hoàn do nhà hàng đã giữ phòng riêng và chuẩn bị dịch vụ.</li>
-                            </ul>
-                        }
-                        else
-                        {
-                            <ul style="padding-left: 18px; margin-bottom: 8px;">
-                                <li>Bàn tiêu chuẩn không yêu cầu cọc.</li>
-                                <li>Khách có thể hủy online nếu còn hơn <strong>1 tiếng</strong> trước giờ đến.</li>
-                            </ul>
-                        }
+                <div class="payment-method-grid">
+                    <div class="payment-method-card momo">
+                        <div class="payment-method-logo momo-logo">
+                            MoMo
+                        </div>
 
-                        <p style="margin-bottom: 0; color: #777; font-size: 13px;">
-                            Do đây là thanh toán mô phỏng cho đồ án, việc hoàn/chuyển cọc sẽ được nhà hàng liên hệ và xử lý thủ công.
-                        </p>
+                        <h4>MoMo Demo</h4>
+                        <p>Thanh toán mô phỏng 1 click để test nhanh.</p>
+
+                        <div class="payment-demo-note">
+                            <strong>Test nhanh</strong>
+                            <span>Không cần quét QR, hệ thống sẽ mô phỏng thanh toán thành công.</span>
+                        </div>
+
+                        <form asp-controller="Home"
+                              asp-action="DemoMoMoPayment"
+                              method="post"
+                              class="deposit-payment-form">
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden" name="code" value="@bookingCode" />
+                            <input type="hidden" name="acceptCancellationPolicy" value="false" class="accept-policy-value" />
+
+                            <button type="submit" class="payment-submit-btn momo-btn">
+                                Thanh toán MoMo
+                            </button>
+                        </form>
                     </div>
 
-                    <div class="form-check text-left mb-3"
-                         style="background: #f8f9fa; border-radius: 10px; padding: 12px 12px 12px 36px;">
-                        <input class="form-check-input"
-                               type="checkbox"
-                               id="acceptCancellationPolicy"
-                               name="acceptCancellationPolicy"
-                               value="true"
-                               required />
+                    <div class="payment-method-card vnpay">
+                        <div class="payment-method-logo vnpay-logo">
+                            VNPay
+                        </div>
 
-                        <label class="form-check-label font-weight-bold"
-                               for="acceptCancellationPolicy"
-                               style="font-size: 14px; color: #333;">
-                            Tôi đã đọc và đồng ý với chính sách hủy/hoàn cọc của SenVie.
-                        </label>
+                        <h4>VNPay Sandbox</h4>
+                        <p>Chuyển sang cổng VNPay để thanh toán.</p>
+
+                        <div class="payment-vnpay-note">
+                            <span>VNPay sẽ chuyển bạn sang trang thanh toán sandbox.</span>
+                        </div>
+
+                        <form asp-controller="Payment"
+                              asp-action="CreateVnPayPayment"
+                              method="post"
+                              class="deposit-payment-form">
+                            @Html.AntiForgeryToken()
+
+                            <input type="hidden" name="code" value="@bookingCode" />
+                            <input type="hidden" name="acceptCancellationPolicy" value="false" class="accept-policy-value" />
+
+                            <button type="submit" class="payment-submit-btn vnpay-btn">
+                                Thanh toán VNPay
+                            </button>
+                        </form>
                     </div>
-                    <button type="submit"
-                            style="background-color: #a50064; color: white; padding: 15px 30px; font-size: 16px; border-radius: 50px; border: none; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 5px 15px rgba(165,0,100,0.3); transition: all 0.3s;">
-                        <i class="fas fa-check-circle"></i>
-                        Xác nhận đã thanh toán Demo
-                    </button>
-                </form>
+                </div>
 
                 @if (canCancelBooking)
                 {
@@ -255,18 +253,14 @@
 
                         <input type="hidden" name="code" value="@bookingCode" />
 
-                        <button type="submit"
-                                class="btn btn-outline-danger rounded-pill font-weight-bold px-4 py-2"
-                                style="width: 100%;">
-                            <i class="fas fa-ban"></i>
+                        <button type="submit" class="payment-cancel-btn">
                             Hủy đơn này
                         </button>
                     </form>
                 }
 
-                <div class="mt-4">
-                    <a href="/" style="color: #777; font-weight: 600; text-decoration: none;">
-                        <i class="fas fa-arrow-left"></i>
+                <div class="payment-back-link">
+                    <a href="/">
                         Quay về trang chủ
                     </a>
                 </div>
@@ -386,7 +380,6 @@
 
                         <button type="submit"
                                 class="btn btn-outline-danger rounded-pill font-weight-bold px-4 py-2">
-                            <i class="fas fa-ban"></i>
                             Hủy đơn đặt bàn
                         </button>
                     </form>
@@ -401,7 +394,465 @@
 </div>
 @section Scripts {
     <script>
-        // Booking đã được lưu vào database, xóa món chọn trước khỏi trình duyệt để tránh gửi lặp ở đơn sau.
         localStorage.removeItem('senvie_preorder_items');
+
+        document.querySelectorAll('.deposit-payment-form').forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                var policyCheckbox = document.getElementById('acceptPaymentPolicy');
+                var hiddenPolicyInput = form.querySelector('.accept-policy-value');
+
+                if (!policyCheckbox || !policyCheckbox.checked) {
+                    event.preventDefault();
+                    alert('Vui lòng đọc và đồng ý với chính sách hủy/hoàn cọc trước khi thanh toán.');
+                    return;
+                }
+
+                if (hiddenPolicyInput) {
+                    hiddenPolicyInput.value = 'true';
+                }
+
+                var submitButton = form.querySelector('button[type="submit"]');
+
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.innerText = 'Đang xử lý...';
+                }
+            });
+        });
     </script>
+    <style>
+        .payment-choice-box {
+            width: 100%;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 34px;
+            border-radius: 24px;
+            background: #ffffff;
+            border-top: 10px solid #7DBA4E;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        .payment-choice-header h2 {
+            margin: 12px 0 8px;
+            color: #172236;
+            font-size: 32px;
+            font-weight: 900;
+        }
+
+        .payment-choice-header p {
+            color: #667085;
+            font-size: 16px;
+            margin-bottom: 22px;
+        }
+
+        .payment-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 34px;
+            padding: 0 16px;
+            border-radius: 999px;
+            color: #7a4b00;
+            background: #fff3cd;
+            font-weight: 900;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        .payment-summary-card {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin: 22px 0;
+        }
+
+            .payment-summary-card div {
+                padding: 16px;
+                border-radius: 16px;
+                background: #f8fff4;
+                border: 1px solid #d8edce;
+                text-align: left;
+            }
+
+            .payment-summary-card span {
+                display: block;
+                margin-bottom: 6px;
+                color: #667085;
+                font-size: 12px;
+                font-weight: 800;
+                text-transform: uppercase;
+            }
+
+            .payment-summary-card strong {
+                color: #1f3b20;
+                font-size: 16px;
+                font-weight: 900;
+            }
+
+        .payment-preorder-card,
+        .payment-policy-box {
+            margin-bottom: 22px;
+            padding: 18px;
+            border-radius: 18px;
+            text-align: left;
+        }
+
+        .payment-preorder-card {
+            background: #f8fff4;
+            border: 1px solid #d8edce;
+            border-left: 5px solid #7DBA4E;
+        }
+
+            .payment-preorder-card h5,
+            .payment-policy-box h5 {
+                margin-bottom: 12px;
+                font-weight: 900;
+            }
+
+        .payment-preorder-row,
+        .payment-preorder-total {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 9px 0;
+            border-bottom: 1px dashed #dbead2;
+        }
+
+        .payment-preorder-total {
+            border-bottom: none;
+            margin-top: 8px;
+            color: #1f3b20;
+            font-weight: 900;
+        }
+
+        .payment-preorder-card p {
+            margin: 8px 0 0;
+            color: #777;
+            font-size: 13px;
+        }
+
+        .payment-policy-box {
+            background: #fff8e1;
+            border-left: 5px solid #ffc107;
+            color: #333;
+        }
+
+            .payment-policy-box ul {
+                padding-left: 18px;
+                margin-bottom: 8px;
+                line-height: 1.7;
+            }
+
+            .payment-policy-box p {
+                margin-bottom: 12px;
+                color: #777;
+                font-size: 13px;
+            }
+
+        .payment-policy-check {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            margin: 0;
+            padding: 12px;
+            border-radius: 12px;
+            background: #ffffff;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+            .payment-policy-check input {
+                margin-top: 4px;
+            }
+
+        .payment-method-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .payment-method-card {
+            padding: 24px;
+            border-radius: 22px;
+            border: 1px solid #e6e9ef;
+            background: #ffffff;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.06);
+            text-align: center;
+        }
+
+            .payment-method-card.momo {
+                border-color: #f2cce3;
+                background: #fff7fc;
+            }
+
+            .payment-method-card.vnpay {
+                border-color: #cde4ff;
+                background: #f5f9ff;
+            }
+
+        .payment-method-icon {
+            width: 68px;
+            height: 68px;
+            margin: 0 auto 14px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+        }
+
+            .payment-method-icon img {
+                max-width: 54px;
+                max-height: 54px;
+            }
+
+        .vnpay-icon {
+            color: #0d6efd;
+            font-size: 34px;
+        }
+
+        .payment-method-card h4 {
+            margin-bottom: 8px;
+            color: #172236;
+            font-weight: 900;
+        }
+
+        .payment-method-card p {
+            min-height: 44px;
+            margin-bottom: 16px;
+            color: #667085;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        .payment-demo-qr img {
+            width: 150px;
+            height: 150px;
+            padding: 6px;
+            margin-bottom: 16px;
+            border-radius: 14px;
+            border: 2px solid #a50064;
+            background: #ffffff;
+        }
+
+        .payment-vnpay-note {
+            min-height: 166px;
+            margin-bottom: 16px;
+            padding: 20px;
+            border-radius: 16px;
+            background: #ffffff;
+            color: #0d4f8b;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            line-height: 1.5;
+        }
+
+            .payment-vnpay-note i {
+                font-size: 24px;
+            }
+
+        .payment-submit-btn,
+        .payment-cancel-btn {
+            width: 100%;
+            min-height: 50px;
+            border: none;
+            border-radius: 999px;
+            color: #ffffff;
+            font-weight: 900;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .momo-btn {
+            background: #a50064;
+            box-shadow: 0 8px 18px rgba(165, 0, 100, 0.22);
+        }
+
+        .vnpay-btn {
+            background: #0d6efd;
+            box-shadow: 0 8px 18px rgba(13, 110, 253, 0.22);
+        }
+
+        .payment-cancel-btn {
+            background: #dc3545;
+        }
+
+        .payment-back-link {
+            margin-top: 20px;
+        }
+
+            .payment-back-link a {
+                color: #667085;
+                font-weight: 800;
+                text-decoration: none;
+            }
+
+        @@media (max-width: 768px) {
+            #booking-status-page {
+                padding: 110px 0 70px 0 !important;
+            }
+
+            .payment-choice-box {
+                padding: 24px 16px;
+                border-radius: 20px;
+            }
+
+            .payment-choice-header h2 {
+                font-size: 25px;
+            }
+
+            .payment-summary-card,
+            .payment-method-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .payment-method-card {
+                padding: 20px 16px;
+            }
+
+                .payment-method-card p,
+                .payment-vnpay-note {
+                    min-height: auto;
+                }
+
+            .payment-demo-qr img {
+                width: 130px;
+                height: 130px;
+            }
+        }
+
+        .payment-choice-box {
+            color: #1f2937;
+        }
+
+        .payment-choice-header h2 {
+            color: #102033 !important;
+            font-weight: 900 !important;
+            letter-spacing: 0 !important;
+        }
+
+        .payment-choice-header p,
+        .payment-method-card p,
+        .payment-policy-box,
+        .payment-policy-box p,
+        .payment-policy-box li,
+        .payment-preorder-card p,
+        .payment-back-link a {
+            color: #263238 !important;
+            font-weight: 700 !important;
+            letter-spacing: 0 !important;
+        }
+
+        .payment-summary-card span,
+        .payment-badge {
+            letter-spacing: 0 !important;
+        }
+
+        .payment-summary-card strong {
+            color: #102033 !important;
+            font-weight: 900 !important;
+        }
+
+        .payment-policy-box h5,
+        .payment-preorder-card h5,
+        .payment-method-card h4 {
+            color: #102033 !important;
+            font-weight: 900 !important;
+            letter-spacing: 0 !important;
+        }
+
+        .payment-method-logo {
+            width: 82px;
+            height: 58px;
+            margin: 0 auto 14px;
+            border-radius: 18px;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            letter-spacing: 0;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+        }
+
+        .momo-logo {
+            color: #a50064;
+            border: 2px solid #f1bddb;
+        }
+
+        .vnpay-logo {
+            color: #0d6efd;
+            border: 2px solid #bdd7ff;
+        }
+
+        .payment-demo-note {
+            min-height: 150px;
+            margin-bottom: 16px;
+            padding: 22px;
+            border-radius: 16px;
+            background: #ffffff;
+            border: 1px dashed #e6a4ca;
+            color: #5f1747;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+            .payment-demo-note strong {
+                font-size: 18px;
+                font-weight: 900;
+            }
+
+            .payment-demo-note span {
+                color: #4b5563;
+                font-weight: 700;
+                line-height: 1.5;
+            }
+
+        .payment-vnpay-note {
+            color: #0b3f78 !important;
+            font-weight: 800 !important;
+        }
+
+        .payment-submit-btn,
+        .payment-cancel-btn {
+            font-size: 15px;
+            letter-spacing: 0;
+        }
+
+        .payment-policy-check {
+            color: #102033 !important;
+            font-weight: 900 !important;
+        }
+
+            .payment-policy-check input {
+                accent-color: #7DBA4E;
+            }
+
+        @@media (max-width: 768px) {
+            .payment-choice-header h2 {
+                font-size: 24px !important;
+                line-height: 1.25 !important;
+            }
+
+            .payment-choice-header p {
+                font-size: 14px !important;
+                line-height: 1.55 !important;
+            }
+
+            .payment-demo-note {
+                min-height: auto;
+                padding: 18px;
+            }
+        }
+    </style>
 }
