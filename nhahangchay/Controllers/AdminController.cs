@@ -360,6 +360,152 @@ namespace nhahangchay.Controllers
             return View();
         }
         [HttpGet]
+        public async Task<IActionResult> Statistics(string? range, DateTime? fromDate, DateTime? toDate)
+        {
+            range = string.IsNullOrWhiteSpace(range) ? "month" : range.Trim().ToLower();
+
+            var today = DateTime.UtcNow.AddHours(7).Date;
+
+            DateTime startDate;
+            DateTime endDate;
+
+            switch (range)
+            {
+                case "today":
+                    startDate = today;
+                    endDate = today;
+                    break;
+
+                case "7days":
+                    startDate = today.AddDays(-6);
+                    endDate = today;
+                    break;
+
+                case "custom":
+                    startDate = fromDate?.Date ?? today.AddDays(-6);
+                    endDate = toDate?.Date ?? today;
+
+                    if (endDate < startDate)
+                    {
+                        var temp = startDate;
+                        startDate = endDate;
+                        endDate = temp;
+                    }
+                    break;
+
+                case "month":
+                default:
+                    range = "month";
+                    startDate = new DateTime(today.Year, today.Month, 1);
+                    endDate = startDate.AddMonths(1).AddDays(-1);
+                    break;
+            }
+
+            var queryEndDate = endDate.AddDays(1);
+
+            var bookings = await _context.Bookings
+                .AsNoTracking()
+                .Where(b => b.CreatedAt >= startDate && b.CreatedAt < queryEndDate)
+                .ToListAsync();
+
+            var bookingIds = bookings.Select(b => b.Id).ToList();
+
+            var estimatedPreOrderTotal = 0m;
+
+            if (bookingIds.Count > 0)
+            {
+                estimatedPreOrderTotal = await _context.BookingDetails
+                    .AsNoTracking()
+                    .Where(d => bookingIds.Contains(d.BookingId))
+                    .SumAsync(d => (decimal?)d.LineTotal) ?? 0;
+            }
+
+            var viewModel = new AdminStatisticsViewModel
+            {
+                Range = range,
+                FromDate = startDate,
+                ToDate = endDate,
+
+                TotalBookings = bookings.Count,
+                PendingBookings = bookings.Count(b => b.Status == BookingPending),
+                CheckedInBookings = bookings.Count(b => b.Status == BookingCheckedIn),
+                CancelledBookings = bookings.Count(b => b.Status == BookingCancelled),
+
+                DepositCollected = bookings
+                    .Where(b => b.DepositAmount > 0 && b.PaymentStatus == PaymentPaid)
+                    .Sum(b => b.DepositAmount),
+
+                PendingDeposit = bookings
+                    .Where(b => b.DepositAmount > 0 &&
+                                b.PaymentStatus == PaymentUnpaid &&
+                                b.Status == BookingPending)
+                    .Sum(b => b.DepositAmount),
+
+                EstimatedPreOrderTotal = estimatedPreOrderTotal,
+
+                StandardBookings = bookings.Count(b =>
+                    b.BookingType != null &&
+                    b.BookingType.Contains("Tiêu Chuẩn", StringComparison.OrdinalIgnoreCase)),
+
+                VipBookings = bookings.Count(b =>
+                    b.BookingType != null &&
+                    b.BookingType.Contains("VIP", StringComparison.OrdinalIgnoreCase)),
+
+                OmakaseBookings = bookings.Count(b =>
+                    b.BookingType != null &&
+                    b.BookingType.Contains("Omakase", StringComparison.OrdinalIgnoreCase))
+            };
+
+            viewModel.DailyStats = bookings
+                .GroupBy(b => b.CreatedAt.Date)
+                .Select(g => new AdminDailyStatisticItem
+                {
+                    Day = g.Key,
+                    Total = g.Count(),
+                    Pending = g.Count(b => b.Status == BookingPending),
+                    CheckedIn = g.Count(b => b.Status == BookingCheckedIn),
+                    Cancelled = g.Count(b => b.Status == BookingCancelled),
+                    DepositCollected = g
+                        .Where(b => b.DepositAmount > 0 && b.PaymentStatus == PaymentPaid)
+                        .Sum(b => b.DepositAmount)
+                })
+                .OrderByDescending(x => x.Day)
+                .ToList();
+
+            viewModel.MonthlyStats = bookings
+                .GroupBy(b => new DateTime(b.CreatedAt.Year, b.CreatedAt.Month, 1))
+                .Select(g => new AdminMonthlyStatisticItem
+                {
+                    Month = g.Key,
+                    Total = g.Count(),
+                    Pending = g.Count(b => b.Status == BookingPending),
+                    CheckedIn = g.Count(b => b.Status == BookingCheckedIn),
+                    Cancelled = g.Count(b => b.Status == BookingCancelled),
+                    DepositCollected = g
+                        .Where(b => b.DepositAmount > 0 && b.PaymentStatus == PaymentPaid)
+                        .Sum(b => b.DepositAmount)
+                })
+                .OrderByDescending(x => x.Month)
+                .ToList();
+
+            viewModel.BookingTypeStats = bookings
+                .GroupBy(b => string.IsNullOrWhiteSpace(b.BookingType) ? "Không xác định" : b.BookingType)
+                .Select(g => new AdminBookingTypeStatisticItem
+                {
+                    BookingType = g.Key,
+                    Total = g.Count(),
+                    CheckedIn = g.Count(b => b.Status == BookingCheckedIn),
+                    Cancelled = g.Count(b => b.Status == BookingCancelled),
+                    DepositCollected = g
+                        .Where(b => b.DepositAmount > 0 && b.PaymentStatus == PaymentPaid)
+                        .Sum(b => b.DepositAmount)
+                })
+                .OrderByDescending(x => x.Total)
+                .ToList();
+
+            return View(viewModel);
+        }
+        [HttpGet]
         public async Task<IActionResult> Users(string? searchString)
         {
             var usersQuery = _context.Users.AsNoTracking().AsQueryable();

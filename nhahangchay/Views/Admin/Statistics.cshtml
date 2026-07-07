@@ -1,0 +1,763 @@
+﻿@model nhahangchay.Models.AdminStatisticsViewModel
+@using System.Text.Json
+
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Thống kê";
+
+    var chartOptions = new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
+    var dailyChartData = Model.DailyStats
+        .OrderBy(x => x.Day)
+        .Select(x => new
+        {
+            label = x.Day.ToString("dd/MM"),
+            total = x.Total,
+            pending = x.Pending,
+            checkedIn = x.CheckedIn,
+            cancelled = x.Cancelled,
+            deposit = x.DepositCollected
+        })
+        .ToList();
+
+    var monthlyChartData = Model.MonthlyStats
+        .OrderBy(x => x.Month)
+        .Select(x => new
+        {
+            label = x.Month.ToString("MM/yyyy"),
+            total = x.Total,
+            pending = x.Pending,
+            checkedIn = x.CheckedIn,
+            cancelled = x.Cancelled,
+            deposit = x.DepositCollected
+        })
+        .ToList();
+}
+
+<section class="admin-page-heading">
+    <div>
+        <p class="admin-eyebrow">Báo cáo nhà hàng</p>
+        <h1>Thống kê hoạt động</h1>
+        <p class="admin-subtitle">
+            Theo dõi số đơn, trạng thái đơn, tiền cọc và dữ liệu đặt bàn của SenVie.
+        </p>
+    </div>
+
+    <div class="d-flex flex-wrap" style="gap: 10px;">
+        <a asp-controller="Admin" asp-action="Index" class="admin-primary-action">
+            <i class="fas fa-arrow-left"></i>
+            <span>Về đơn đặt bàn</span>
+        </a>
+    </div>
+</section>
+
+<section class="admin-stat-filter-card">
+    <form asp-controller="Admin" asp-action="Statistics" method="get" class="admin-stat-filter-form">
+        <div>
+            <label>Khoảng thời gian</label>
+            <select name="range" class="form-control">
+                <option value="today" selected="@(Model.Range == "today" ? "selected" : null)">Hôm nay</option>
+                <option value="7days" selected="@(Model.Range == "7days" ? "selected" : null)">7 ngày gần nhất</option>
+                <option value="month" selected="@(Model.Range == "month" ? "selected" : null)">Tháng này</option>
+                <option value="custom" selected="@(Model.Range == "custom" ? "selected" : null)">Tùy chọn</option>
+            </select>
+        </div>
+
+        <div>
+            <label>Từ ngày</label>
+            <input type="date" name="fromDate" value="@Model.FromDate.ToString("yyyy-MM-dd")" class="form-control" />
+        </div>
+
+        <div>
+            <label>Đến ngày</label>
+            <input type="date" name="toDate" value="@Model.ToDate.ToString("yyyy-MM-dd")" class="form-control" />
+        </div>
+
+        <button type="submit" class="admin-stat-filter-btn">
+            <i class="fas fa-filter"></i>
+            Xem thống kê
+        </button>
+    </form>
+</section>
+
+<section class="admin-report-grid">
+    <div class="admin-report-card">
+        <span>Tổng đơn trong kỳ</span>
+        <strong>@Model.TotalBookings</strong>
+        <small>@Model.FromDate.ToString("dd/MM/yyyy") - @Model.ToDate.ToString("dd/MM/yyyy")</small>
+    </div>
+
+    <div class="admin-report-card warning">
+        <span>Đơn chờ xử lý</span>
+        <strong>@Model.PendingBookings</strong>
+        <small>Cần theo dõi / check-in / thu cọc</small>
+    </div>
+
+    <div class="admin-report-card success">
+        <span>Đã check-in</span>
+        <strong>@Model.CheckedInBookings</strong>
+        <small>Khách đã đến nhà hàng</small>
+    </div>
+
+    <div class="admin-report-card danger">
+        <span>Đã hủy</span>
+        <strong>@Model.CancelledBookings</strong>
+        <small>Khách/admin/auto hủy</small>
+    </div>
+
+    <div class="admin-report-card money">
+        <span>Cọc đã thu</span>
+        <strong>@Model.DepositCollected.ToString("N0")đ</strong>
+        <small>Chỉ tính đơn trong kỳ đã xác nhận cọc</small>
+    </div>
+
+    <div class="admin-report-card pending-money">
+        <span>Cọc còn chờ</span>
+        <strong>@Model.PendingDeposit.ToString("N0")đ</strong>
+        <small>Đơn chưa xác nhận thanh toán cọc</small>
+    </div>
+
+    <div class="admin-report-card estimate">
+        <span>Tạm tính món chọn trước</span>
+        <strong>@Model.EstimatedPreOrderTotal.ToString("N0")đ</strong>
+        <small>Chưa phải doanh thu thật</small>
+    </div>
+
+    <div class="admin-report-card">
+        <span>Loại bàn nổi bật</span>
+        <strong>@Model.OmakaseBookings</strong>
+        <small>Đơn Omakase trong kỳ</small>
+    </div>
+</section>
+
+<section class="admin-report-split admin-chart-split">
+    <div class="admin-report-panel admin-chart-panel">
+        <div class="admin-report-panel-header">
+            <div>
+                <h2>Biểu đồ đơn theo ngày</h2>
+                <p>Tổng đơn, đơn chờ, check-in và đơn hủy theo từng ngày.</p>
+            </div>
+        </div>
+
+        @if (Model.DailyStats.Any())
+        {
+            <div class="admin-chart-box">
+                <canvas id="dailyBookingChart"></canvas>
+            </div>
+        }
+        else
+        {
+            <div class="admin-report-empty">
+                <i class="fas fa-chart-line"></i>
+                <span>Chưa có dữ liệu trong khoảng thời gian này.</span>
+            </div>
+        }
+    </div>
+
+    <div class="admin-report-panel admin-chart-panel">
+        <div class="admin-report-panel-header">
+            <div>
+                <h2>Biểu đồ theo tháng</h2>
+                <p>So sánh tổng đơn và tiền cọc đã thu theo từng tháng.</p>
+            </div>
+        </div>
+
+        @if (Model.MonthlyStats.Any())
+        {
+            <div class="admin-chart-box">
+                <canvas id="monthlyBookingChart"></canvas>
+            </div>
+        }
+        else
+        {
+            <div class="admin-report-empty">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Chưa có dữ liệu theo tháng.</span>
+            </div>
+        }
+    </div>
+</section>
+
+<section class="admin-report-panel mt-4">
+    <div class="admin-report-panel-header">
+        <div>
+            <h2>Thống kê theo loại bàn</h2>
+            <p>So sánh số đơn theo Bàn tiêu chuẩn, VIP và Omakase.</p>
+        </div>
+    </div>
+
+    @if (Model.BookingTypeStats.Any())
+    {
+        <div class="admin-report-table-wrap">
+            <table class="admin-report-table">
+                <thead>
+                    <tr>
+                        <th>Loại bàn</th>
+                        <th>Tổng đơn</th>
+                        <th>Đã check-in</th>
+                        <th>Đã hủy</th>
+                        <th>Cọc đã thu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.BookingTypeStats)
+                    {
+                        <tr>
+                            <td data-label="Loại bàn">@item.BookingType</td>
+                            <td data-label="Tổng đơn"><strong>@item.Total</strong></td>
+                            <td data-label="Đã check-in">@item.CheckedIn</td>
+                            <td data-label="Đã hủy">@item.Cancelled</td>
+                            <td data-label="Cọc đã thu">@item.DepositCollected.ToString("N0")đ</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="admin-report-empty">
+            <i class="fas fa-table"></i>
+            <span>Chưa có dữ liệu theo loại bàn.</span>
+        </div>
+    }
+</section>
+
+<style>
+    .admin-stat-filter-card {
+        margin-bottom: 22px;
+        padding: 18px;
+        border-radius: 18px;
+        background: #ffffff;
+        border: 1px solid #e2ecd9;
+        box-shadow: 0 10px 24px rgba(31, 42, 51, 0.06);
+    }
+
+    .admin-stat-filter-form {
+        display: grid;
+        grid-template-columns: 1fr 180px 180px auto;
+        gap: 14px;
+        align-items: end;
+    }
+
+        .admin-stat-filter-form label {
+            color: #5f6f5f;
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+        }
+
+        .admin-stat-filter-form .form-control {
+            height: 44px;
+            border-radius: 11px;
+            border: 1px solid #d8e0d5;
+            font-weight: 700;
+        }
+
+    .admin-stat-filter-btn {
+        height: 44px;
+        border: none;
+        border-radius: 11px;
+        padding: 0 18px;
+        background: #7DBA4E;
+        color: #ffffff;
+        font-weight: 900;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .admin-report-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 22px;
+    }
+
+    .admin-report-card {
+        min-height: 138px;
+        padding: 20px;
+        border-radius: 20px;
+        background: #ffffff;
+        border: 1px solid #e2ecd9;
+        box-shadow: 0 10px 24px rgba(31, 42, 51, 0.06);
+    }
+
+        .admin-report-card span {
+            display: block;
+            color: #667266;
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 10px;
+        }
+
+        .admin-report-card strong {
+            display: block;
+            color: #1f2f1f;
+            font-size: 28px;
+            font-weight: 900;
+            line-height: 1.2;
+        }
+
+        .admin-report-card small {
+            display: block;
+            margin-top: 8px;
+            color: #7a837a;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        .admin-report-card.success {
+            border-color: #cdebd1;
+            background: #f3fff4;
+        }
+
+        .admin-report-card.warning {
+            border-color: #ffe2a7;
+            background: #fffaf0;
+        }
+
+        .admin-report-card.danger {
+            border-color: #f6c9cf;
+            background: #fff3f5;
+        }
+
+        .admin-report-card.money {
+            border-color: #cdebd1;
+            background: #f5fff1;
+        }
+
+        .admin-report-card.pending-money {
+            border-color: #ffd7a7;
+            background: #fff7ef;
+        }
+
+        .admin-report-card.estimate {
+            border-color: #cde4ff;
+            background: #f3f8ff;
+        }
+
+    .admin-report-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
+
+    .admin-report-panel {
+        border-radius: 22px;
+        background: #ffffff;
+        border: 1px solid #e2ecd9;
+        box-shadow: 0 10px 24px rgba(31, 42, 51, 0.06);
+        overflow: hidden;
+    }
+
+    .admin-report-panel-header {
+        padding: 18px 20px;
+        border-bottom: 1px solid #edf3e9;
+        background: #fbfdf9;
+    }
+
+        .admin-report-panel-header h2 {
+            margin: 0;
+            color: #263326;
+            font-size: 20px;
+            font-weight: 900;
+        }
+
+        .admin-report-panel-header p {
+            margin: 5px 0 0;
+            color: #758175;
+            font-weight: 700;
+        }
+
+    .admin-report-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .admin-report-table {
+        width: 100%;
+        margin: 0;
+        border-collapse: collapse;
+    }
+
+        .admin-report-table th {
+            padding: 14px 16px;
+            background: #1f3b20;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .admin-report-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #edf3e9;
+            color: #263326;
+            font-weight: 700;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+    .admin-report-empty {
+        padding: 42px 18px;
+        text-align: center;
+        color: #738073;
+        font-weight: 700;
+    }
+
+        .admin-report-empty i {
+            display: block;
+            margin-bottom: 10px;
+            color: #7DBA4E;
+            font-size: 34px;
+        }
+
+    @@media (max-width: 992px) {
+        .admin-stat-filter-form {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .admin-stat-filter-btn {
+            width: 100%;
+        }
+
+        .admin-report-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .admin-report-split {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .admin-stat-filter-form {
+            grid-template-columns: 1fr;
+        }
+
+        .admin-report-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .admin-report-card {
+            min-height: auto;
+        }
+
+        .admin-report-table-wrap {
+            overflow: visible;
+        }
+
+        .admin-report-table,
+        .admin-report-table thead,
+        .admin-report-table tbody,
+        .admin-report-table tr,
+        .admin-report-table td {
+            display: block;
+            width: 100%;
+        }
+
+            .admin-report-table thead {
+                display: none;
+            }
+
+            .admin-report-table tr {
+                margin: 14px;
+                padding: 14px;
+                border-radius: 16px;
+                background: #ffffff;
+                border: 1px solid #e2ecd9;
+                box-shadow: 0 8px 18px rgba(31, 42, 51, 0.06);
+            }
+
+            .admin-report-table td {
+                border: none;
+                border-bottom: 1px solid #edf3e9;
+                padding: 9px 0;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                white-space: normal;
+                text-align: right;
+            }
+
+                .admin-report-table td::before {
+                    content: attr(data-label);
+                    flex: 0 0 42%;
+                    color: #667266;
+                    font-size: 12px;
+                    font-weight: 900;
+                    text-align: left;
+                    text-transform: uppercase;
+                }
+
+                .admin-report-table td:last-child {
+                    border-bottom: none;
+                }
+    }
+
+    .admin-chart-split {
+        align-items: stretch;
+    }
+
+    .admin-chart-panel {
+        min-height: 460px;
+    }
+
+    .admin-chart-box {
+        position: relative;
+        width: 100%;
+        height: 360px;
+        padding: 18px;
+    }
+
+        .admin-chart-box canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+    @@media (max-width: 992px) {
+        .admin-chart-panel {
+            min-height: 420px;
+        }
+
+        .admin-chart-box {
+            height: 330px;
+            padding: 14px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .admin-chart-panel {
+            min-height: auto;
+        }
+
+        .admin-chart-box {
+            height: 310px;
+            padding: 12px;
+        }
+    }
+</style>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const dailyChartData = @Html.Raw(JsonSerializer.Serialize(dailyChartData, chartOptions));
+        const monthlyChartData = @Html.Raw(JsonSerializer.Serialize(monthlyChartData, chartOptions));
+
+        function formatVnd(value) {
+        return new Intl.NumberFormat("vi-VN").format(value || 0) + "đ";
+        }
+
+        function createDailyBookingChart() {
+        const canvas = document.getElementById("dailyBookingChart");
+
+        if (!canvas || !dailyChartData.length) {
+        return;
+        }
+
+        new Chart(canvas, {
+        type: "bar",
+        data: {
+        labels: dailyChartData.map(x => x.label),
+        datasets: [
+        {
+        label: "Tổng đơn",
+        data: dailyChartData.map(x => x.total),
+        backgroundColor: "rgba(125, 186, 78, 0.75)",
+        borderColor: "rgba(95, 148, 56, 1)",
+        borderWidth: 1,
+        borderRadius: 8
+        },
+        {
+        label: "Đơn chờ",
+        data: dailyChartData.map(x => x.pending),
+        backgroundColor: "rgba(246, 184, 0, 0.72)",
+        borderColor: "rgba(188, 134, 0, 1)",
+        borderWidth: 1,
+        borderRadius: 8
+        },
+        {
+        label: "Đã hủy",
+        data: dailyChartData.map(x => x.cancelled),
+        backgroundColor: "rgba(220, 53, 69, 0.68)",
+        borderColor: "rgba(190, 38, 52, 1)",
+        borderWidth: 1,
+        borderRadius: 8
+        }
+        ]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+        mode: "index",
+        intersect: false
+        },
+        plugins: {
+        legend: {
+        position: "bottom",
+        labels: {
+        boxWidth: 14,
+        font: {
+        weight: "bold"
+        }
+        }
+        },
+        tooltip: {
+        callbacks: {
+        afterBody: function (items) {
+        const index = items[0].dataIndex;
+        return "Cọc đã thu: " + formatVnd(dailyChartData[index].deposit);
+        }
+        }
+        }
+        },
+        scales: {
+        x: {
+        grid: {
+        display: false
+        },
+        ticks: {
+        font: {
+        weight: "bold"
+        }
+        }
+        },
+        y: {
+        beginAtZero: true,
+        ticks: {
+        precision: 0
+        }
+        }
+        }
+        }
+        });
+        }
+
+        function createMonthlyBookingChart() {
+        const canvas = document.getElementById("monthlyBookingChart");
+
+        if (!canvas || !monthlyChartData.length) {
+        return;
+        }
+
+        new Chart(canvas, {
+        data: {
+        labels: monthlyChartData.map(x => x.label),
+        datasets: [
+        {
+        type: "bar",
+        label: "Tổng đơn",
+        data: monthlyChartData.map(x => x.total),
+        backgroundColor: "rgba(125, 186, 78, 0.76)",
+        borderColor: "rgba(95, 148, 56, 1)",
+        borderWidth: 1,
+        borderRadius: 8,
+        yAxisID: "yOrders"
+        },
+        {
+        type: "line",
+        label: "Cọc đã thu",
+        data: monthlyChartData.map(x => x.deposit),
+        borderColor: "rgba(19, 167, 187, 1)",
+        backgroundColor: "rgba(19, 167, 187, 0.16)",
+        borderWidth: 3,
+        tension: 0.35,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        fill: true,
+        yAxisID: "yMoney"
+        }
+        ]
+        },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+        mode: "index",
+        intersect: false
+        },
+        plugins: {
+        legend: {
+        position: "bottom",
+        labels: {
+        boxWidth: 14,
+        font: {
+        weight: "bold"
+        }
+        }
+        },
+        tooltip: {
+        callbacks: {
+        label: function (context) {
+        if (context.dataset.yAxisID === "yMoney") {
+        return context.dataset.label + ": " + formatVnd(context.raw);
+        }
+
+        return context.dataset.label + ": " + context.raw;
+        }
+        }
+        }
+        },
+        scales: {
+        x: {
+        grid: {
+        display: false
+        },
+        ticks: {
+        font: {
+        weight: "bold"
+        }
+        }
+        },
+        yOrders: {
+        beginAtZero: true,
+        position: "left",
+        ticks: {
+        precision: 0
+        },
+        title: {
+        display: true,
+        text: "Số đơn"
+        }
+        },
+        yMoney: {
+        beginAtZero: true,
+        position: "right",
+        grid: {
+        drawOnChartArea: false
+        },
+        ticks: {
+        callback: function (value) {
+        return new Intl.NumberFormat("vi-VN", {
+        notation: "compact",
+        compactDisplay: "short"
+        }).format(value) + "đ";
+        }
+        },
+        title: {
+        display: true,
+        text: "Tiền cọc"
+        }
+        }
+        }
+        }
+        });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+        createDailyBookingChart();
+        createMonthlyBookingChart();
+        });
+    </script>
+}
