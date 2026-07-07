@@ -7,6 +7,7 @@
 
     var bookingCounts = ViewBag.BookingCounts as Dictionary<string, int> ?? new Dictionary<string, int>();
     var currentSearch = ViewBag.CurrentSearch as string ?? "";
+    var staffUserIds = ViewBag.StaffUserIds as HashSet<string> ?? new HashSet<string>();
 }
 
 <section class="admin-page-heading">
@@ -52,6 +53,10 @@
         <span>Đang bị khóa</span>
         <strong>@ViewBag.LockedUsers</strong>
     </div>
+    <div class="admin-user-stat-card">
+        <span>Nhân viên check-in</span>
+        <strong>@ViewBag.StaffUsers</strong>
+    </div>
 </section>
 
 <section class="admin-user-toolbar">
@@ -89,6 +94,7 @@
                 <tr>
                     <th>Người dùng</th>
                     <th>Email</th>
+                    <th>Vai trò</th>
                     <th>Trạng thái</th>
                     <th>Số đơn</th>
                     <th>Khóa</th>
@@ -100,9 +106,9 @@
                 @foreach (var user in Model)
                 {
                     var isAdmin = string.Equals(user.Email, "admin@uef.com", StringComparison.OrdinalIgnoreCase);
+                    var isStaff = staffUserIds.Contains(user.Id);
                     var isLocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow;
                     var count = bookingCounts.ContainsKey(user.Id) ? bookingCounts[user.Id] : 0;
-
                     <tr>
                         <td data-label="Người dùng">
                             <div class="admin-user-name">
@@ -115,6 +121,10 @@
                                     {
                                         <small>Quản trị viên</small>
                                     }
+                                    else if (isStaff)
+                                    {
+                                        <small>Nhân viên check-in</small>
+                                    }
                                     else
                                     {
                                         <small>Khách hàng</small>
@@ -126,7 +136,20 @@
                         <td data-label="Email">
                             <span class="admin-user-email">@user.Email</span>
                         </td>
-
+                        <td data-label="Vai trò">
+                            @if (isAdmin)
+                            {
+                                <span class="admin-user-badge role-admin">Admin</span>
+                            }
+                            else if (isStaff)
+                            {
+                                <span class="admin-user-badge role-staff">Nhân viên</span>
+                            }
+                            else
+                            {
+                                <span class="admin-user-badge role-customer">Khách hàng</span>
+                            }
+                        </td>
                         <td data-label="Trạng thái">
                             @if (user.EmailConfirmed)
                             {
@@ -157,6 +180,38 @@
                             <div class="admin-user-actions">
                                 @if (!isAdmin)
                                 {
+                                    @if (isStaff)
+                                    {
+                                        <form asp-controller="Admin"
+                                              asp-action="RemoveStaffRole"
+                                              method="post"
+                                              class="admin-user-action-form"
+                                              data-confirm="Bạn có chắc chắn muốn gỡ quyền nhân viên check-in của tài khoản này không?">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@user.Id" />
+
+                                            <button type="submit" class="admin-user-action-btn staff-remove">
+                                                <i class="fas fa-user-minus"></i>
+                                                Gỡ nhân viên
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form asp-controller="Admin"
+                                              asp-action="GrantStaffRole"
+                                              method="post"
+                                              class="admin-user-action-form"
+                                              data-confirm="Bạn có chắc chắn muốn cấp quyền nhân viên check-in cho tài khoản này không?">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@user.Id" />
+
+                                            <button type="submit" class="admin-user-action-btn staff-grant">
+                                                <i class="fas fa-user-check"></i>
+                                                Cấp nhân viên
+                                            </button>
+                                        </form>
+                                    }
                                     <form asp-controller="Admin"
                                           asp-action="ToggleUserLock"
                                           method="post"
@@ -226,7 +281,7 @@
 
     .admin-user-stats {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 16px;
         margin-bottom: 18px;
     }
@@ -392,6 +447,21 @@
             background: #eef8e8;
         }
 
+        .admin-user-badge.role-admin {
+            color: #ffffff;
+            background: #1f3b20;
+        }
+
+        .admin-user-badge.role-staff {
+            color: #0b5b75;
+            background: #e5f8ff;
+        }
+
+        .admin-user-badge.role-customer {
+            color: #4a6f32;
+            background: #eef8e8;
+        }
+
     .admin-user-actions {
         display: flex;
         gap: 8px;
@@ -426,6 +496,14 @@
 
         .admin-user-action-btn.delete {
             background: #dc3545;
+        }
+
+        .admin-user-action-btn.staff-grant {
+            background: #198754;
+        }
+
+        .admin-user-action-btn.staff-remove {
+            background: #fd7e14;
         }
 
     .admin-user-note {

@@ -11,7 +11,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
+using System.Collections.Generic;
 namespace nhahangchay.Controllers
 {
     [Authorize]
@@ -40,31 +40,57 @@ namespace nhahangchay.Controllers
         private readonly CloudinaryService _cloudinaryService;
         private readonly EmailService _emailService;
         private readonly UserManager<AppUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         public AdminController(
-                ApplicationDbContext context,
-                CloudinaryService cloudinaryService,
-                EmailService emailService,
-                UserManager<AppUser> userManager)
+         ApplicationDbContext context,
+         CloudinaryService cloudinaryService,
+         EmailService emailService,
+         UserManager<AppUser> userManager,
+         RoleManager<IdentityRole> roleManager)
         {
             _context = context;
             _cloudinaryService = cloudinaryService;
             _emailService = emailService;
             _userManager = userManager;
+            _roleManager = roleManager;
         }
-
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             var currentEmail = User.Identity?.Name;
+            var actionName = context.RouteData.Values["action"]?.ToString() ?? "";
 
-            if (!string.Equals(currentEmail, "admin@uef.com", StringComparison.OrdinalIgnoreCase))
+            var isAdmin =
+                string.Equals(currentEmail, "admin@uef.com", StringComparison.OrdinalIgnoreCase) ||
+                User.IsInRole("Admin");
+
+            var isStaff = User.IsInRole("Staff");
+
+            if (isAdmin)
             {
-                context.Result = RedirectToAction("Index", "Home");
+                base.OnActionExecuting(context);
                 return;
             }
 
-            base.OnActionExecuting(context);
-        }
+            if (isStaff)
+            {
+                var allowedStaffActions = new[]
+                {
+            nameof(CheckIn),
+            nameof(ProcessCheckIn)
+        };
 
+                if (allowedStaffActions.Contains(actionName, StringComparer.OrdinalIgnoreCase))
+                {
+                    base.OnActionExecuting(context);
+                    return;
+                }
+
+                context.Result = RedirectToAction(nameof(CheckIn));
+                return;
+            }
+
+            context.Result = RedirectToAction("Index", "Home");
+        }
         [HttpGet]
         public async Task<IActionResult> Index(
             string? searchString,
@@ -534,17 +560,95 @@ namespace nhahangchay.Controllers
                     Count = g.Count()
                 })
                 .ToDictionaryAsync(x => x.UserId, x => x.Count);
+            var staffUserIds = new HashSet<string>();
+
+            if (await _roleManager.RoleExistsAsync("Staff"))
+            {
+                var staffUsers = await _userManager.GetUsersInRoleAsync("Staff");
+                staffUserIds = staffUsers.Select(u => u.Id).ToHashSet();
+            }
 
             ViewBag.CurrentSearch = searchString;
             ViewBag.BookingCounts = bookingCounts;
+            ViewBag.StaffUserIds = staffUserIds;
             ViewBag.TotalUsers = await _context.Users.CountAsync();
             ViewBag.ConfirmedUsers = await _context.Users.CountAsync(u => u.EmailConfirmed);
             ViewBag.LockedUsers = await _context.Users.CountAsync(u =>
                 u.LockoutEnd != null && u.LockoutEnd > DateTimeOffset.UtcNow);
+            ViewBag.StaffUsers = staffUserIds.Count;
 
             return View(users);
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GrantStaffRole(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tài khoản cần cấp quyền nhân viên.";
+                return RedirectToAction(nameof(Users));
+            }
 
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tài khoản cần cấp quyền nhân viên.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            if (string.Equals(user.Email, "admin@uef.com", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "Không cần cấp quyền nhân viên cho tài khoản quản trị chính.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            if (!await _roleManager.RoleExistsAsync("Staff"))
+            {
+                await _roleManager.CreateAsync(new IdentityRole("Staff"));
+            }
+
+            if (!await _userManager.IsInRoleAsync(user, "Staff"))
+            {
+                await _userManager.AddToRoleAsync(user, "Staff");
+            }
+
+            TempData["SuccessMessage"] = $"Đã cấp quyền nhân viên check-in cho {user.Email}.";
+            return RedirectToAction(nameof(Users));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveStaffRole(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tài khoản cần gỡ quyền nhân viên.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tài khoản cần gỡ quyền nhân viên.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            if (string.Equals(user.Email, "admin@uef.com", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["ErrorMessage"] = "Không thể gỡ quyền từ tài khoản quản trị chính.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            if (await _userManager.IsInRoleAsync(user, "Staff"))
+            {
+                await _userManager.RemoveFromRoleAsync(user, "Staff");
+            }
+
+            TempData["SuccessMessage"] = $"Đã gỡ quyền nhân viên check-in khỏi {user.Email}.";
+            return RedirectToAction(nameof(Users));
+        }
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleUserLock(string id)
@@ -859,20 +963,17 @@ namespace nhahangchay.Controllers
             {
                 return bookings.Where(b => b.BookingDate >= today && b.BookingDate < today.AddDays(1));
             }
-
             if (dateFilter == "tomorrow")
             {
                 var start = today.AddDays(1);
                 var end = today.AddDays(2);
                 return bookings.Where(b => b.BookingDate >= start && b.BookingDate < end);
             }
-
             if (dateFilter == "week")
             {
                 var end = today.AddDays(7);
                 return bookings.Where(b => b.BookingDate >= today && b.BookingDate < end);
             }
-
             if (dateFilter == "range")
             {
                 if (fromDate.HasValue)
@@ -889,14 +990,12 @@ namespace nhahangchay.Controllers
 
             return bookings;
         }
-
         private void NormalizeDishInput(Dish dish)
         {
             dish.Name = dish.Name?.Trim() ?? "";
             dish.Category = dish.Category?.Trim() ?? "";
             dish.Description = dish.Description?.Trim();
         }
-
         private void ValidateDishImage(IFormFile? imageFile, bool required)
         {
             if (imageFile == null || imageFile.Length == 0)
@@ -919,7 +1018,6 @@ namespace nhahangchay.Controllers
                 ModelState.AddModelError("ImageUrl", "Ảnh không được vượt quá 5MB.");
             }
         }
-
         private async Task<bool> UploadDishImageToModel(Dish dish, IFormFile imageFile)
         {
             var uploadResult = await _cloudinaryService.UploadDishImageAsync(imageFile);
@@ -950,7 +1048,6 @@ namespace nhahangchay.Controllers
             {
             }
         }
-
         private string NormalizeBookingCode(string? rawCode)
         {
             if (string.IsNullOrWhiteSpace(rawCode))
@@ -998,7 +1095,7 @@ namespace nhahangchay.Controllers
             value = value
                 .Split(new[] { ' ', '\r', '\n', '\t' }, StringSplitOptions.RemoveEmptyEntries)
                 .FirstOrDefault() ?? value;
-
+            
             return value.Trim().ToUpperInvariant();
         }
     }

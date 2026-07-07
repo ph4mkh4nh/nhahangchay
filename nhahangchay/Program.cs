@@ -93,9 +93,14 @@ using (var scope = app.Services.CreateScope())
     var adminEmail = "admin@uef.com";
     var adminPassword = "123456";
 
-    if (!await roleManager.RoleExistsAsync("Admin"))
+    var roles = new[] { "Admin", "Staff" };
+
+    foreach (var roleName in roles)
     {
-        await roleManager.CreateAsync(new IdentityRole("Admin"));
+        if (!await roleManager.RoleExistsAsync(roleName))
+        {
+            await roleManager.CreateAsync(new IdentityRole(roleName));
+        }
     }
 
     var admin = await userManager.FindByEmailAsync(adminEmail);

@@ -39,16 +39,22 @@ namespace nhahangchay.Controllers
 
         // LOGIN
         [HttpGet]
-        public IActionResult Login()
+        public async Task<IActionResult> Login()
         {
             if (User.Identity?.IsAuthenticated == true)
             {
+                var currentUser = await _userManager.GetUserAsync(User);
+
+                if (currentUser != null)
+                {
+                    return await RedirectAfterLoginAsync(currentUser);
+                }
+
                 return RedirectToAction("Index", "Home");
             }
 
             return View();
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(string email, string password)
@@ -85,17 +91,17 @@ namespace nhahangchay.Controllers
                 isPersistent: false,
                 lockoutOnFailure: false
             );
-
             if (result.Succeeded)
             {
-                if (string.Equals(email, "admin@uef.com", StringComparison.OrdinalIgnoreCase))
+                var signedInUser = await _userManager.FindByEmailAsync(email);
+
+                if (signedInUser == null)
                 {
-                    return RedirectToAction("Index", "Admin");
+                    return RedirectToAction("Index", "Home");
                 }
 
-                return RedirectToAction("Index", "Home");
+                return await RedirectAfterLoginAsync(signedInUser);
             }
-
             if (result.IsNotAllowed)
             {
                 TempData["InfoMessage"] = "Vui lòng xác nhận email bằng mã OTP trước khi đăng nhập.";
@@ -105,7 +111,21 @@ namespace nhahangchay.Controllers
             ViewBag.Error = "Sai Email hoặc Mật khẩu. Vui lòng thử lại!";
             return View();
         }
+        private async Task<IActionResult> RedirectAfterLoginAsync(AppUser user)
+        {
+            if (string.Equals(user.Email, "admin@uef.com", StringComparison.OrdinalIgnoreCase) ||
+                await _userManager.IsInRoleAsync(user, "Admin"))
+            {
+                return RedirectToAction("Index", "Admin");
+            }
 
+            if (await _userManager.IsInRoleAsync(user, "Staff"))
+            {
+                return RedirectToAction("CheckIn", "Admin");
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
         // REGISTER + OTP
         [HttpGet]
         public IActionResult Register()
@@ -251,7 +271,7 @@ namespace nhahangchay.Controllers
             if (await _userManager.IsEmailConfirmedAsync(user))
             {
                 await _signInManager.SignInAsync(user, isPersistent: false);
-                return RedirectToAction("Index", "Home");
+                return await RedirectAfterLoginAsync(user);
             }
 
             var verifyResult = await VerifyRegisterOtpAsync(user, otp);
@@ -262,11 +282,10 @@ namespace nhahangchay.Controllers
                 ViewBag.Error = verifyResult.Message;
                 return View();
             }
-
             await _signInManager.SignInAsync(user, isPersistent: false);
 
             TempData["SuccessMessage"] = "Xác nhận email thành công. Chào mừng bạn đến với SenVie!";
-            return RedirectToAction("Index", "Home");
+            return await RedirectAfterLoginAsync(user);
         }
 
         [HttpPost]
