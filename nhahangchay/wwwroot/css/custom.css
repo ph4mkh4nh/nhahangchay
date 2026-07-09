@@ -15,9 +15,7 @@
     --senvie-danger: #dc3545;
 }
 
-/* =========================================================
-   1. Global chỉnh nhẹ toàn site
-   ========================================================= */
+/* 1. Global  */
 
 /* Logo SenVie - Header */
 #mainNav .navbar-brand img {
@@ -34,8 +32,6 @@
     height: auto;
     object-fit: contain;
 }
-
-/* Chữ cơ bản: tránh ép span/li toàn site vì dễ làm hỏng badge, icon, menu */
 body {
     color: var(--senvie-text);
 }
@@ -50,7 +46,6 @@ p {
     line-height: 1.6;
 }
 
-/* Các đoạn mô tả/tin tức cần rõ hơn */
 .blog-box-inner p,
 .blog-detail p,
 .menu-box p {
@@ -58,13 +53,11 @@ p {
     font-weight: 500 !important;
 }
 
-/* Nút menu active trong template */
 #mainNav .navbar-nav .nav-item .nav-link.active,
 #mainNav .navbar-nav .nav-item .nav-link.active span {
     color: #ffffff !important;
 }
 
-/* Thẻ tên đầu bếp trên nền tối/ảnh */
 .our-team .team-content,
 .our-team .team-content h3,
 .our-team .team-content span {
@@ -105,9 +98,7 @@ p {
     color: var(--senvie-green) !important;
 }
 
-/* =========================================================
-   2. Profile / Quản lý đặt bàn
-   ========================================================= */
+/* 2. Profile / Quản lý đặt bàn */
 
 .senvie-profile-container {
     margin-top: 115px;

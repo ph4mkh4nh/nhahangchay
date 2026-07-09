@@ -246,3 +246,46 @@
     });
 
 })(jQuery);
+(function ($) {
+	$(window).on('load', function () {
+		var $gallery = $('.gallery-list');
+
+		if (!$gallery.length || !$.fn.isotope) {
+			return;
+		}
+
+		function layoutGallery() {
+			$gallery.isotope({
+				itemSelector: '.gallery-grid',
+				layoutMode: 'fitRows',
+				percentPosition: true
+			});
+		}
+
+		layoutGallery();
+
+		$gallery.find('img').each(function () {
+			if (this.complete) {
+				layoutGallery();
+			} else {
+				$(this).on('load', layoutGallery);
+			}
+		});
+
+		$('.gallery-menu button, .gallery-menu .btn').on('click.senvieGalleryFix', function () {
+			var filterValue = $(this).attr('data-filter') || $(this).data('filter') || '*';
+
+			$('.gallery-menu button, .gallery-menu .btn').removeClass('active');
+			$(this).addClass('active');
+
+			$gallery.isotope({
+				filter: filterValue,
+				layoutMode: 'fitRows',
+				percentPosition: true
+			});
+
+			setTimeout(layoutGallery, 80);
+			setTimeout(layoutGallery, 220);
+		});
+	});
+})(jQuery);
