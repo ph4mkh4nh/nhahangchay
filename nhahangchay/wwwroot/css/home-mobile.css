@@ -1059,3 +1059,83 @@
         max-height: 92px !important;
     }
 }
+/* =====================================================
+   Preorder cart desktop compact layout
+   Giảm chiều ngang thanh "Món chọn trước" trên PC
+===================================================== */
+
+@media (min-width: 992px) {
+    .senvie-preorder-panel,
+    #preorderSummary,
+    #preorderCart,
+    .preorder-cart,
+    .preorder-floating-cart,
+    .preorder-summary,
+    .menu-preorder-cart {
+        position: fixed !important;
+        left: 28px !important;
+        right: auto !important;
+        bottom: 28px !important;
+        width: 380px !important;
+        max-width: 380px !important;
+        min-width: 0 !important;
+        border-radius: 18px !important;
+        z-index: 980 !important;
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.16) !important;
+        overflow: hidden !important;
+    }
+
+        .senvie-preorder-panel.is-collapsed,
+        #preorderSummary.collapsed,
+        #preorderSummary.is-collapsed,
+        #preorderCart.is-collapsed,
+        .preorder-cart.is-collapsed,
+        .preorder-summary.is-collapsed,
+        .menu-preorder-cart.is-collapsed {
+            width: 340px !important;
+            max-width: 340px !important;
+            max-height: 86px !important;
+            overflow: hidden !important;
+        }
+
+        .senvie-preorder-panel.is-open,
+        #preorderSummary.is-open,
+        #preorderCart.is-open,
+        .preorder-cart.is-open,
+        .preorder-summary.is-open,
+        .menu-preorder-cart.is-open {
+            width: 420px !important;
+            max-width: 420px !important;
+            max-height: calc(100vh - 120px) !important;
+            overflow-y: auto !important;
+        }
+
+        .senvie-preorder-panel .preorder-summary-header,
+        #preorderSummary .preorder-summary-header,
+        #preorderCart .preorder-summary-header,
+        .preorder-cart .preorder-summary-header,
+        .preorder-summary .preorder-summary-header,
+        .menu-preorder-cart .preorder-summary-header {
+            padding: 16px 18px !important;
+        }
+
+        .senvie-preorder-panel h4,
+        #preorderSummary h4,
+        #preorderCart h4,
+        .preorder-cart h4,
+        .preorder-summary h4,
+        .menu-preorder-cart h4 {
+            font-size: 17px !important;
+            line-height: 1.3 !important;
+            margin-bottom: 4px !important;
+        }
+
+        .senvie-preorder-panel button,
+        #preorderSummary button,
+        #preorderCart button,
+        .preorder-cart button,
+        .preorder-summary button,
+        .menu-preorder-cart button {
+            white-space: nowrap !important;
+        }
+}
