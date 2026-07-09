@@ -290,82 +290,143 @@
 	});
 })(jQuery);
 (function () {
-	document.addEventListener("DOMContentLoaded", function () {
-		var cart = findPreorderCart();
+    document.addEventListener("DOMContentLoaded", function () {
+        initSenViePreorderToggle();
+    });
 
-		if (!cart) {
-			return;
-		}
+    window.addEventListener("load", function () {
+        setTimeout(initSenViePreorderToggle, 300);
+    });
 
-		cart.classList.add("senvie-preorder-panel");
-		cart.classList.add("is-collapsed");
+    function initSenViePreorderToggle() {
+        var cart = findPreorderCart();
 
-		var toggleBtn = findToggleButton(cart);
+        if (!cart || cart.dataset.senvieToggleReady === "true") {
+            return;
+        }
 
-		if (!toggleBtn) {
-			return;
-		}
+        cart.dataset.senvieToggleReady = "true";
+        cart.classList.add("senvie-preorder-panel");
 
-		updateToggleText(toggleBtn, true);
+        var toggleBtn = findToggleButton(cart);
 
-		toggleBtn.addEventListener("click", function (event) {
-			event.preventDefault();
-			event.stopPropagation();
+        if (!toggleBtn) {
+            return;
+        }
 
-			var isCollapsed = cart.classList.toggle("is-collapsed");
-			updateToggleText(toggleBtn, isCollapsed);
-		}, true);
-	});
+        setCollapsed(cart, toggleBtn, true);
 
-	function findPreorderCart() {
-		var selectors = [
-			"#preorderCart",
-			".preorder-cart",
-			".preorder-floating-cart",
-			".preorder-summary",
-			".selected-dishes-box",
-			".menu-preorder-cart",
-			".senvie-preorder-cart"
-		];
+        toggleBtn.addEventListener("click", function (event) {
+            event.preventDefault();
+            event.stopPropagation();
 
-		for (var i = 0; i < selectors.length; i++) {
-			var item = document.querySelector(selectors[i]);
+            var isCollapsed = cart.classList.contains("is-collapsed");
+            setCollapsed(cart, toggleBtn, !isCollapsed);
+        }, true);
+    }
 
-			if (item && item.innerText && item.innerText.indexOf("Món chọn trước") !== -1) {
-				return item;
-			}
-		}
+    function findPreorderCart() {
+        var selectors = [
+            "#preorderCart",
+            ".preorder-cart",
+            ".preorder-floating-cart",
+            ".preorder-summary",
+            ".selected-dishes-box",
+            ".menu-preorder-cart",
+            ".senvie-preorder-cart"
+        ];
 
-		var allElements = document.querySelectorAll("div, section, aside");
+        for (var i = 0; i < selectors.length; i++) {
+            var item = document.querySelector(selectors[i]);
 
-		for (var j = 0; j < allElements.length; j++) {
-			var text = allElements[j].innerText || "";
+            if (isPreorderPanel(item)) {
+                return item;
+            }
+        }
 
-			if (text.indexOf("Món chọn trước") !== -1 &&
-				text.indexOf("Tiếp tục đặt bàn") !== -1) {
-				return allElements[j];
-			}
-		}
+        var allElements = document.querySelectorAll("div, section, aside");
 
-		return null;
-	}
+        for (var j = 0; j < allElements.length; j++) {
+            if (isPreorderPanel(allElements[j])) {
+                return allElements[j];
+            }
+        }
 
-	function findToggleButton(cart) {
-		var buttons = cart.querySelectorAll("button, a");
+        return null;
+    }
 
-		for (var i = 0; i < buttons.length; i++) {
-			var text = (buttons[i].innerText || "").trim().toLowerCase();
+    function isPreorderPanel(element) {
+        if (!element) {
+            return false;
+        }
 
-			if (text.indexOf("mở") !== -1 || text.indexOf("thu gọn") !== -1) {
-				return buttons[i];
-			}
-		}
+        var text = element.innerText || "";
 
-		return buttons.length > 0 ? buttons[0] : null;
-	}
+        return text.indexOf("Món chọn trước") !== -1 &&
+            text.indexOf("Tiếp tục đặt bàn") !== -1;
+    }
 
-	function updateToggleText(button, isCollapsed) {
-		button.innerText = isCollapsed ? "Mở" : "Thu gọn";
-		button.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
-	}
+    function findToggleButton(cart) {
+        var buttons = cart.querySelectorAll("button, a");
+
+        for (var i = 0; i < buttons.length; i++) {
+            var text = (buttons[i].innerText || "").trim().toLowerCase();
+
+            if (text.indexOf("mở") !== -1 || text.indexOf("thu gọn") !== -1) {
+                return buttons[i];
+            }
+        }
+
+        return null;
+    }
+
+    function setCollapsed(cart, toggleBtn, collapsed) {
+        if (collapsed) {
+            cart.classList.add("is-collapsed");
+            toggleBtn.innerText = "Mở";
+            toggleBtn.setAttribute("aria-expanded", "false");
+            hideCartContent(cart, toggleBtn);
+        } else {
+            cart.classList.remove("is-collapsed");
+            toggleBtn.innerText = "Thu gọn";
+            toggleBtn.setAttribute("aria-expanded", "true");
+            showCartContent(cart);
+        }
+    }
+
+    function hideCartContent(cart, toggleBtn) {
+        var children = Array.prototype.slice.call(cart.children);
+
+        children.forEach(function (child) {
+            if (child.contains(toggleBtn) || child.innerText.indexOf("Món chọn trước") !== -1) {
+                child.style.display = "";
+                return;
+            }
+
+            child.dataset.senvieHiddenByToggle = "true";
+            child.style.display = "none";
+        });
+
+        cart.style.maxHeight = "96px";
+        cart.style.overflow = "hidden";
+    }
+
+    function showCartContent(cart) {
+        var hiddenItems = cart.querySelectorAll("[data-senvie-hidden-by-toggle='true']");
+
+        hiddenItems.forEach(function (item) {
+            item.style.display = "";
+            item.removeAttribute("data-senvie-hidden-by-toggle");
+        });
+
+        Array.prototype.slice.call(cart.children).forEach(function (child) {
+            if (child.dataset.senvieHiddenByToggle === "true") {
+                child.style.display = "";
+                child.removeAttribute("data-senvie-hidden-by-toggle");
+            }
+        });
+
+        cart.style.maxHeight = "";
+        cart.style.overflow = "";
+    }
 })();

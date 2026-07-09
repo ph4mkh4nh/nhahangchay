@@ -1040,3 +1040,22 @@
         max-height: 86px !important;
     }
 }
+
+/* Preorder cart collapsed visual fix */
+.senvie-preorder-panel.is-collapsed {
+    min-height: 86px !important;
+    max-height: 96px !important;
+    overflow: hidden !important;
+}
+
+    .senvie-preorder-panel.is-collapsed button,
+    .senvie-preorder-panel.is-collapsed a {
+        pointer-events: auto !important;
+    }
+
+@media (max-width: 767.98px) {
+    .senvie-preorder-panel.is-collapsed {
+        min-height: 82px !important;
+        max-height: 92px !important;
+    }
+}
