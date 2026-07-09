@@ -1003,3 +1003,40 @@
         height: 58px !important;
     }
 }
+/* =====================================================
+   Preorder cart collapsed state
+===================================================== */
+
+.senvie-preorder-panel {
+    transition: all 0.25s ease;
+}
+
+    .senvie-preorder-panel.is-collapsed {
+        max-height: 92px !important;
+        overflow: hidden !important;
+    }
+
+        .senvie-preorder-panel.is-collapsed > *:not(:first-child) {
+            display: none !important;
+        }
+
+        .senvie-preorder-panel.is-collapsed .preorder-cart-body,
+        .senvie-preorder-panel.is-collapsed .preorder-cart-content,
+        .senvie-preorder-panel.is-collapsed .preorder-selected-list,
+        .senvie-preorder-panel.is-collapsed .preorder-total,
+        .senvie-preorder-panel.is-collapsed .preorder-actions,
+        .senvie-preorder-panel.is-collapsed .cart-body,
+        .senvie-preorder-panel.is-collapsed .cart-content {
+            display: none !important;
+        }
+
+    .senvie-preorder-panel button,
+    .senvie-preorder-panel a {
+        cursor: pointer;
+    }
+
+@media (max-width: 767.98px) {
+    .senvie-preorder-panel.is-collapsed {
+        max-height: 86px !important;
+    }
+}

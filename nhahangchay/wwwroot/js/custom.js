@@ -289,3 +289,83 @@
 		});
 	});
 })(jQuery);
+(function () {
+	document.addEventListener("DOMContentLoaded", function () {
+		var cart = findPreorderCart();
+
+		if (!cart) {
+			return;
+		}
+
+		cart.classList.add("senvie-preorder-panel");
+		cart.classList.add("is-collapsed");
+
+		var toggleBtn = findToggleButton(cart);
+
+		if (!toggleBtn) {
+			return;
+		}
+
+		updateToggleText(toggleBtn, true);
+
+		toggleBtn.addEventListener("click", function (event) {
+			event.preventDefault();
+			event.stopPropagation();
+
+			var isCollapsed = cart.classList.toggle("is-collapsed");
+			updateToggleText(toggleBtn, isCollapsed);
+		}, true);
+	});
+
+	function findPreorderCart() {
+		var selectors = [
+			"#preorderCart",
+			".preorder-cart",
+			".preorder-floating-cart",
+			".preorder-summary",
+			".selected-dishes-box",
+			".menu-preorder-cart",
+			".senvie-preorder-cart"
+		];
+
+		for (var i = 0; i < selectors.length; i++) {
+			var item = document.querySelector(selectors[i]);
+
+			if (item && item.innerText && item.innerText.indexOf("Món chọn trước") !== -1) {
+				return item;
+			}
+		}
+
+		var allElements = document.querySelectorAll("div, section, aside");
+
+		for (var j = 0; j < allElements.length; j++) {
+			var text = allElements[j].innerText || "";
+
+			if (text.indexOf("Món chọn trước") !== -1 &&
+				text.indexOf("Tiếp tục đặt bàn") !== -1) {
+				return allElements[j];
+			}
+		}
+
+		return null;
+	}
+
+	function findToggleButton(cart) {
+		var buttons = cart.querySelectorAll("button, a");
+
+		for (var i = 0; i < buttons.length; i++) {
+			var text = (buttons[i].innerText || "").trim().toLowerCase();
+
+			if (text.indexOf("mở") !== -1 || text.indexOf("thu gọn") !== -1) {
+				return buttons[i];
+			}
+		}
+
+		return buttons.length > 0 ? buttons[0] : null;
+	}
+
+	function updateToggleText(button, isCollapsed) {
+		button.innerText = isCollapsed ? "Mở" : "Thu gọn";
+		button.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
+	}
+})();

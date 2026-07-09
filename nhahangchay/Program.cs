@@ -79,7 +79,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHub<ChatHub>("/chatHub");
-
+app.MapGet("/healthz", () => Results.Ok("SenVie OK"));
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
